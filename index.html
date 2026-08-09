@@ -21,15 +21,15 @@
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-    body { background: #070b14; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { background: #070b14; color: #f8fafc; height: 100vh; overflow: hidden; position: relative; }
 
-    /* حاوية الفيديو */
-    .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; border-bottom: 3px solid #6366f1; box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2); }
-    .plyr { width: 100%; max-height: 45vh; aspect-ratio: 16 / 9; }
-    .plyr--video { --plyr-color-main: #6366f1; } /* تغيير لون المشغل */
+    /* حاوية الفيديو (مثبتة في الأعلى) */
+    .video-container { width: 100%; height: 40vh; background: #000; position: fixed; top: 0; left: 0; z-index: 100; border-bottom: 3px solid #6366f1; box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2); }
+    .plyr { width: 100%; height: 100%; }
+    .plyr--video { --plyr-color-main: #6366f1; }
 
-    /* منطقة المحتوى السفلي */
-    .content-area { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: hidden; background: #0b1120; }
+    /* منطقة المحتوى السفلي (تأخذ المساحة المتبقية تحت الفيديو) */
+    .content-area { position: absolute; top: 40vh; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: hidden; background: #0b1120; }    
 
     /* شريط المتصلين */
     .status-bar { display: flex; gap: 10px; align-items: center; background: #1e293b; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #334155; white-space: nowrap; }
@@ -99,7 +99,7 @@
   </div>
 
   <div class="video-container">
-    <video id="videoPlayer" playsinline crossorigin="anonymous">
+    <video id="videoPlayer" playsinline crossorigin="anonymous" muted>
       <source id="videoSource" src="" type="video/mp4">
     </video>
   </div>
@@ -150,28 +150,38 @@
 
     // 3. إدارة المستخدم (البروفايل)
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
+        let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('app_user_id', userId);
     let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
 
     if (!currentUser) {
       document.getElementById('profileModal').style.display = 'flex';
     } else {
-      initPresence();
-      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
-    }
+          function initPresence() {
+      if(!currentUser) return;
+      // استخدمنا userId الثابت بدلاً من push()
+      const userRef = db.ref('onlineUsers/' + userId);
+      
+      userRef.onDisconnect().remove();
+      userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
 
-    function selectAvatar(el) {
-      document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedAvatarUrl = el.src;
-    }
-
-    function saveProfile() {
-      const name = document.getElementById('initUsername').value.trim() || "زائر";
-      currentUser = { name: name, avatar: selectedAvatarUrl };
-      localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
-      document.getElementById('profileModal').style.display = 'none';
-      initPresence();
-      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
+      db.ref('onlineUsers').on('value', (snap) => {
+        const bar = document.getElementById('usersStatus');
+        bar.innerHTML = "<b>المتصلون:</b> ";
+        let count = 0;
+        snap.forEach(child => {
+          count++;
+          const u = child.val();
+          bar.innerHTML += `
+            <div class="user-badge" title="${u.name}">
+              <span class="user-dot"></span>
+              <img src="${u.avatar}" class="user-avatar" />
+              <span>${u.name}</span>
+            </div>
+          `;
+        });
+        if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
+      });
     }
 
     // 4. نظام المتواجدين الآن (Presence)
@@ -251,6 +261,12 @@
       if (st.action === 'load' && player.source !== st.src) {
         isSystemAction = true;
         player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
+        
+        // بمجرد أن يجهز المشغل، نحاول تشغيله إجبارياً
+        player.once('ready', () => {
+          player.play().catch(e => console.log("المتصفح يحتاج لضغط المستخدم للتشغيل"));
+        });
+
         setTimeout(() => { isSystemAction = false; }, 1000);
         return;
       }
@@ -428,25 +444,4 @@
     function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
-        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الملف "متاح للجميع" 
-        // واستخدام رابط تحميل مباشر. الكود القديم كان غير صحيح. 
-        // هذا الرابط هو الرابط المباشر الصحيح لملفات درايف الصغيرة/المتوسطة.
-        const streamUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
-        
-        db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
-        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
-        sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
-      }
-    }
-
-    // إصلاح ارتفاع الشاشة في الجوالات (تجنب تغطية الكيبورد للشات)
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        document.body.style.height = window.visualViewport.height + 'px';
-        const msgDiv = document.getElementById('messages');
-        msgDiv.scrollTop = msgDiv.scrollHeight;
-      });
-    }
-  </script>
-</body>
-</html>
+        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الن ال
