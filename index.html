@@ -153,47 +153,36 @@
         let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('app_user_id', userId);
     let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
+        function selectAvatar(el) {
+      document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAvatarUrl = el.src;
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('initUsername').value.trim() || "زائر";
+      currentUser = { name: name, avatar: selectedAvatarUrl };
+      localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
+      document.getElementById('profileModal').style.display = 'none';
+      initPresence();
+      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
+    }    
 
     if (!currentUser) {
       document.getElementById('profileModal').style.display = 'flex';
     } else {
-          function initPresence() {
-      if(!currentUser) return;
-      // استخدمنا userId الثابت بدلاً من push()
-      const userRef = db.ref('onlineUsers/' + userId);
-      
-      userRef.onDisconnect().remove();
-      userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
-
-      db.ref('onlineUsers').on('value', (snap) => {
-        const bar = document.getElementById('usersStatus');
-        bar.innerHTML = "<b>المتصلون:</b> ";
-        let count = 0;
-        snap.forEach(child => {
-          count++;
-          const u = child.val();
-          bar.innerHTML += `
-            <div class="user-badge" title="${u.name}">
-              <span class="user-dot"></span>
-              <img src="${u.avatar}" class="user-avatar" />
-              <span>${u.name}</span>
-            </div>
-          `;
-        });
-        if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
-      });
+      initPresence();
+      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
     }
 
     // 4. نظام المتواجدين الآن (Presence)
     function initPresence() {
       if(!currentUser) return;
-      const userRef = db.ref('onlineUsers').push();
       
-      // عندما يخرج المستخدم، احذفه من القائمة وأرسل رسالة نظام
-      userRef.onDisconnect().remove().then(() => {
-         // لا يمكن إرسال رسالة شات عند الـ disconnect مباشرة من العميل الميت، لكن يمكن استخدام Cloud Functions.
-         // سنكتفي بحذفه من القائمة.
-      });
+      // استخدمنا userId الثابت بدلاً من push()
+      const userRef = db.ref('onlineUsers/' + userId);
+      
+      userRef.onDisconnect().remove();
       userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
 
       db.ref('onlineUsers').on('value', (snap) => {
@@ -359,16 +348,17 @@
     });
 
     // ==========================================
-    // 7. مؤشر الكتابة (Typing Indicator)
+    // 7. مؤشر الكتابة (Typing Indicator) - آمن ضد الرموز
     // ==========================================
     let typingTimeout;
     function handleTyping() {
       if (!currentUser) return;
-      db.ref(`typing/${currentUser.name}`).set(true);
+      // نستخدم userId كمفتاح آمن، ونخزن الاسم كقيمة
+      db.ref(`typing/${userId}`).set(currentUser.name);
       
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => { 
-        db.ref(`typing/${currentUser.name}`).remove(); 
+        db.ref(`typing/${userId}`).remove(); 
       }, 1500);
     }
 
@@ -376,7 +366,8 @@
       const area = document.getElementById('typingArea');
       const typists = [];
       snap.forEach(c => {
-        if (currentUser && c.key !== currentUser.name) typists.push(c.key);
+        // التحقق من أن الكاتب ليس أنا عبر الـ ID
+        if (currentUser && c.key !== userId) typists.push(c.val());
       });
 
       if (typists.length === 1) {
@@ -441,7 +432,24 @@
       picker.setVisible(true);
     }
 
-    function pickerCallback(data) {
+        function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
-        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الن ال
+        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الملف متاحاً للجميع (Anyone with the link)
+        const streamUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        
+        db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
+        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
+        sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
+      }
+    }
+
+    // إصلاح ارتفاع الشاشة في الجوالات عند فتح الكيبورد
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        document.body.style.height = window.visualViewport.height + 'px';
+      });
+    }
+  </script>
+</body>
+</html>
