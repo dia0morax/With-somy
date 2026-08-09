@@ -274,23 +274,22 @@
       let expectedTime = st.time;
       if (st.action === 'play') { expectedTime += delayInSeconds; }
 
-      // 3. المزامنة الذكية (Smart Syncing) المقتبسة من مكتبات Watch Party
+      // 3. المزامنة المتسامحة (منع التقطيع والـ Buffering المستمر)
       const timeDifference = player.currentTime() - expectedTime;
 
+      // لن نتدخل أبداً إذا كان الفارق أقل من ثانية (1.0) لترك المتصفح يحمل بسلاسة
       if (Math.abs(timeDifference) > 3.0) {
-          // إذا كان الفارق كبيراً جداً (أكثر من 3 ثوانٍ)، قم بالقفز (Hard Seek)
           isSystemAction = true;
           player.currentTime(expectedTime);
+          player.playbackRate(1.0);
           setTimeout(() => { isSystemAction = false; }, 500);
-          player.playbackRate(1.0); // إعادة السرعة لطبيعتها
-      } else if (timeDifference > 0.3) {
-          // أنا متقدم عن الطرف الآخر (فيديوي يسبق): أبطئ الفيديو قليلاً
-          player.playbackRate(0.90);
-      } else if (timeDifference < -0.3) {
-          // أنا متأخر عن الطرف الآخر: أسرع الفيديو قليلاً للحاق به
-          player.playbackRate(1.10);
+      } else if (timeDifference > 1.0) {
+          // التبطيء الناعم جداً فقط عند فارق يزيد عن ثانية
+          player.playbackRate(0.95);
+      } else if (timeDifference < -1.0) {
+          // التسريع الناعم جداً فقط عند فارق يزيد عن ثانية
+          player.playbackRate(1.05);
       } else {
-          // نحن متزامنان تماماً (الفارق أقل من 300 جزء من الثانية)
           player.playbackRate(1.0);
       }
 
@@ -452,11 +451,11 @@
         function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
-        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الملف متاحاً للجميع (Anyone with the link)
-        const streamUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        
+        // الحل السحري لتجاوز حظر CORS وصفحة فحص الفيروسات في جوجل درايف
+        const streamUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
         
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
-        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
         sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
       }
     }
