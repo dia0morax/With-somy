@@ -3,80 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime Watch Together Ultimate</title>
+  <title>Anime Watch Together Pro</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <style>
+    :root { --primary: #6366f1; --bg: #0b0f19; --chat-bg: #1e293b; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-    body { background: #0b0f19; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    body { background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* المشغل ومكان العرض */
-    .video-container { flex-shrink: 0; width: 100%; height: 40vh; background: #000; position: relative; }
-    #plyr-container, #drive-container { width: 100%; height: 100%; }
-    #drive-container { display: none; }
-    iframe { width: 100%; height: 100%; border: none; }
+    .video-section { flex-shrink: 0; width: 100%; height: 35vh; background: #000; position: relative; }
+    #videoPlayer { width: 100%; height: 100%; }
+    #driveFrame { width: 100%; height: 100%; display: none; border: none; }
 
-    /* المنطقة التفاعلية */
-    .content-area { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; background: #0f172a; }
-    .status-bar { display: flex; gap: 8px; align-items: center; background: #1e293b; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; }
-    .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 3px 8px; border-radius: 20px; border: 1px solid #334155; }
-    .user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
-
-    /* الأزرار والإدخال */
-    .input-group { display: flex; gap: 6px; }
-    input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
-    button { padding: 8px 12px; background: #6366f1; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
+    .main-content { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow: hidden; }
+    .status-bar { display: flex; gap: 8px; align-items: center; background: var(--chat-bg); padding: 8px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; }
+    .user-badge { display: flex; align-items: center; gap: 5px; background: #0f172a; padding: 4px 10px; border-radius: 20px; border: 1px solid #334155; }
+    .user-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
     
-    /* الشات */
-    .chat-container { flex: 1; display: flex; flex-direction: column; background: #1e293b; border-radius: 8px; padding: 10px; overflow: hidden; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .msg-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; }
-    .msg-avatar { width: 26px; height: 26px; border-radius: 50%; }
-    .msg-content { background: #0f172a; padding: 6px 10px; border-radius: 8px; max-width: 85%; }
-    .msg-name { font-weight: bold; color: #818cf8; font-size: 0.75rem; display: block; }
-    .typing { font-size: 0.7rem; color: #94a3b8; height: 15px; }
+    .input-group { display: flex; gap: 5px; }
+    input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: var(--chat-bg); color: #fff; }
+    button { padding: 8px 12px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
+    
+    .history-box { background: var(--chat-bg); padding: 8px; border-radius: 6px; font-size: 0.75rem; max-height: 60px; overflow-y: auto; }
+    .history-item { padding: 4px; background: #0f172a; border-radius: 4px; margin-bottom: 3px; cursor: pointer; }
 
-    /* المودال */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-card { background: #1e293b; width: 300px; padding: 20px; border-radius: 12px; text-align: center; }
+    .chat-container { flex: 1; background: var(--chat-bg); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .msg-item { display: flex; align-items: flex-start; gap: 8px; }
+    .msg-avatar { width: 28px; height: 28px; border-radius: 50%; }
+    .msg-bubble { background: #0f172a; padding: 6px 10px; border-radius: 8px; font-size: 0.9rem; }
+    
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 2000; }
   </style>
 </head>
 <body>
 
-  <div id="profileModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card">
-      <h3>بروفايلك</h3>
-      <div id="avatarPicker" style="display:flex; justify-content:center; gap:10px; margin:10px 0;">
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Alien" class="avatar-opt" onclick="setAvatar(this)" style="width:40px; cursor:pointer;" />
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Vamp" class="avatar-opt" onclick="setAvatar(this)" style="width:40px; cursor:pointer;" />
+  <!-- البروفايل -->
+  <div id="profileModal" class="modal" style="display:none;">
+    <div style="background:#1e293b; padding:20px; border-radius:12px; text-align:center; width:300px;">
+      <h3>إعداد ملفك الشخصي</h3>
+      <div id="avatarPicker" style="display:flex; justify-content:center; gap:10px; margin:15px 0;">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=1" onclick="setAvatar(this)" style="width:40px; cursor:pointer; border-radius:50%">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=2" onclick="setAvatar(this)" style="width:40px; cursor:pointer; border-radius:50%">
       </div>
-      <input type="text" id="initUsername" placeholder="اسمك..." style="width:100%; margin-bottom:10px;">
-      <button onclick="saveProfile()" style="width:100%;">دخول</button>
+      <input type="text" id="initName" placeholder="اسمك..." style="width:100%; margin-bottom:10px; padding:8px;">
+      <button onclick="saveProfile()" style="width:100%;">حفظ ودخول</button>
     </div>
   </div>
 
-  <div class="video-container">
-    <div id="plyr-container"><video id="videoPlayer" playsinline></video></div>
-    <div id="drive-container"><iframe id="driveFrame" src="" allowfullscreen></iframe></div>
+  <div class="video-section">
+    <video id="videoPlayer" playsinline></video>
+    <iframe id="driveFrame"></iframe>
   </div>
 
-  <div class="content-area">
-    <div class="status-bar" id="usersStatus"><b>المتصلون:</b> </div>
-    <button onclick="db.ref('onlineUsers').remove()" style="background:#ef4444; font-size:0.6rem; padding:2px;">تصفير الكل</button>
-
+  <div class="main-content">
+    <div class="status-bar" id="usersStatus">
+        <b>المتصلون:</b>
+        <button onclick="confirmReset()" style="background:#ef4444; font-size:0.6rem; padding:2px 5px;">تصفير النشطين</button>
+    </div>
+    
     <div class="input-group">
-      <input type="text" id="videoUrlInput" placeholder="رابط mp4 أو Drive..." />
+      <input type="text" id="videoUrl" placeholder="رابط mp4 أو Drive..." />
       <button onclick="loadVideo()">تشغيل</button>
     </div>
+    
+    <div class="history-box" id="historyList"></div>
 
     <div class="chat-container">
       <div id="messages"></div>
-      <div id="typingArea" class="typing"></div>
-      <div class="input-group" style="margin-top:5px;">
-        <input type="text" id="msgInput" oninput="sendTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+      <div id="typing" style="font-size:0.7rem; color:#94a3b8; height:15px;"></div>
+      <div class="input-group">
+        <input type="text" id="msgInput" oninput="db.ref('typing/'+uID).set(uName)" />
         <button onclick="sendMessage()">إرسال</button>
       </div>
     </div>
@@ -86,31 +85,41 @@
     const firebaseConfig = { apiKey: "AIzaSyAs57mg-SUx-QFeYsqky4SIvph71n5uB5w", databaseURL: "https://with-somy-default-rtdb.firebaseio.com", projectId: "with-somy" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
+    // 1. تعريف المستخدم الفريد (لمنع التكرار)
+    let uID = localStorage.getItem('uID') || 'u_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('uID', uID);
+    let profile = JSON.parse(localStorage.getItem('profile')) || { name: "زائر", avatar: "" };
+
+    // 2. المشغل
     const player = new Plyr('#videoPlayer');
+    
+    // 3. الدوال الأساسية
+    function saveProfile() {
+        profile.name = document.getElementById('initName').value || "زائر";
+        localStorage.setItem('profile', JSON.stringify(profile));
+        document.getElementById('profileModal').style.display = 'none';
+        location.reload();
+    }
+    function setAvatar(el) { profile.avatar = el.src; }
+    function confirmReset() { if(confirm('هل أنت متأكد من تصفير قائمة النشطين؟')) db.ref('onlineUsers').remove(); }
 
-    // الهوية الثابتة
-    let userId = localStorage.getItem('uID') || 'u_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('uID', userId);
-    let currentUser = JSON.parse(localStorage.getItem('profile')) || { name: "زائر", avatar: "..." };
+    if(!profile.avatar) document.getElementById('profileModal').style.display='flex';
 
-    function setAvatar(el) { document.querySelectorAll('.avatar-opt').forEach(i=>i.style.border="none"); el.style.border="2px solid #6366f1"; currentUser.avatar = el.src; }
-    function saveProfile() { currentUser.name = document.getElementById('initUsername').value; localStorage.setItem('profile', JSON.stringify(currentUser)); document.getElementById('profileModal').style.display='none'; location.reload(); }
-
-    if(!localStorage.getItem('profile')) document.getElementById('profileModal').style.display='flex';
-
-    // الحالة والنشاط
-    db.ref('onlineUsers/' + userId).onDisconnect().remove();
-    db.ref('onlineUsers/' + userId).set(currentUser);
-
+    // 4. الحضور
+    db.ref('onlineUsers/'+uID).onDisconnect().remove();
+    db.ref('onlineUsers/'+uID).set(profile);
+    
     db.ref('onlineUsers').on('value', snap => {
-        const bar = document.getElementById('usersStatus');
-        bar.innerHTML = "<b>المتصلون:</b> ";
-        snap.forEach(c => { bar.innerHTML += `<div class="user-badge"><img src="${c.val().avatar}" class="user-avatar" /> ${c.val().name}</div>`; });
+        let bar = document.getElementById('usersStatus');
+        let btn = '<button onclick="confirmReset()" style="background:#ef4444; font-size:0.6rem; padding:2px 5px;">تصفير</button>';
+        bar.innerHTML = "<b>المتصلون:</b> " + btn;
+        snap.forEach(c => bar.innerHTML += `<div class="user-badge"><img src="${c.val().avatar}" class="user-avatar">${c.val().name}</div>`);
     });
 
-    // المشغل الذكي
+    // 5. المشغل والمزامنة
     function loadVideo() {
-        let url = document.getElementById('videoUrlInput').value.trim();
+        let url = document.getElementById('videoUrl').value;
         db.ref('videoState').set({ src: url, action: 'load' });
     }
 
@@ -118,36 +127,44 @@
         let st = snap.val();
         if(!st) return;
         if(st.src.includes('drive.google.com')) {
-            document.getElementById('plyr-container').style.display='none';
-            document.getElementById('drive-container').style.display='block';
+            document.getElementById('videoPlayer').style.display='none';
+            document.getElementById('driveFrame').style.display='block';
             document.getElementById('driveFrame').src = st.src.replace('/view', '/preview');
         } else {
-            document.getElementById('drive-container').style.display='none';
-            document.getElementById('plyr-container').style.display='block';
+            document.getElementById('driveFrame').style.display='none';
+            document.getElementById('videoPlayer').style.display='block';
             player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
         }
+        db.ref('history').push({ url: st.src });
     });
 
-    // الشات
-    function sendTyping() { db.ref('typing/'+userId).set(currentUser.name); setTimeout(()=>db.ref('typing/'+userId).remove(), 2000); }
-    db.ref('typing').on('value', snap => { 
-        document.getElementById('typingArea').innerText = Object.values(snap.val()||{}).join(', ') + " يكتب..."; 
+    // 6. السجل والمزامنة
+    db.ref('history').limitToLast(5).on('value', snap => {
+        let div = document.getElementById('historyList'); div.innerHTML = "";
+        snap.forEach(c => div.innerHTML += `<div class="history-item" onclick="document.getElementById('videoUrl').value='${c.val().url}'; loadVideo()">▶ ${c.val().url.substring(0,20)}...</div>`);
     });
 
+    player.on('play', () => db.ref('sync').set({action: 'play', time: player.currentTime}));
+    db.ref('sync').on('value', snap => { if(snap.val().action == 'play') player.play(); });
+
+    // 7. الشات
     function sendMessage() {
-        let msg = document.getElementById('msgInput').value;
-        if(msg) { db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, text: msg }); document.getElementById('msgInput').value=''; }
+        let m = document.getElementById('msgInput');
+        if(m.value) { db.ref('chat').push({ name: profile.name, avatar: profile.avatar, text: m.value }); m.value=''; }
     }
-
     db.ref('chat').limitToLast(10).on('value', snap => {
-        let m = document.getElementById('messages');
-        m.innerHTML = '';
-        snap.forEach(c => m.innerHTML += `<div class="msg-item"><img src="${c.val().avatar}" class="msg-avatar"><div class="msg-content"><span class="msg-name">${c.val().name}</span>${c.val().text}</div></div>`);
-        m.scrollTop = m.scrollHeight;
+        let div = document.getElementById('messages'); div.innerHTML = '';
+        snap.forEach(c => div.innerHTML += `<div class="msg-item"><img src="${c.val().avatar}" class="msg-avatar"><div class="msg-bubble"><span class="msg-name">${c.val().name}</span>${c.val().text}</div></div>`);
+        div.scrollTop = div.scrollHeight;
     });
 
-    // حماية الشاشة عند الكيبورد
-    if(window.visualViewport) window.visualViewport.addEventListener('resize', ()=>document.body.style.height = window.visualViewport.height + 'px');
+    // 8. مؤشر الكتابة
+    db.ref('typing').on('value', snap => {
+        let t = document.getElementById('typing');
+        let names = Object.values(snap.val() || {}).filter(n => n !== profile.name);
+        t.innerText = names.length > 0 ? names.join(', ') + " يكتب..." : "";
+    });
+    document.getElementById('msgInput').oninput = () => db.ref('typing/'+uID).set(profile.name);
   </script>
 </body>
 </html>
