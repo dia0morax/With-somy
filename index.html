@@ -246,17 +246,26 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد
-      if (st.action === 'load' && player.source !== st.src) {
+            // 1. تحميل مقطع جديد (معدل ليعمل بسلاسة)
+      if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
+        window.currentLoadedUrl = st.src;
         isSystemAction = true;
-        player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
         
-        // بمجرد أن يجهز المشغل، نحاول تشغيله إجبارياً
-        player.once('ready', () => {
-          player.play().catch(e => console.log("المتصفح يحتاج لضغط المستخدم للتشغيل"));
-        });
-
-        setTimeout(() => { isSystemAction = false; }, 1000);
+        player.stop(); // إيقاف المشغل الحالي
+        
+        player.source = { 
+          type: 'video', 
+          sources: [{ 
+            src: st.src, 
+            type: st.src.includes('.mp4') ? 'video/mp4' : '' 
+          }] 
+        };
+        
+        setTimeout(() => {
+            player.play().catch(e => console.warn("يرجى الضغط على تشغيل في المتصفح"));
+            isSystemAction = false;
+        }, 1000);
+        
         return;
       }
 
