@@ -3,118 +3,450 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime Watch Together Pro</title>
+  <title>Anime Watch Together - Pro Max</title>
+  
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
+
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-    body { background: #0b0f19; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; border-bottom: 2px solid #1e293b; }
-    .plyr { width: 100%; max-height: 40vh; aspect-ratio: 16 / 9; }
-    .content-area { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; background: #0f172a; }
-    .status-bar { display: flex; gap: 8px; align-items: center; background: #1e293b; padding: 8px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; }
-    .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 4px 10px; border-radius: 20px; border: 1px solid #334155; white-space: nowrap; }
-    .input-group { display: flex; gap: 6px; }
-    input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
-    button { padding: 8px 14px; background: #6366f1; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
-    .chat-container { flex: 1; background: #1e293b; border-radius: 8px; padding: 10px; overflow: hidden; display: flex; flex-direction: column; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 5px; }
-    .msg-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem; }
-    .msg-content { background: #0f172a; padding: 6px 12px; border-radius: 8px; word-break: break-word; }
+    /* تنسيقات عامة وسكرول بار مخفي وجميل */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    body { background: #070b14; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* حاوية الفيديو */
+    .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; border-bottom: 3px solid #6366f1; box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2); }
+    .plyr { width: 100%; max-height: 45vh; aspect-ratio: 16 / 9; }
+    .plyr--video { --plyr-color-main: #6366f1; } /* تغيير لون المشغل */
+
+    /* منطقة المحتوى السفلي */
+    .content-area { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: hidden; background: #0b1120; }
+
+    /* شريط المتصلين */
+    .status-bar { display: flex; gap: 10px; align-items: center; background: #1e293b; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #334155; white-space: nowrap; }
+    .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 4px 12px; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; }
+    .user-badge:hover { border-color: #6366f1; }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: #334155; }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+    /* أدوات التحكم (الإدخال والأزرار) */
+    .input-group { display: flex; gap: 8px; }
+    input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 0.9rem; outline: none; transition: 0.3s; }
+    input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+    button { padding: 10px 16px; background: #6366f1; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: 0.2s; }
+    button:hover { background: #4f46e5; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button.drive-btn { background: #2563eb; }
+    button.drive-btn:hover { background: #1d4ed8; }
+
+    /* سجل المشاهدة */
+    .history-box { background: #1e293b; border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; max-height: 60px; overflow-y: auto; border: 1px solid #334155; display: flex; flex-direction: column; gap: 4px; }
+    .history-item { background: #0f172a; border-radius: 6px; padding: 5px 8px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; transition: 0.2s; }
+    .history-item:hover { background: #334155; color: #818cf8; }
+
+    /* منطقة الشات */
+    .chat-container { flex: 1; display: flex; flex-direction: column; background: #1e293b; border-radius: 10px; padding: 12px; overflow: hidden; border: 1px solid #334155; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
+    .msg-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #475569; }
+    .msg-content { background: #0f172a; padding: 8px 12px; border-radius: 10px; border-top-right-radius: 2px; max-width: 85%; word-break: break-word; border: 1px solid #334155; }
+    .msg-content.mine { background: #4f46e5; border-color: #6366f1; border-top-right-radius: 10px; border-top-left-radius: 2px; }
+    .msg-name { font-weight: bold; color: #a5b4fc; font-size: 0.75rem; display: block; margin-bottom: 4px; }
+    .msg-content.mine .msg-name { color: #e0e7ff; }
+    
+    /* رسائل النظام */
+    .msg-system { text-align: center; font-size: 0.8rem; color: #94a3b8; font-style: italic; margin: 4px 0; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; align-self: center; }
+
+    .typing-indicator { font-size: 0.8rem; color: #a5b4fc; font-style: italic; min-height: 20px; margin-top: 4px; }
+
+    /* نافذة التسجيل */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(8px); }
+    .modal-card { background: #1e293b; width: 100%; max-width: 350px; border-radius: 16px; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 16px; border: 1px solid #475569; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
+    .avatar-opt { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; transition: 0.2s; background: #0f172a; }
+    .avatar-opt:hover { transform: scale(1.1); }
+    .avatar-opt.selected { border-color: #6366f1; transform: scale(1.15); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
   </style>
 </head>
 <body>
 
+  <div id="profileModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <h2 style="color: #fff;">غرفة المشاهدة 🎬</h2>
+      <p style="font-size:0.9rem; color:#94a3b8;">اختر صورتك الرمزية واسمك للدخول:</p>
+      <div class="avatar-picker">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Alien" class="avatar-opt selected" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Vamp" class="avatar-opt" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cat" class="avatar-opt" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Bandit" class="avatar-opt" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Nerd" class="avatar-opt" onclick="selectAvatar(this)" />
+      </div>
+      <input type="text" id="initUsername" placeholder="اكتب اسمك هنا..." />
+      <button onclick="saveProfile()" style="padding: 12px; font-size: 1rem;">دخول الغرفة</button>
+    </div>
+  </div>
+
   <div class="video-container">
-    <video id="videoPlayer" playsinline crossorigin="anonymous"></video>
+    <video id="videoPlayer" playsinline crossorigin="anonymous">
+      <source id="videoSource" src="" type="video/mp4">
+    </video>
   </div>
 
   <div class="content-area">
-    <div class="status-bar" id="usersStatus"><b>المتصلون:</b></div>
+    <div class="status-bar" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+
     <div class="input-group">
-      <button onclick="openDrivePicker()" style="background:#2563eb;">📁 Drive</button>
-      <input type="text" id="videoUrlInput" placeholder="رابط مباشر..." />
-      <button onclick="loadVideoManual()">تشغيل</button>
+      <button onclick="openDrivePicker()" class="drive-btn" title="اختر من درايف">📁 Drive</button>
+      <input type="text" id="videoUrlInput" placeholder="ضع رابط MP4 مباشر هنا..." />
+      <button onclick="changeVideoManual()">تشغيل ومزامنة</button>
     </div>
+
+    <div class="history-box">
+      <div style="font-weight:bold; color:#a5b4fc; margin-bottom:4px; font-size:0.75rem;">السجل (انقر لتشغيل المقطع مجدداً):</div>
+      <div id="historyList">لا توجد مقاطع سابقة</div>
+    </div>
+
     <div class="chat-container">
       <div id="messages"></div>
-      <div id="typingArea" style="font-size:0.7rem; color:#94a3b8; height:15px;"></div>
-      <div class="input-group" style="margin-top:5px;">
-        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+      <div id="typingArea" class="typing-indicator"></div>
+      <div class="input-group" style="margin-top: 8px;">
+        <input type="text" id="messageInput" placeholder="تحدث مع صديقتك..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
         <button onclick="sendMessage()">إرسال</button>
       </div>
     </div>
   </div>
 
   <script>
-    const firebaseConfig = { apiKey: "AIzaSyAs57mg-SUx-QFeYsqky4SIvph71n5uB5w", databaseURL: "https://with-somy-default-rtdb.firebaseio.com", projectId: "with-somy" };
+    // 1. إعدادات Firebase (استخدمت مفاتيحك الخاصة)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAs57mg-SUx-QFeYsqky4SIvph71n5uB5w",
+      authDomain: "with-somy.firebaseapp.com",
+      databaseURL: "https://with-somy-default-rtdb.firebaseio.com",
+      projectId: "with-somy",
+      storageBucket: "with-somy.firebasestorage.app",
+      messagingSenderId: "925753610772",
+      appId: "1:925753610772:web:1c1c7784d6f5c686d4d01"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const player = new Plyr('#videoPlayer');
-
-    // الهوية الثابتة لمنع التكرار
-    let uID = localStorage.getItem('uID') || 'u_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('uID', uID);
-    let uName = localStorage.getItem('uName') || "زائر";
-    let uAvatar = localStorage.getItem('uAvatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=1";
-
-    // تفعيل الحضور
-    db.ref('onlineUsers/'+uID).onDisconnect().remove();
-    db.ref('onlineUsers/'+uID).set({ name: uName, avatar: uAvatar });
-    db.ref('onlineUsers').on('value', snap => {
-        let bar = document.getElementById('usersStatus');
-        bar.innerHTML = "<b>المتصلون:</b> <button onclick=\"if(confirm('تصفير القائمة؟')) db.ref('onlineUsers').remove()\" style='background:#ef4444; border:none; padding:2px 5px; font-size:0.6rem; border-radius:4px;'>تصفير</button>";
-        snap.forEach(c => bar.innerHTML += `<div class="user-badge"><img src="${c.val().avatar}" class="user-avatar" style="width:15px; border-radius:50%"> ${c.val().name}</div>`);
+    
+    // 2. تهيئة مشغل Plyr
+    const player = new Plyr('#videoPlayer', {
+      controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
+      keyboard: { focused: true, global: true }
     });
 
-    // المشغل والمزامنة
-    let isRemote = false;
-    function loadVideoManual() {
-        let url = document.getElementById('videoUrlInput').value.trim();
-        db.ref('videoState').set({ src: url, action: 'load' });
+    // 3. إدارة المستخدم (البروفايل)
+    let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
+    let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
+
+    if (!currentUser) {
+      document.getElementById('profileModal').style.display = 'flex';
+    } else {
+      initPresence();
+      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
     }
 
-    db.ref('videoState').on('value', snap => {
-        let st = snap.val(); if(!st) return;
-        isRemote = true;
+    function selectAvatar(el) {
+      document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAvatarUrl = el.src;
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('initUsername').value.trim() || "زائر";
+      currentUser = { name: name, avatar: selectedAvatarUrl };
+      localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
+      document.getElementById('profileModal').style.display = 'none';
+      initPresence();
+      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
+    }
+
+    // 4. نظام المتواجدين الآن (Presence)
+    function initPresence() {
+      if(!currentUser) return;
+      const userRef = db.ref('onlineUsers').push();
+      
+      // عندما يخرج المستخدم، احذفه من القائمة وأرسل رسالة نظام
+      userRef.onDisconnect().remove().then(() => {
+         // لا يمكن إرسال رسالة شات عند الـ disconnect مباشرة من العميل الميت، لكن يمكن استخدام Cloud Functions.
+         // سنكتفي بحذفه من القائمة.
+      });
+      userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
+
+      db.ref('onlineUsers').on('value', (snap) => {
+        const bar = document.getElementById('usersStatus');
+        bar.innerHTML = "<b>المتصلون:</b> ";
+        let count = 0;
+        snap.forEach(child => {
+          count++;
+          const u = child.val();
+          bar.innerHTML += `
+            <div class="user-badge" title="${u.name}">
+              <span class="user-dot"></span>
+              <img src="${u.avatar}" class="user-avatar" />
+              <span>${u.name}</span>
+            </div>
+          `;
+        });
+        if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
+      });
+    }
+
+    // ==========================================
+    // 5. قلب النظام: المزامنة الاحترافية للفيديو
+    // ==========================================
+    let isSystemAction = false; // هذا المتغير السحري يمنع التكرار اللانهائي
+    const SYNC_THRESHOLD = 1.0; // فارق الثواني المسموح به قبل الإجبار على المزامنة
+
+    function changeVideoManual() {
+      const url = document.getElementById('videoUrlInput').value.trim();
+      if (!url) return;
+      
+      const videoData = { src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
+      db.ref('videoState').set(videoData);
+      db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
+      sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
+      document.getElementById('videoUrlInput').value = "";
+    }
+
+    // --- أحداث المشغل (ترسل إلى Firebase) ---
+    player.on('play', () => {
+      if (isSystemAction) return; 
+      db.ref('videoState').update({ action: 'play', time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      sendSystemMessage(`${currentUser.name} قام بتشغيل الفيديو ▶️`);
+    });
+
+    player.on('pause', () => {
+      if (isSystemAction) return;
+      db.ref('videoState').update({ action: 'pause', time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      sendSystemMessage(`${currentUser.name} أوقف الفيديو ⏸️`);
+    });
+
+    // نستخدم 'seeked' بدلاً من 'seeking' حتى لا نرسل بيانات أثناء السحب بشكل متكرر
+    player.on('seeked', () => {
+      if (isSystemAction) return;
+      db.ref('videoState').update({ time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      sendSystemMessage(`${currentUser.name} قام بتقديم/تأخير الفيديو ⏩`);
+    });
+
+    // --- استقبال الأوامر من Firebase ---
+    db.ref('videoState').on('value', (snap) => {
+      const st = snap.val();
+      if (!st) return;
+
+      // 1. تحميل مقطع جديد
+      if (st.action === 'load' && player.source !== st.src) {
+        isSystemAction = true;
         player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
-        setTimeout(() => isRemote = false, 1000);
+        setTimeout(() => { isSystemAction = false; }, 1000);
+        return;
+      }
+
+      // 2. حساب التأخير الزمني للإنترنت (Latency)
+      const now = Date.now();
+      const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
+      
+      let expectedTime = st.time;
+      // إذا كان المقطع في حالة تشغيل، نضيف وقت التأخير ليكون الفيديو متطابقاً تماماً
+      if (st.action === 'play') {
+          expectedTime += delayInSeconds; 
+      }
+
+      // 3. مزامنة الوقت إذا كان الفارق كبيراً
+      if (Math.abs(player.currentTime - expectedTime) > SYNC_THRESHOLD) {
+        isSystemAction = true;
+        player.currentTime = expectedTime;
+        setTimeout(() => { isSystemAction = false; }, 500); // إغلاق الحماية بعد نصف ثانية
+      }
+
+      // 4. مزامنة حالة التشغيل والإيقاف
+      if (st.action === 'play' && player.paused) {
+        isSystemAction = true;
+        player.play().then(() => { isSystemAction = false; }).catch(() => { isSystemAction = false; });
+      } else if (st.action === 'pause' && !player.paused) {
+        isSystemAction = true;
+        player.pause();
+        setTimeout(() => { isSystemAction = false; }, 300);
+      }
     });
 
-    player.on('play', () => { if(!isRemote) db.ref('sync').set({action: 'play', time: player.currentTime}); });
-    player.on('pause', () => { if(!isRemote) db.ref('sync').set({action: 'pause', time: player.currentTime}); });
-    player.on('seeked', () => { if(!isRemote) db.ref('sync').set({action: 'seek', time: player.currentTime}); });
+    // ==========================================
+    // 6. نظام الشات والإشعارات
+    // ==========================================
+    
+    // إرسال رسالة نظام (مثل: شخص قام بتشغيل المقطع)
+    function sendSystemMessage(text) {
+      if(!currentUser) return;
+      db.ref('chat').push({ isSystem: true, text: text, time: Date.now() });
+    }
 
-    db.ref('sync').on('value', snap => {
-        let s = snap.val(); if(!s || isRemote) return;
-        if(s.action == 'play') player.play();
-        if(s.action == 'pause') player.pause();
-        if(s.action == 'seek') player.currentTime = s.time;
-    });
-
-    // الشات والنشاط
     function sendMessage() {
-        let m = document.getElementById('messageInput');
-        if(m.value) { db.ref('chat').push({ name: uName, avatar: uAvatar, text: m.value }); m.value = ''; }
+      if (!currentUser) return;
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (text) {
+        db.ref('chat').push({ 
+          name: currentUser.name, 
+          avatar: currentUser.avatar, 
+          text: text, 
+          time: Date.now(),
+          isSystem: false
+        });
+        input.value = "";
+        db.ref(`typing/${currentUser.name}`).remove();
+      }
     }
-    db.ref('chat').limitToLast(10).on('value', snap => {
-        let div = document.getElementById('messages'); div.innerHTML = '';
-        snap.forEach(c => div.innerHTML += `<div class="msg-item"><img src="${c.val().avatar}" class="msg-avatar"><div class="msg-content"><b>${c.val().name}:</b> ${c.val().text}</div></div>`);
-        div.scrollTop = div.scrollHeight;
+
+    // استماع للشات
+    db.ref('chat').limitToLast(50).on('value', (snap) => {
+      const msgDiv = document.getElementById('messages');
+      // نحتفظ بمسافة السكرول الحالية لمعرفة ما إذا كان المستخدم يقرأ رسائل قديمة
+      const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
+      
+      msgDiv.innerHTML = "";
+      snap.forEach(c => {
+        const m = c.val();
+        
+        if(m.isSystem) {
+          msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
+        } else {
+          const isMine = currentUser && m.name === currentUser.name;
+          msgDiv.innerHTML += `
+            <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
+              <img src="${m.avatar}" class="msg-avatar" />
+              <div class="msg-content ${isMine ? 'mine' : ''}">
+                <span class="msg-name">${m.name}</span>
+                <div>${m.text}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
+      if (isScrolledToBottom) {
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      }
     });
 
+    // ==========================================
+    // 7. مؤشر الكتابة (Typing Indicator)
+    // ==========================================
+    let typingTimeout;
     function handleTyping() {
-        db.ref('typing/'+uID).set(uName);
-        setTimeout(() => db.ref('typing/'+uID).remove(), 2000);
+      if (!currentUser) return;
+      db.ref(`typing/${currentUser.name}`).set(true);
+      
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => { 
+        db.ref(`typing/${currentUser.name}`).remove(); 
+      }, 1500);
     }
-    db.ref('typing').on('value', snap => {
-        let names = Object.values(snap.val() || {}).filter(n => n !== uName);
-        document.getElementById('typingArea').innerText = names.length > 0 ? names.join(', ') + " يكتب..." : "";
+
+    db.ref('typing').on('value', (snap) => {
+      const area = document.getElementById('typingArea');
+      const typists = [];
+      snap.forEach(c => {
+        if (currentUser && c.key !== currentUser.name) typists.push(c.key);
+      });
+
+      if (typists.length === 1) {
+        area.innerHTML = `${typists[0]} يكتب الآن... ✍️`;
+      } else if (typists.length > 1) {
+        area.innerHTML = `عدة أشخاص يكتبون الآن... ✍️`;
+      } else {
+        area.innerHTML = "";
+      }
     });
+
+    // ==========================================
+    // 8. سجل الروابط وتكامل Google Drive
+    // ==========================================
+    db.ref('history').limitToLast(5).on('value', (snap) => {
+      const box = document.getElementById('historyList');
+      box.innerHTML = "";
+      let hasItems = false;
+      snap.forEach(c => {
+        hasItems = true;
+        const item = c.val();
+        // تقصير الرابط الطويل لجمالية الشكل
+        const shortUrl = item.url.length > 40 ? item.url.substring(0, 40) + '...' : item.url;
+        box.innerHTML += `<div class="history-item" title="${item.url}" onclick="playFromHistory('${item.url}')">
+          ▶ ${shortUrl} <span style="color:#6366f1; font-size:0.7rem;">(من ${item.sender || 'مجهول'})</span>
+        </div>`;
+      });
+      if(!hasItems) box.innerHTML = "لا توجد مقاطع سابقة";
+    });
+
+    function playFromHistory(url) {
+      db.ref('videoState').set({src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name});
+      sendSystemMessage(`${currentUser.name} قام بتشغيل مقطع من السجل 🎬`);
+    }
+
+    // Google Drive Picker (تم ترك كودك هنا مع ملاحظة هامة)
+    const CLIENT_ID = '925753610772-ih6q5ghbeg6g2imqtnefv9dqdsnjd1sv.apps.googleusercontent.com';
+    let accessToken = null;
+
+    function openDrivePicker() {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.readonly',
+        callback: (res) => {
+          if (res.access_token) {
+            accessToken = res.access_token;
+            gapi.load('picker', createPicker);
+          }
+        },
+      });
+      client.requestAccessToken();
+    }
+
+    function createPicker() {
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
+      view.setMimeTypes('video/mp4,video/x-matroska,video/webm');
+      const picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(accessToken)
+        .setCallback(pickerCallback)
+        .build();
+      picker.setVisible(true);
+    }
+
+    function pickerCallback(data) {
+      if (data.action === google.picker.Action.PICKED) {
+        const file = data.docs[0];
+        // ملاحظة: روابط درايف المباشرة تحتاج لأن يكون الملف "متاح للجميع" 
+        // واستخدام رابط تحميل مباشر. الكود القديم كان غير صحيح. 
+        // هذا الرابط هو الرابط المباشر الصحيح لملفات درايف الصغيرة/المتوسطة.
+        const streamUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        
+        db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
+        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
+        sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
+      }
+    }
+
+    // إصلاح ارتفاع الشاشة في الجوالات (تجنب تغطية الكيبورد للشات)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        document.body.style.height = window.visualViewport.height + 'px';
+        const msgDiv = document.getElementById('messages');
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      });
+    }
   </script>
 </body>
 </html>
