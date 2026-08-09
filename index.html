@@ -274,11 +274,24 @@
       let expectedTime = st.time;
       if (st.action === 'play') { expectedTime += delayInSeconds; }
 
-      // 3. مزامنة الوقت
-      if (Math.abs(player.currentTime() - expectedTime) > SYNC_THRESHOLD) {
-        isSystemAction = true;
-        player.currentTime(expectedTime);
-        setTimeout(() => { isSystemAction = false; }, 500);
+      // 3. المزامنة الذكية (Smart Syncing) المقتبسة من مكتبات Watch Party
+      const timeDifference = player.currentTime() - expectedTime;
+
+      if (Math.abs(timeDifference) > 3.0) {
+          // إذا كان الفارق كبيراً جداً (أكثر من 3 ثوانٍ)، قم بالقفز (Hard Seek)
+          isSystemAction = true;
+          player.currentTime(expectedTime);
+          setTimeout(() => { isSystemAction = false; }, 500);
+          player.playbackRate(1.0); // إعادة السرعة لطبيعتها
+      } else if (timeDifference > 0.3) {
+          // أنا متقدم عن الطرف الآخر (فيديوي يسبق): أبطئ الفيديو قليلاً
+          player.playbackRate(0.90);
+      } else if (timeDifference < -0.3) {
+          // أنا متأخر عن الطرف الآخر: أسرع الفيديو قليلاً للحاق به
+          player.playbackRate(1.10);
+      } else {
+          // نحن متزامنان تماماً (الفارق أقل من 300 جزء من الثانية)
+          player.playbackRate(1.0);
       }
 
       // 4. مزامنة حالة التشغيل والإيقاف
