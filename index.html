@@ -3,60 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime Watch Together Ultimate</title>
+  <title>Anime Watch Together Pro</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: #0f172a; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* تثبيت الفيديو في الأعلى */
     .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; }
     video { width: 100%; max-height: 35vh; display: block; object-fit: contain; }
+
+    /* المنطقة التفاعلية */
     .content-area { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; }
+
+    /* شريط حالة المتصلين */
     .status-bar { display: flex; gap: 10px; align-items: center; background: #1e293b; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; }
     .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 3px 8px; border-radius: 20px; }
     .user-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
     .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+    /* أدوات التحكم بالرابط */
     .input-group { display: flex; gap: 6px; }
     input { flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 0.85rem; outline: none; }
-    button { padding: 8px 12px; background: #6366f1; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
-    .history-box { background: #1e293b; border-radius: 6px; padding: 6px; font-size: 0.75rem; max-height: 50px; overflow-y: auto; }
-    .history-item { padding: 4px 6px; background: #0f172a; border-radius: 4px; margin-bottom: 3px; cursor: pointer; }
+    button { padding: 8px 12px; background: #6366f1; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
+    button.secondary { background: #059669; }
+
+    /* سجل الروابط */
+    .history-box { background: #1e293b; border-radius: 6px; padding: 6px; font-size: 0.75rem; max-height: 60px; overflow-y: auto; }
+    .history-item { padding: 4px 6px; background: #0f172a; border-radius: 4px; margin-bottom: 3px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+    /* صندوق الشات الذكي */
     .chat-container { flex: 1; display: flex; flex-direction: column; background: #1e293b; border-radius: 8px; padding: 8px; overflow: hidden; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
     .msg-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; }
     .msg-avatar { width: 24px; height: 24px; border-radius: 50%; }
-    .msg-content { background: #0f172a; padding: 6px 10px; border-radius: 8px; max-width: 85%; }
-    .typing-indicator { font-size: 0.7rem; color: #94a3b8; height: 15px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-card { background: #1e293b; width: 300px; padding: 20px; border-radius: 12px; text-align: center; }
+    .msg-content { background: #0f172a; padding: 6px 10px; border-radius: 8px; max-width: 85%; word-break: break-word; }
+    .msg-name { font-weight: bold; color: #818cf8; font-size: 0.75rem; display: block; margin-bottom: 2px; }
+    
+    /* مؤشر يكتب الآن */
+    .typing-indicator { font-size: 0.75rem; color: #94a3b8; font-style: italic; height: 16px; margin-top: 2px; }
+
+    /* نافذة إنشاء البروفايل (Modal) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-card { background: #1e293b; width: 100%; max-width: 320px; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; }
+    .avatar-picker { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
+    .avatar-opt { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; object-fit: cover; }
+    .avatar-opt.selected { border-color: #6366f1; transform: scale(1.1); }
   </style>
 </head>
 <body>
 
-  <div id="profileModal" class="modal-overlay" style="display:none;">
+  <!-- نافذة إنشاء البروفايل عند الدخول أول مرة -->
+  <div id="profileModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
-      <h3>بروفايل المشاهدة</h3>
-      <input type="text" id="initUsername" placeholder="اسمك..." style="width:100%; margin:10px 0;">
-      <button onclick="saveProfile()" style="width:100%;">دخول</button>
+      <h3>إنشاء بروفايل للمشاهدة</h3>
+      <p style="font-size:0.8rem; color:#94a3b8;">اختر صورتكِ واسمكِ للمرة الأولى:</p>
+      
+      <div class="avatar-picker">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Alien" class="avatar-opt selected" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Vamp" class="avatar-opt" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cat" class="avatar-opt" onclick="selectAvatar(this)" />
+      </div>
+
+      <input type="text" id="initUsername" placeholder="ادخل اسمكِ هنا..." value="Alien" />
+      <button onclick="saveProfile()">حفظ والدخول</button>
     </div>
   </div>
 
+  <!-- 1. الفيديو الثابت -->
   <div class="video-container">
-    <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
+    <video id="videoPlayer" controls playsinline crossorigin="anonymous">
+      <source id="videoSource" src="" type="video/mp4">
+    </video>
   </div>
 
-  <div class="content-area">
-    <div class="status-bar" id="usersStatus"></div>
+  <div class="content-area" id="contentArea">
+    <!-- 2. المتصلون الآن -->
+    <div class="status-bar" id="usersStatus">المتصلون: </div>
+
+    <!-- 3. إدخال وتغيير رابط الفيديو -->
     <div class="input-group">
-      <input type="text" id="videoUrlInput" placeholder="رابط درايف أو فيديو..." />
-      <button onclick="changeVideo()">تشغيل</button>
+      <input type="text" id="videoUrlInput" placeholder="رابط فيديو مباشر MP4..." />
+      <button onclick="changeVideo(false)">تشغيل</button>
+      <button onclick="changeVideo(true)" class="secondary" title="استخدمه إذا لم يعمل الرابط المباشر">تجاوز الحظر</button>
     </div>
-    <div class="history-box" id="historyList"></div>
+
+    <!-- 4. سجل الروابط -->
+    <div class="history-box" id="historyList">لا يوجد سجل روابط بعد</div>
+
+    <!-- 5. الشات والرسائل -->
     <div class="chat-container">
       <div id="messages"></div>
       <div id="typingArea" class="typing-indicator"></div>
-      <div class="input-group" style="margin-top:5px;">
-        <input type="text" id="messageInput" placeholder="رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+      <div class="input-group" style="margin-top: 5px;">
+        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
         <button onclick="sendMessage()">إرسال</button>
       </div>
     </div>
@@ -76,79 +117,169 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const video = document.getElementById('videoPlayer');
-    let currentUser = JSON.parse(localStorage.getItem('app_user_profile'));
 
-    if(!currentUser) document.getElementById('profileModal').style.display = 'flex';
-    else initPresence();
+    // --- (1) إدارة البروفايل والظهور الأول ---
+    let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
+    let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
+
+    if (!currentUser) {
+      document.getElementById('profileModal').style.display = 'flex';
+    } else {
+      initPresence();
+    }
+
+    function selectAvatar(el) {
+      document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAvatarUrl = el.src;
+    }
 
     function saveProfile() {
-      currentUser = { name: document.getElementById('initUsername').value || "زائر", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed="+Math.random() };
+      const name = document.getElementById('initUsername').value.trim() || "زائر";
+      currentUser = { name: name, avatar: selectedAvatarUrl };
       localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
       document.getElementById('profileModal').style.display = 'none';
       initPresence();
     }
 
+    // --- (2) نظام النشاط المباشر (Presence) ---
     function initPresence() {
+      if(!currentUser) return;
       const userRef = db.ref('onlineUsers').push();
       userRef.onDisconnect().remove();
       userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
+
       db.ref('onlineUsers').on('value', (snap) => {
         const bar = document.getElementById('usersStatus');
-        bar.innerHTML = "<b>المتواجدون:</b> ";
-        snap.forEach(c => { bar.innerHTML += `<div class="user-badge"><span class="user-dot"></span>${c.val().name}</div>`; });
+        bar.innerHTML = "<b>نشط الآن:</b> ";
+        snap.forEach(child => {
+          const u = child.val();
+          bar.innerHTML += `
+            <div class="user-badge">
+              <span class="user-dot"></span>
+              <img src="${u.avatar}" class="user-avatar" />
+              <span>${u.name}</span>
+            </div>
+          `;
+        });
       });
     }
 
-    // --- (الجزء الحاسم: محاولة تشغيل الفيديو) ---
-    function changeVideo() {
+    // --- (3) المزامنة وتغيير الفيديو + معالجة الحظر ---
+    let isRemote = false;
+
+    function changeVideo(useBypass = false) {
       let url = document.getElementById('videoUrlInput').value.trim();
-      // هنا نستخدم "جسر" Proxy بسيط للالتفاف على الحماية
-      // يمكن تغيير الرابط التالي إذا توقف البروكسي عن العمل
-      const bridgeUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
-      
-      db.ref('videoState').set({ src: bridgeUrl, action: 'load', time: 0 });
+      if (!url) return;
+
+      if (useBypass) {
+        // فك الحظر لتشغيل السيرفرات والتغلب على قيود الكورس
+        url = "https://corsproxy.io/?" + encodeURIComponent(url);
+      }
+
+      db.ref('videoState').set({ src: url, action: 'load', time: 0 });
       db.ref('history').push({ url: url, time: Date.now() });
     }
 
-    // المزامنة التلقائية (نفس الكود السابق)
-    let isRemote = false;
-    video.onplay = () => { if(!isRemote) db.ref('videoState').update({action: 'play', time: video.currentTime}); };
-    video.onpause = () => { if(!isRemote) db.ref('videoState').update({action: 'pause', time: video.currentTime}); };
-    
+    video.onplay = () => { if (!isRemote) db.ref('videoState').update({ action: 'play', time: video.currentTime }); };
+    video.onpause = () => { if (!isRemote) db.ref('videoState').update({ action: 'pause', time: video.currentTime }); };
+    video.onseeking = () => { if (!isRemote) db.ref('videoState').update({ time: video.currentTime }); };
+
     db.ref('videoState').on('value', (snap) => {
       const st = snap.val();
-      if(!st) return;
+      if (!st) return;
       isRemote = true;
-      if(st.action === 'load' && video.src !== st.src) { video.src = st.src; video.load(); }
-      if(st.action === 'play') video.play().catch(()=>{});
-      if(st.action === 'pause') video.pause();
-      setTimeout(() => { isRemote = false; }, 500);
+
+      if (st.action === 'load' && document.getElementById('videoSource').src !== st.src) {
+        document.getElementById('videoSource').src = st.src;
+        video.load();
+      }
+
+      if (Math.abs(video.currentTime - st.time) > 1.2) video.currentTime = st.time;
+
+      if (st.action === 'play' && video.paused) video.play().catch(() => {});
+      else if (st.action === 'pause' && !video.paused) video.pause();
+
+      setTimeout(() => { isRemote = false; }, 300);
     });
 
-    // الشات (نفس الكود السابق)
-    function sendMessage() {
-        const input = document.getElementById('messageInput');
-        if(input.value) { 
-            db.ref('chat').push({ name: currentUser.name, text: input.value, time: Date.now() });
-            input.value = "";
-        }
+    // --- (4) سجل الروابط ---
+    db.ref('history').limitToLast(4).on('value', (snap) => {
+      const box = document.getElementById('historyList');
+      box.innerHTML = "";
+      snap.forEach(c => {
+        const item = c.val();
+        box.innerHTML += `<div class="history-item" onclick="playFromHist('${item.url}')">▶ ${item.url}</div>`;
+      });
+    });
+
+    function playFromHist(url) {
+      db.ref('videoState').set({ src: url, action: 'load', time: 0 });
     }
-    db.ref('chat').limitToLast(10).on('value', (snap) => {
-        const m = document.getElementById('messages');
-        m.innerHTML = "";
-        snap.forEach(c => { m.innerHTML += `<div class="msg-item"><div class="msg-content"><span class="msg-name">${c.val().name}</span>${c.val().text}</div></div>`; });
-        m.scrollTop = m.scrollHeight;
-    });
 
+    // --- (5) الشات + مؤشر يكتب الآن + ضبط الكيبورد ---
+    let typingTimeout;
     function handleTyping() {
-        db.ref('typing/'+currentUser.name).set(true);
-        setTimeout(() => db.ref('typing/'+currentUser.name).remove(), 2000);
+      if (!currentUser) return;
+      db.ref('typing/' + currentUser.name).set(true);
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        db.ref('typing/' + currentUser.name).remove();
+      }, 2000);
     }
+
     db.ref('typing').on('value', (snap) => {
-        const t = document.getElementById('typingArea');
-        t.innerHTML = "";
-        snap.forEach(c => { if(c.key !== currentUser.name) t.innerHTML = c.key + " يكتب..."; });
+      const area = document.getElementById('typingArea');
+      area.innerHTML = "";
+      snap.forEach(c => {
+        if (currentUser && c.key !== currentUser.name) {
+          area.innerHTML = `${c.key} يكتب الآن...`;
+        }
+      });
     });
+
+    function sendMessage() {
+      if (!currentUser) return;
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (text) {
+        db.ref('chat').push({
+          name: currentUser.name,
+          avatar: currentUser.avatar,
+          text: text,
+          time: Date.now()
+        });
+        input.value = "";
+        db.ref('typing/' + currentUser.name).remove();
+      }
+    }
+
+    db.ref('chat').limitToLast(20).on('value', (snap) => {
+      const msgDiv = document.getElementById('messages');
+      msgDiv.innerHTML = "";
+      snap.forEach(c => {
+        const m = c.val();
+        msgDiv.innerHTML += `
+          <div class="msg-item">
+            <img src="${m.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=User'}" class="msg-avatar" />
+            <div class="msg-content">
+              <span class="msg-name">${m.name}</span>
+              <div>${m.text}</div>
+            </div>
+          </div>
+        `;
+      });
+      msgDiv.scrollTop = msgDiv.scrollHeight;
+    });
+
+    // حل رفع الشات مع فتح الكيبورد تلقائياً على الموبايل
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        document.body.style.height = window.visualViewport.height + 'px';
+        const msgDiv = document.getElementById('messages');
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      });
+    }
   </script>
 </body>
 </html>
