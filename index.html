@@ -243,17 +243,28 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد عبر Video.js
+      // 1. تحميل مقطع جديد (مُحصّن لمتصفحات الموبايل)
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        player.src({ src: st.src, type: 'video/mp4' });
+        // إيقاف المشغل وتفريغ المصدر القديم لتفادي تعارض الذاكرة
+        player.pause();
+        player.reset();
 
-        setTimeout(() => {
-          player.play().catch(e => console.warn("انتظار ضغطة المستخدم للتشغيل"));
-          isSystemAction = false;
-        }, 1000);
+        // نمرر الرابط كـ src مباشر بدون تحديد النوع لنجعل المتصفح يكتشفه بمرونة
+        player.src(st.src);
+
+        // ننتظر حتى يصبح المشغل مستعداً تماماً لقراءة البيانات (أهم خطوة للموبايل)
+        player.ready(function() {
+            setTimeout(() => {
+                // محاولة التشغيل مع معالجة خطأ سياسات المتصفح بصمت
+                player.play().catch(error => {
+                    console.log("متصفح الموبايل يحتاج لتفاعل يدوي لبدء التشغيل");
+                });
+                isSystemAction = false;
+            }, 1000);
+        });
         return;
       }
 
