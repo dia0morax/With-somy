@@ -4,14 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Anime Watch Together Pro</title>
-  
-  <!-- Firebase & Google APIs -->
+
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
 
-  <!-- Plyr Player CSS & JS -->
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
@@ -19,9 +17,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: #0b0f19; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* تحسين المشغل وتكبير حجمه بنسبة متناسقة */
     .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; border-bottom: 2px solid #1e293b; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
-    .plyr { width: 100%; max-height: 42vh; aspect-ratio: 16 / 9; }
+    .plyr { width: 100%; max-height: 40vh; aspect-ratio: 16 / 9; }
 
     .content-area { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; background: #0f172a; }
 
@@ -116,8 +113,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    // تهيئة مشغل Plyr الاحترافي
+
     const player = new Plyr('#videoPlayer', {
       controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
     });
@@ -153,11 +149,17 @@
     function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
-        // معالجة رابط Google Drive ليعمل بسلاسة داخل المشغل
-        const streamUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
+        const streamUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0 });
         db.ref('history').push({ url: file.name, time: Date.now() });
       }
+    }
+
+    // إدارة معرف المستخدم الثابت لمنع تكرار أيقونة الأونلاين
+    let deviceUserId = localStorage.getItem('device_user_id');
+    if (!deviceUserId) {
+      deviceUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('device_user_id', deviceUserId);
     }
 
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
@@ -182,7 +184,8 @@
 
     function initPresence() {
       if(!currentUser) return;
-      const userRef = db.ref('onlineUsers').push();
+      // نستخدم الـ ID الثابت للجهاز بدلاً من إنشاء مفتاح عشوائي في كل مرة
+      const userRef = db.ref('onlineUsers/' + deviceUserId);
       userRef.onDisconnect().remove();
       userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
 
