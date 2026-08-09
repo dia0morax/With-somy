@@ -248,8 +248,8 @@
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        player.src({ src: st.src, type: st.src.includes('.mp4') ? 'video/mp4' : '' });
-        
+        player.src({ src: st.src, type: 'video/mp4' });
+
         setTimeout(() => {
           player.play().catch(e => console.warn("انتظار ضغطة المستخدم للتشغيل"));
           isSystemAction = false;
