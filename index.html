@@ -25,8 +25,9 @@
 
     /* حاوية الفيديو (مثبتة في الأعلى) */
     .video-container { width: 100%; height: 40vh; background: #000; position: fixed; top: 0; left: 0; z-index: 100; border-bottom: 3px solid #6366f1; box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2); }
-    .plyr { width: 100%; height: 100%; }
-    .plyr--video { --plyr-color-main: #6366f1; }
+    .video-js { width: 100%; height: 100%; }
+    .vjs-default-skin .vjs-control-bar { background: #000; }
+    .video-js .vjs-play-progress { background-color: #6366f1; }    
 
     /* منطقة المحتوى السفلي (تأخذ المساحة المتبقية تحت الفيديو) */
     .content-area { position: absolute; top: 40vh; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: hidden; background: #0b1120; }    
@@ -99,9 +100,7 @@
   </div>
 
   <div class="video-container">
-    <video id="videoPlayer" playsinline crossorigin="anonymous" muted>
-      <source id="videoSource" src="" type="video/mp4">
-    </video>
+    <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline muted preload="auto"></video>
   </div>
 
   <div class="content-area">
@@ -142,10 +141,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Plyr
-    const player = new Plyr('#videoPlayer', {
-      controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
-      keyboard: { focused: true, global: true }
+    // 2. تهيئة مشغل Video.js (البديل الأقوى)
+    const player = videojs('videoPlayer', {
+      userActions: { hotkeys: true }
     });
 
     // 3. إدارة المستخدم (البروفايل)
@@ -221,23 +219,22 @@
       document.getElementById('videoUrlInput').value = "";
     }
 
-    // --- أحداث المشغل (ترسل إلى Firebase) ---
+        // --- أحداث المشغل (ترسل إلى Firebase) ---
     player.on('play', () => {
       if (isSystemAction) return; 
-      db.ref('videoState').update({ action: 'play', time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      db.ref('videoState').update({ action: 'play', time: player.currentTime(), timestamp: Date.now(), sender: currentUser.name });
       sendSystemMessage(`${currentUser.name} قام بتشغيل الفيديو ▶️`);
     });
 
     player.on('pause', () => {
       if (isSystemAction) return;
-      db.ref('videoState').update({ action: 'pause', time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      db.ref('videoState').update({ action: 'pause', time: player.currentTime(), timestamp: Date.now(), sender: currentUser.name });
       sendSystemMessage(`${currentUser.name} أوقف الفيديو ⏸️`);
     });
 
-    // نستخدم 'seeked' بدلاً من 'seeking' حتى لا نرسل بيانات أثناء السحب بشكل متكرر
     player.on('seeked', () => {
       if (isSystemAction) return;
-      db.ref('videoState').update({ time: player.currentTime, timestamp: Date.now(), sender: currentUser.name });
+      db.ref('videoState').update({ time: player.currentTime(), timestamp: Date.now(), sender: currentUser.name });
       sendSystemMessage(`${currentUser.name} قام بتقديم/تأخير الفيديو ⏩`);
     });
 
@@ -246,51 +243,38 @@
       const st = snap.val();
       if (!st) return;
 
-            // 1. تحميل مقطع جديد (معدل ليعمل بسلاسة)
+      // 1. تحميل مقطع جديد عبر Video.js
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        player.stop(); // إيقاف المشغل الحالي
-        
-        player.source = { 
-          type: 'video', 
-          sources: [{ 
-            src: st.src, 
-            type: st.src.includes('.mp4') ? 'video/mp4' : '' 
-          }] 
-        };
+        player.src({ src: st.src, type: st.src.includes('.mp4') ? 'video/mp4' : '' });
         
         setTimeout(() => {
-            player.play().catch(e => console.warn("يرجى الضغط على تشغيل في المتصفح"));
-            isSystemAction = false;
+          player.play().catch(e => console.warn("انتظار ضغطة المستخدم للتشغيل"));
+          isSystemAction = false;
         }, 1000);
-        
         return;
       }
 
-      // 2. حساب التأخير الزمني للإنترنت (Latency)
+      // 2. حساب التأخير الزمني للإنترنت
       const now = Date.now();
       const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
-      
       let expectedTime = st.time;
-      // إذا كان المقطع في حالة تشغيل، نضيف وقت التأخير ليكون الفيديو متطابقاً تماماً
-      if (st.action === 'play') {
-          expectedTime += delayInSeconds; 
-      }
+      if (st.action === 'play') { expectedTime += delayInSeconds; }
 
-      // 3. مزامنة الوقت إذا كان الفارق كبيراً
-      if (Math.abs(player.currentTime - expectedTime) > SYNC_THRESHOLD) {
+      // 3. مزامنة الوقت
+      if (Math.abs(player.currentTime() - expectedTime) > SYNC_THRESHOLD) {
         isSystemAction = true;
-        player.currentTime = expectedTime;
-        setTimeout(() => { isSystemAction = false; }, 500); // إغلاق الحماية بعد نصف ثانية
+        player.currentTime(expectedTime);
+        setTimeout(() => { isSystemAction = false; }, 500);
       }
 
       // 4. مزامنة حالة التشغيل والإيقاف
-      if (st.action === 'play' && player.paused) {
+      if (st.action === 'play' && player.paused()) {
         isSystemAction = true;
-        player.play().then(() => { isSystemAction = false; }).catch(() => { isSystemAction = false; });
-      } else if (st.action === 'pause' && !player.paused) {
+        player.play().catch(() => { isSystemAction = false; });
+      } else if (st.action === 'pause' && !player.paused()) {
         isSystemAction = true;
         player.pause();
         setTimeout(() => { isSystemAction = false; }, 300);
