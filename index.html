@@ -3,59 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anime Watch Together</title>
+  <title>Anime Watch Together Pro</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <style>
-    :root { --primary: #6366f1; --bg: #0b0f19; --card: #1e293b; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-    body { background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    
-    /* الفيديو */
-    .video-section { flex-shrink: 0; width: 100%; aspect-ratio: 16/9; background: #000; }
-    #videoPlayer { width: 100%; height: 100%; }
-    #driveFrame { width: 100%; height: 100%; display: none; border: none; }
-    
-    /* المحتوى */
-    .main-content { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; }
-    .status-bar { display: flex; gap: 8px; align-items: center; background: var(--card); padding: 8px; border-radius: 8px; font-size: 0.8rem; }
-    .user-badge { display: flex; align-items: center; gap: 5px; background: #0f172a; padding: 2px 8px; border-radius: 12px; }
-    
-    /* الشات */
-    .chat-container { flex: 1; background: var(--card); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .msg-item { display: flex; gap: 8px; align-items: start; }
-    .msg-bubble { background: #0f172a; padding: 6px 10px; border-radius: 8px; font-size: 0.9rem; }
+    body { background: #0b0f19; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    .video-container { flex-shrink: 0; width: 100%; background: #000; position: relative; border-bottom: 2px solid #1e293b; }
+    .plyr { width: 100%; max-height: 40vh; aspect-ratio: 16 / 9; }
+    .content-area { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden; background: #0f172a; }
+    .status-bar { display: flex; gap: 8px; align-items: center; background: #1e293b; padding: 8px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; }
+    .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 4px 10px; border-radius: 20px; border: 1px solid #334155; white-space: nowrap; }
+    .input-group { display: flex; gap: 6px; }
+    input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
+    button { padding: 8px 14px; background: #6366f1; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
+    .chat-container { flex: 1; background: #1e293b; border-radius: 8px; padding: 10px; overflow: hidden; display: flex; flex-direction: column; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 5px; }
+    .msg-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem; }
+    .msg-content { background: #0f172a; padding: 6px 12px; border-radius: 8px; word-break: break-word; }
   </style>
 </head>
 <body>
 
-  <div class="video-section">
-    <video id="videoPlayer" playsinline></video>
-    <iframe id="driveFrame"></iframe>
+  <div class="video-container">
+    <video id="videoPlayer" playsinline crossorigin="anonymous"></video>
   </div>
 
-  <div class="main-content">
-    <div class="status-bar" id="usersStatus">
-        <b>المتصلون:</b>
-        <button onclick="if(confirm('تصفير القائمة؟')) db.ref('onlineUsers').remove()" style="background:#ef4444; color:white; border:none; padding:2px 5px; font-size:0.6rem; cursor:pointer;">تصفير</button>
+  <div class="content-area">
+    <div class="status-bar" id="usersStatus"><b>المتصلون:</b></div>
+    <div class="input-group">
+      <button onclick="openDrivePicker()" style="background:#2563eb;">📁 Drive</button>
+      <input type="text" id="videoUrlInput" placeholder="رابط مباشر..." />
+      <button onclick="loadVideoManual()">تشغيل</button>
     </div>
-    
-    <div style="display:flex; gap:5px;">
-        <input type="text" id="urlIn" placeholder="رابط MP4 أو Drive..." style="flex:1; padding:8px; border-radius:6px; border:none;">
-        <button onclick="sendVideoLoad()">تشغيل</button>
-    </div>
-
-    <div id="historyList" style="font-size:0.7rem; color:#94a3b8; overflow-x:auto; display:flex; gap:5px;"></div>
-
     <div class="chat-container">
       <div id="messages"></div>
-      <div id="typing" style="font-size:0.7rem; color:#6366f1; height:15px;"></div>
-      <div style="display:flex; gap:5px;">
-        <input type="text" id="msgIn" oninput="db.ref('typing/'+uID).set(uName)" style="flex:1; padding:8px; border-radius:6px; border:none;">
-        <button onclick="sendMsg()">إرسال</button>
+      <div id="typingArea" style="font-size:0.7rem; color:#94a3b8; height:15px;"></div>
+      <div class="input-group" style="margin-top:5px;">
+        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button onclick="sendMessage()">إرسال</button>
       </div>
     </div>
   </div>
@@ -64,49 +54,40 @@
     const firebaseConfig = { apiKey: "AIzaSyAs57mg-SUx-QFeYsqky4SIvph71n5uB5w", databaseURL: "https://with-somy-default-rtdb.firebaseio.com", projectId: "with-somy" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
+    const player = new Plyr('#videoPlayer');
+
+    // الهوية الثابتة لمنع التكرار
     let uID = localStorage.getItem('uID') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('uID', uID);
-    let uName = localStorage.getItem('uName') || prompt("اسمك؟") || "زائر";
-    localStorage.setItem('uName', uName);
+    let uName = localStorage.getItem('uName') || "زائر";
+    let uAvatar = localStorage.getItem('uAvatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=1";
 
-    const player = new Plyr('#videoPlayer');
-    let isRemote = false;
-
-    // حضور
+    // تفعيل الحضور
     db.ref('onlineUsers/'+uID).onDisconnect().remove();
-    db.ref('onlineUsers/'+uID).set({ name: uName });
+    db.ref('onlineUsers/'+uID).set({ name: uName, avatar: uAvatar });
     db.ref('onlineUsers').on('value', snap => {
         let bar = document.getElementById('usersStatus');
-        bar.innerHTML = "<b>المتصلون:</b> <button onclick=\"if(confirm('تصفير القائمة؟')) db.ref('onlineUsers').remove()\" style='background:#ef4444; color:white; border:none; padding:2px 5px; font-size:0.6rem;'>تصفير</button>";
-        snap.forEach(c => bar.innerHTML += `<div class="user-badge">${c.val().name}</div>`);
+        bar.innerHTML = "<b>المتصلون:</b> <button onclick=\"if(confirm('تصفير القائمة؟')) db.ref('onlineUsers').remove()\" style='background:#ef4444; border:none; padding:2px 5px; font-size:0.6rem; border-radius:4px;'>تصفير</button>";
+        snap.forEach(c => bar.innerHTML += `<div class="user-badge"><img src="${c.val().avatar}" class="user-avatar" style="width:15px; border-radius:50%"> ${c.val().name}</div>`);
     });
 
-    // فيديو ومزامنة
-    function sendVideoLoad() {
-        let url = document.getElementById('urlIn').value;
-        db.ref('videoState').set({ src: url, action: 'load', time: 0 });
-        db.ref('history').push({ url: url });
+    // المشغل والمزامنة
+    let isRemote = false;
+    function loadVideoManual() {
+        let url = document.getElementById('videoUrlInput').value.trim();
+        db.ref('videoState').set({ src: url, action: 'load' });
     }
 
     db.ref('videoState').on('value', snap => {
         let st = snap.val(); if(!st) return;
         isRemote = true;
-        if(st.src.includes('drive')) {
-            document.getElementById('videoPlayer').style.display='none';
-            document.getElementById('driveFrame').style.display='block';
-            document.getElementById('driveFrame').src = st.src.replace('/view', '/preview');
-        } else {
-            document.getElementById('driveFrame').style.display='none';
-            document.getElementById('videoPlayer').style.display='block';
-            player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
-        }
-        setTimeout(()=> isRemote = false, 1000);
+        player.source = { type: 'video', sources: [{ src: st.src, type: 'video/mp4' }] };
+        setTimeout(() => isRemote = false, 1000);
     });
 
     player.on('play', () => { if(!isRemote) db.ref('sync').set({action: 'play', time: player.currentTime}); });
     player.on('pause', () => { if(!isRemote) db.ref('sync').set({action: 'pause', time: player.currentTime}); });
-    player.on('seeking', () => { if(!isRemote) db.ref('sync').set({action: 'seek', time: player.currentTime}); });
+    player.on('seeked', () => { if(!isRemote) db.ref('sync').set({action: 'seek', time: player.currentTime}); });
 
     db.ref('sync').on('value', snap => {
         let s = snap.val(); if(!s || isRemote) return;
@@ -115,15 +96,24 @@
         if(s.action == 'seek') player.currentTime = s.time;
     });
 
-    // شات
-    function sendMsg() {
-        let m = document.getElementById('msgIn');
-        if(m.value) { db.ref('chat').push({ name: uName, text: m.value }); m.value = ''; }
+    // الشات والنشاط
+    function sendMessage() {
+        let m = document.getElementById('messageInput');
+        if(m.value) { db.ref('chat').push({ name: uName, avatar: uAvatar, text: m.value }); m.value = ''; }
     }
     db.ref('chat').limitToLast(10).on('value', snap => {
-        let d = document.getElementById('messages'); d.innerHTML = '';
-        snap.forEach(c => d.innerHTML += `<div class="msg-item"><div class="msg-bubble"><b>${c.val().name}:</b> ${c.val().text}</div></div>`);
-        d.scrollTop = d.scrollHeight;
+        let div = document.getElementById('messages'); div.innerHTML = '';
+        snap.forEach(c => div.innerHTML += `<div class="msg-item"><img src="${c.val().avatar}" class="msg-avatar"><div class="msg-content"><b>${c.val().name}:</b> ${c.val().text}</div></div>`);
+        div.scrollTop = div.scrollHeight;
+    });
+
+    function handleTyping() {
+        db.ref('typing/'+uID).set(uName);
+        setTimeout(() => db.ref('typing/'+uID).remove(), 2000);
+    }
+    db.ref('typing').on('value', snap => {
+        let names = Object.values(snap.val() || {}).filter(n => n !== uName);
+        document.getElementById('typingArea').innerText = names.length > 0 ? names.join(', ') + " يكتب..." : "";
     });
   </script>
 </body>
