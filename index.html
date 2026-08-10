@@ -40,6 +40,8 @@
     .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
 
     @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+    .kick-btn { margin-right: auto; padding-right: 8px; color: #ef4444; cursor: pointer; background: none; border: none; font-size: 0.9rem; font-weight: bold; }
+    .kick-btn:hover { color: #b91c1c; }    
 
     /* أدوات التحكم (الإدخال والأزرار) */
     .input-group { display: flex; gap: 8px; }
@@ -89,7 +91,7 @@
       <p style="font-size:0.9rem; color:#94a3b8;">اختر صورتك الرمزية واسمك للدخول:</p>
       <div class="avatar-picker">
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Alien" class="avatar-opt selected" onclick="selectAvatar(this)" />
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Vamp" class="avatar-opt" onclick="selectAvatar(this)" />
+        <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=VampireGirl&backgroundColor=fca5a5" class="avatar-opt" onclick="selectAvatar(this)" />
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cat" class="avatar-opt" onclick="selectAvatar(this)" />
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Bandit" class="avatar-opt" onclick="selectAvatar(this)" />
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Nerd" class="avatar-opt" onclick="selectAvatar(this)" />
@@ -104,7 +106,14 @@
   </div>
 
   <div class="content-area">
-    <div class="status-bar" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+    <div class="status-bar" style="justify-content: space-between;">
+      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; width: 100%;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+      <button onclick="document.getElementById('profileModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">⚙️ تعديل</button>
+    </div>
+    
+    <div class="status-bar" id="syncStatus" style="font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
+      <b>توقيت المشاهدة:</b> جاري التحميل...
+    </div>
 
     <div class="input-group">
       <button onclick="openDrivePicker()" class="drive-btn" title="اختر من درايف">📁 Drive</button>
@@ -195,12 +204,49 @@
               <span class="user-dot"></span>
               <img src="${u.avatar}" class="user-avatar" />
               <span>${u.name}</span>
+              <button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد هذا المستخدم">✖</button>
             </div>
           `;
         });
         if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
       });
     }
+
+    // دالة طرد المستخدمين المعلقين
+    function kickUser(kId) {
+      if(confirm("هل أنت متأكد من طرد هذا المستخدم؟")) {
+        db.ref('onlineUsers/' + kId).remove();
+        db.ref('typing/' + kId).remove(); // يحل مشكلة زائر يكتب الآن
+        db.ref('playbackPositions/' + kId).remove();
+      }
+    }
+
+    // متتبع توقيت المشاهدة الحي (تحديث كل ثانيتين)
+    setInterval(() => {
+      if(currentUser && !player.paused()) {
+        const posRef = db.ref(`playbackPositions/${userId}`);
+        posRef.set({ name: currentUser.name, time: player.currentTime() });
+        posRef.onDisconnect().remove();
+      }
+    }, 2000);
+
+    // استقبال التوقيت وعرضه
+    db.ref('playbackPositions').on('value', (snap) => {
+      const syncBar = document.getElementById('syncStatus');
+      let html = "<b>توقيت المشاهدة:</b> ";
+      let count = 0;
+      snap.forEach(c => {
+        const d = c.val();
+        if(d.name) {
+          const m = Math.floor(d.time / 60);
+          const s = Math.floor(d.time % 60).toString().padStart(2, '0');
+          html += `<span style="margin-left: 12px; color: #f8fafc;">${d.name}: <span style="color:#22c55e;">${m}:${s}</span></span>`;
+          count++;
+        }
+      });
+      if(count === 0) html += "<span style='margin-left: 12px;'>متوقف</span>";
+      syncBar.innerHTML = html;
+    });
 
     // ==========================================
     // 5. قلب النظام: المزامنة الاحترافية للفيديو
@@ -369,12 +415,13 @@
     let typingTimeout;
     function handleTyping() {
       if (!currentUser) return;
-      // نستخدم userId كمفتاح آمن، ونخزن الاسم كقيمة
-      db.ref(`typing/${userId}`).set(currentUser.name);
+      const typeRef = db.ref(`typing/${userId}`);
+      typeRef.set(currentUser.name);
+      typeRef.onDisconnect().remove(); // حماية إضافية من التعليق
       
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => { 
-        db.ref(`typing/${userId}`).remove(); 
+        typeRef.remove(); 
       }, 1500);
     }
 
