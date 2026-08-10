@@ -64,7 +64,9 @@
     .msg-content.mine { background: var(--accent); border-color: var(--accent-hover); border-top-right-radius: 10px; border-top-left-radius: 2px; color: #fff; }
     .msg-name { font-weight: bold; color: var(--accent); font-size: 0.75rem; display: block; margin-bottom: 4px; }
     .msg-content.mine .msg-name { color: #e0e7ff; }
-    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; } /* تنسيق الملصقات */
+    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }
+    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
+    .msg-content.sticker-bg { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
     
     .msg-system { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin: 4px 0; }
     .typing-indicator { font-size: 0.8rem; color: var(--accent); font-style: italic; min-height: 20px; margin-top: 4px; }
@@ -108,18 +110,19 @@
     <span style="color: #fff; margin-top: 10px; font-size: 0.9rem;">انقر في أي مكان للإغلاق</span>
   </div>
 
-  <!-- لوحة الملصقات المحفوظة الدائمة (الطلب الثالث) -->
-  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; background: var(--bg-panel); border: 1px solid var(--accent); border-radius: 12px; padding: 10px; z-index: 500; flex-direction: column; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">
+  <!-- لوحة الملصقات المحفوظة الدائمة (شبكة عمودية 4 أعمدة) -->
+  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 45vh; background: var(--bg-panel); border: 1px solid var(--accent); border-radius: 12px; padding: 10px; z-index: 500; flex-direction: column; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-hover); padding-bottom: 5px;">
-      <b style="color: var(--accent); font-size: 0.85rem;">ملصقاتي المحفوظة 🌟</b>
-      <div>
+      <b style="color: var(--accent); font-size: 0.85rem;">الملصقات 🌟</b>
+      <div style="display: flex; gap: 5px;">
+        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #f59e0b;">✏️ تعديل</button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
-        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;">➕ رفع ملصق</button>
+        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;">➕ رفع</button>
         <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;">✖</button>
       </div>
     </div>
-    <div id="stickersContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; min-height: 60px; align-items: center;">
-       <span style="font-size: 0.8rem; color: var(--text-muted);">جاري تحميل الملصقات...</span>
+    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
+       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 4; text-align: center;">جاري تحميل الملصقات...</span>
     </div>
   </div>
 
@@ -486,17 +489,22 @@
         } else {
           const isMine = currentUser && m.name === currentUser.name;
           
-          // 1. معالجة الصور لفتحها في الشاشة المكبرة 
+          // 1. التفريق بين الصورة العادية والملصق الصغير الشفاف
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
-          if(m.img) contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
+          if(m.img && m.isSticker) {
+              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+          } else if(m.img) {
+              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
+          }
           
-          // 2. زر الحذف الوهمي (يظهر للجميع)
-          const deleteBtn = `<span onclick="fakeDelete()" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${isMine ? 'left' : 'right'};" title="حذف الرسالة">✖</span>`;
+          // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
+          const msgKey = c.key;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${isMine ? 'left' : 'right'};" title="حذف الرسالة">✖</span>`;
 
           msgDiv.innerHTML += `
             <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
               <img src="${m.avatar}" class="msg-avatar" />
-              <div class="msg-content ${isMine ? 'mine' : ''}" style="width: 100%;">
+              <div class="msg-content ${isMine ? 'mine' : ''} ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%;">
                 <span class="msg-name" style="display: block;">${m.name} ${deleteBtn}</span>
                 ${contentHtml}
               </div>
@@ -605,10 +613,9 @@
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
         
-        // استخدام مسار lh3.googleusercontent.com
-        // هذا المسار يوفر تجربة تشغيل أفضل للفيديوهات ويتجاوز شاشة الفيروسات
-        // مع العلم أننا نمرر type: 'video/mp4' في دالة المزامنة لضمان تشغيله
-        const streamUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
+        // استخدام خدمة Worker/Proxy مفتوحة المصدر لتجاوز قيود درايف
+        // هذا الرابط يأخذ الـ ID الخاص بالفيديو ويعيد دفق MP4 حقيقي
+        const streamUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id=' + file.id)}`;
         
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
         db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
@@ -626,22 +633,35 @@
       document.getElementById('imageModal').style.display = 'flex';
     }
 
-    // [زر السخرية من الحذف] - مكانه معزول لتغيير الكود مستقبلاً وجعله يحذف فعلياً إن أردت
-    function fakeDelete() {
+    // [الحذف الحقيقي للرسالة مع ترك أثر ساخر 😂]
+    function deleteMessage(msgKey) {
       if (!currentUser) return;
-      db.ref('chat').push({ 
-        name: currentUser.name, 
-        avatar: currentUser.avatar, 
-        text: "قامعتني بكل التطبيقات مو ؟ هذا موقعي وكلا كلا للمسح ، يبوي حتى هنا تمسحين ، نشوف شلون تمسحين بعد 🤣", 
-        time: Date.now(), 
-        isSystem: false 
-      });
+      if(confirm("هل أنت متأكد من مسح الرسالة؟ 👀")) {
+        db.ref('chat/' + msgKey).update({ 
+          text: "(افا حذفتي ، يلا عاد شنسوي somy is being somy)", 
+          img: null,
+          isSticker: false
+        });
+      }
     }
 
-    // نظام الملصقات الدائمة (لا تتأثر بمسح السجل)
+    // نظام الملصقات الدائمة (الشبكة العمودية + التعديل)
+    let isEditingStickers = false;
+
     function toggleStickers() {
       const panel = document.getElementById('stickersPanel');
       panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+      if(panel.style.display === 'none') { 
+          isEditingStickers = false; 
+          document.getElementById('editStickersBtn').style.background = '#f59e0b'; 
+          renderStickers(); 
+      }
+    }
+
+    function toggleEditStickers() {
+      isEditingStickers = !isEditingStickers;
+      document.getElementById('editStickersBtn').style.background = isEditingStickers ? '#22c55e' : '#f59e0b';
+      renderStickers();
     }
 
     function uploadSticker(input) {
@@ -650,28 +670,61 @@
       if(file.size > 800000) { alert("الملصق كبير جداً! يجب أن يكون أقل من 1 ميجا."); return; }
       const reader = new FileReader();
       reader.onload = function(e) {
-        db.ref('savedStickers').push({ img: e.target.result });
+        db.ref('savedStickers').push({ img: e.target.result, order: Date.now() });
       };
       reader.readAsDataURL(file);
       input.value = "";
     }
 
     function sendSavedSticker(imgSrc) {
-      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: imgSrc, time: Date.now(), isSystem: false });
+      if(isEditingStickers) return;
+      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
       toggleStickers();
     }
 
+    function deleteSticker(sKey) {
+      if(confirm("حذف هذا الملصق نهائياً؟")) db.ref('savedStickers/' + sKey).remove();
+    }
+
+    function moveSticker(sKey, currentOrder, direction) {
+        db.ref('savedStickers/' + sKey).update({ order: currentOrder + (direction === 'up' ? -15000 : 15000) });
+    }
+
+    let globalStickers = [];
     db.ref('savedStickers').on('value', snap => {
+      globalStickers = [];
+      snap.forEach(c => { globalStickers.push({ key: c.key, ...c.val() }); });
+      // ترتيب الملصقات برمجياً حسب الأقدمية/التعديل
+      globalStickers.sort((a, b) => (a.order || 0) - (b.order || 0));
+      renderStickers();
+    });
+
+    function renderStickers() {
       const container = document.getElementById('stickersContainer');
       if(!container) return;
       container.innerHTML = "";
-      let hasStickers = false;
-      snap.forEach(c => {
-         hasStickers = true;
-         container.innerHTML += `<img src="${c.val().img}" style="height: 60px; max-width: 60px; object-fit: contain; cursor: pointer; border-radius: 4px; background: rgba(255,255,255,0.05); padding: 2px;" onclick="sendSavedSticker('${c.val().img}')" title="إرسال">`;
+      if(globalStickers.length === 0) {
+          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 4; text-align: center;">لا توجد ملصقات، أضف ملصقاتك الآن!</span>`;
+          return;
+      }
+      
+      globalStickers.forEach((s) => {
+         const orderNum = s.order || Date.now();
+         if(isEditingStickers) {
+             container.innerHTML += `
+             <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
+                <img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
+                <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
+                <div style="display:flex; width: 100%; gap: 2px; margin-top: 2px;">
+                  <button onclick="moveSticker('${s.key}', ${orderNum}, 'up')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">◀</button>
+                  <button onclick="moveSticker('${s.key}', ${orderNum}, 'down')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">▶</button>
+                </div>
+             </div>`;
+         } else {
+             container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
+         }
       });
-      if(!hasStickers) container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">لا توجد ملصقات، أضف ملصقات شفافة الآن!</span>`;
-    });
+    }
 
     // إصلاح ارتفاع الكيبورد في الآيباد (تثبيت الفيديو)
     const videoCont = document.querySelector('.video-container');
