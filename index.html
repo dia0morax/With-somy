@@ -15,70 +15,118 @@
 
   <style>
     :root {
-      --bg-main: #070b14; --bg-content: #0b1120; --bg-panel: #1e293b; --bg-hover: #334155; --text-main: #f8fafc; --text-muted: #94a3b8; --accent: #6366f1; --accent-hover: #4f46e5;
+      /* ثيم داكن فاخر كافتراضي (مستوحى من تطبيقات الـ Streaming الحديثة) */
+      --bg-main: #0f172a; 
+      --bg-content: #1e293b; 
+      --bg-panel: rgba(30, 41, 59, 0.7); 
+      --bg-hover: #334155; 
+      --text-main: #f8fafc; 
+      --text-muted: #94a3b8; 
+      --accent: #8b5cf6; /* بنفسجي فاخر */
+      --accent-hover: #7c3aed;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
-    body.theme-pink { --bg-main: #fdf2f8; --bg-content: #fce7f3; --bg-panel: #fbcfe8; --bg-hover: #f9a8d4; --text-main: #1e293b; --text-muted: #475569; --accent: #ec4899; --accent-hover: #be185d; }
-    body.theme-blue { --bg-main: #f0f9ff; --bg-content: #e0f2fe; --bg-panel: #bae6fd; --bg-hover: #7dd3fc; --text-main: #0f172a; --text-muted: #334155; --accent: #0284c7; --accent-hover: #0369a1; }
-    body.theme-cozy { --bg-main: #1c1917; --bg-content: #292524; --bg-panel: #44403c; --bg-hover: #57534e; --text-main: #fafaf9; --text-muted: #a8a29e; --accent: #d97706; --accent-hover: #b45309; }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-content); } ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
-
-    /* استخدام dvh يضمن تفاعل الجسم بالكامل مع الكيبورد */
-    html, body { background: var(--bg-main); color: var(--text-main); height: 100dvh; width: 100%; overflow: hidden; margin: 0; padding: 0; display: flex; flex-direction: column; }
-
-    /* الفيديو يبقى ثابتاً في الأعلى */
-    .video-container { width: 100%; height: 35vh; min-height: 35vh; background: #000; z-index: 100; border-bottom: 3px solid var(--accent); flex-shrink: 0; }
-    .video-js { width: 100%; height: 100%; } .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.8); } .video-js .vjs-play-progress { background-color: var(--accent); }    
-
-    /* منطقة المحتوى تنضغط تلقائياً عند صعود الكيبورد */
-    .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); z-index: 10; }
-
-    /* أزرار السلايد الأنيقة */
-    details { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--bg-hover); margin-bottom: 2px; }
-    summary { padding: 10px 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--accent); list-style: none; display: flex; justify-content: space-between; align-items: center; }
-    summary::-webkit-details-marker { display: none; }
-    .details-content { padding: 10px; border-top: 1px solid var(--bg-hover); display: flex; flex-direction: column; gap: 8px; }
-
-    .status-bar { display: flex; gap: 10px; align-items: center; background: var(--bg-panel); padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; overflow-x: auto; border: 1px solid var(--bg-hover); white-space: nowrap; }
-    .user-badge { display: flex; align-items: center; gap: 6px; background: var(--bg-content); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--bg-hover); }
-    .user-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: var(--bg-hover); }
-    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
-    .kick-btn { margin-right: auto; padding-right: 8px; color: #ef4444; cursor: pointer; background: none; border: none; font-size: 0.9rem; font-weight: bold; }
     
-    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+    /* ثيمات مطورة بألوان أكثر نعومة واحترافية */
+    body.theme-pink { --bg-main: #fdf2f8; --bg-content: #fce7f3; --bg-panel: rgba(252, 231, 243, 0.8); --bg-hover: #f9a8d4; --text-main: #1e293b; --text-muted: #475569; --accent: #ec4899; --accent-hover: #be185d; --glass-border: rgba(0, 0, 0, 0.05); --shadow: 0 4px 15px rgba(236, 72, 153, 0.2); }
+    body.theme-blue { --bg-main: #f0f9ff; --bg-content: #e0f2fe; --bg-panel: rgba(224, 242, 254, 0.8); --bg-hover: #bae6fd; --text-main: #0f172a; --text-muted: #334155; --accent: #0ea5e9; --accent-hover: #0284c7; --glass-border: rgba(0, 0, 0, 0.05); --shadow: 0 4px 15px rgba(14, 165, 233, 0.2); }
+    body.theme-cozy { --bg-main: #292524; --bg-content: #44403c; --bg-panel: rgba(68, 64, 60, 0.8); --bg-hover: #57534e; --text-main: #fafaf9; --text-muted: #a8a29e; --accent: #d97706; --accent-hover: #b45309; --glass-border: rgba(255, 255, 255, 0.05); --shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
 
-    .input-group { display: flex; gap: 8px; }
-    input[type="text"] { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--bg-hover); background: var(--bg-panel); color: var(--text-main); font-size: 0.9rem; outline: none; }
-    input[type="text"]:focus { border-color: var(--accent); }
-    button { padding: 10px 16px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: 0.2s; white-space: nowrap; }
-    button:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    button.icon-btn { padding: 8px 12px; font-size: 1.1rem; background: var(--bg-hover); }
-
-    .history-item { background: var(--bg-content); border-radius: 6px; padding: 5px 8px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.8rem; margin-bottom: 4px; border: 1px solid transparent; }
-    .history-item:hover { border-color: var(--accent); color: var(--accent); }
-
-    .chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); border-radius: 10px; padding: 12px; overflow: hidden; border: 1px solid var(--bg-hover); min-height: 250px; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
-    .msg-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-    .msg-content { background: var(--bg-content); padding: 8px 12px; border-radius: 10px; border-top-right-radius: 2px; max-width: 85%; word-break: break-word; border: 1px solid var(--bg-hover); }
-    .msg-content.mine { background: var(--accent); border-color: var(--accent-hover); border-top-right-radius: 10px; border-top-left-radius: 2px; color: #fff; }
-    .msg-name { font-weight: bold; color: var(--accent); font-size: 0.75rem; display: block; margin-bottom: 4px; }
-    .msg-content.mine .msg-name { color: #e0e7ff; }
-    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }
-    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
-    .msg-content.sticker-bg { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     
-    .msg-system { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin: 4px 0; }
-    .typing-indicator { font-size: 0.8rem; color: var(--accent); font-style: italic; min-height: 20px; margin-top: 4px; }
+    /* تصميم سكرول بار أنيق */
+    ::-webkit-scrollbar { width: 5px; height: 5px; } 
+    ::-webkit-scrollbar-track { background: transparent; } 
+    ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-    .modal-card { background: var(--bg-panel); width: 100%; max-width: 350px; border-radius: 16px; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--bg-hover); }
-    .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 10px 0; align-items: center; }
-    .avatar-opt { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; background: var(--bg-content); transition: 0.2s; }
-    .avatar-opt.selected { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    html, body { background: var(--bg-main); color: var(--text-main); height: 100dvh; width: 100%; overflow: hidden; display: flex; flex-direction: column; transition: background 0.4s ease; }
+
+    /* تحسين إطار الفيديو ليكون بارزاً */
+    .video-container { width: 100%; height: 35vh; min-height: 35vh; background: #000; z-index: 100; border-bottom: 2px solid var(--accent); flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative;}
+    .video-js { width: 100%; height: 100%; } 
+    .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); } 
+    .video-js .vjs-play-progress { background-color: var(--accent); }    
+
+    /* منطقة المحتوى بتصميم عصري (تأثير الزجاج) */
+    .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; gap: 12px; overflow-y: auto; background: var(--bg-main); z-index: 10; position: relative; }
+
+    /* شرائط الحالة (المتصلين والتوقيت) محسنة */
+    .status-bar { display: flex; gap: 10px; align-items: center; background: var(--bg-panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; overflow-x: auto; border: 1px solid var(--glass-border); white-space: nowrap; box-shadow: var(--shadow); transition: 0.3s;}
+    
+    .user-badge { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--glass-border); transition: 0.2s; }
+    .user-badge:hover { background: rgba(0,0,0,0.3); transform: translateY(-1px); }
+    .user-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--bg-hover); border: 1px solid var(--accent); }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
+    
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; box-shadow: 0 0 12px #10b981; } 100% { opacity: 0.6; } }
+
+    /* تحسين الأزرار وحقول الإدخال */
+    .input-group { display: flex; gap: 8px; width: 100%; }
+    input[type="text"], select { flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--bg-panel); color: var(--text-main); font-size: 0.95rem; outline: none; transition: 0.3s; backdrop-filter: blur(5px); }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); background: var(--bg-content); }
+    
+    button { padding: 10px 18px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    button:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    button:active { transform: translateY(0); }
+    button.icon-btn { padding: 10px 14px; font-size: 1.2rem; background: var(--bg-panel); border: 1px solid var(--glass-border); color: var(--text-main); }
+    button.icon-btn:hover { background: var(--bg-hover); border-color: var(--accent); }
+
+    /* حاوية الشات الفخمة */
+    .chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 16px; padding: 15px; overflow: hidden; border: 1px solid var(--glass-border); min-height: 250px; box-shadow: var(--shadow); position: relative; }
+    
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-bottom: 10px; scroll-behavior: smooth; }
+    
+    /* تصميم الرسائل (فقاعات ناعمة مثل iMessage) */
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(15px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    
+    .msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    
+    .msg-content { padding: 10px 14px; border-radius: 18px; max-width: 80%; word-break: break-word; box-shadow: 0 2px 8px rgba(0,0,0,0.1); line-height: 1.4; position: relative; }
+    
+    /* تخصيص زوايا الفقاعات بناءً على الاتجاه */
+    .msg-item[style*="row-reverse"] .msg-content { border-bottom-right-radius: 4px; }
+    .msg-item[style*="row"] .msg-content { border-bottom-left-radius: 4px; }
+
+    .msg-name { font-weight: 700; font-size: 0.75rem; margin-bottom: 4px; opacity: 0.9; letter-spacing: 0.5px; }
+    
+    .chat-img { max-width: 180px; border-radius: 12px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s; }
+    .chat-img:hover { transform: scale(1.02); }
+    .chat-sticker { max-width: 100px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .chat-sticker:hover { transform: scale(1.1) rotate(5deg); }
+    
+    /* إخفاء خلفية الفقاعة للملصقات فقط */
+    .msg-content.sticker-bg { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+
+    .msg-system { text-align: center; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 12px; margin: 4px auto; width: fit-content; border: 1px solid var(--glass-border); }
+    
+    .typing-indicator { font-size: 0.8rem; color: var(--accent); font-style: italic; min-height: 20px; margin-top: 8px; padding-left: 5px; opacity: 0.8; }
+
+    /* النوافذ المنبثقة الفخمة (Modals) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .modal-card { background: var(--bg-content); width: 100%; max-width: 380px; border-radius: 24px; padding: 30px 24px; display: flex; flex-direction: column; gap: 18px; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+    /* لمعة خلفية للكارد */
+    .modal-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%); z-index: 0; pointer-events: none; }
+    .modal-card > * { z-index: 1; }
+    
+    .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 10px 0; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; border: 1px solid var(--glass-border); }
+    .avatar-opt { width: 55px; height: 55px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; background: var(--bg-panel); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .avatar-opt:hover { transform: scale(1.1); border-color: rgba(139, 92, 246, 0.5); }
+    .avatar-opt.selected { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+
+    /* تفاصيل داخل الإعدادات */
+    .details-content { background: rgba(0,0,0,0.2) !important; padding: 15px !important; border: 1px solid var(--glass-border) !important; border-radius: 12px !important; }
+    
+    .history-item { background: var(--bg-panel); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.85rem; margin-bottom: 6px; border: 1px solid var(--glass-border); transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
+    .history-item:hover { border-color: var(--accent); background: var(--bg-hover); padding-right: 15px; }
+
+    /* زر الحذف الأنيق للرسائل */
+    .delete-btn-msg { color: #ef4444; opacity: 0.5; transition: 0.2s; font-size: 1rem; padding: 0 5px; }
+    .delete-btn-msg:hover { opacity: 1; transform: scale(1.2); }
   </style>
 
 </head>
