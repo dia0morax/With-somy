@@ -126,6 +126,8 @@
       <b style="color: var(--accent); font-size: 0.85rem;">الملصقات 🌟</b>
       <div style="display: flex; gap: 5px;">
         <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #f59e0b;">✏️ تعديل</button>
+        <!-- زر حذف كل الملصقات -->
+        <button onclick="deleteAllStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #991b1b;" title="حذف كل الملصقات">🗑️ الكل</button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
         <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;">➕ رفع</button>
         <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;">✖</button>
@@ -483,10 +485,9 @@
     // 6. نظام الشات والإشعارات
     // ==========================================
     
-    // إرسال رسالة نظام (مثل: شخص قام بتشغيل المقطع)
+    // إرسال رسالة نظام (تم إيقافها لتخفيف الضغط على الموقع)
     function sendSystemMessage(text) {
-      if(!currentUser) return;
-      db.ref('chat').push({ isSystem: true, text: text, time: Date.now() });
+      return; 
     }
 
     function sendMessage() {
@@ -500,7 +501,7 @@
       }
     }
 
-    // إرسال الصور (مع ضغط الحجم آلياً لتقليل اللاق)
+    // إرسال الصور (ضغط أقوى لتقليل اللاق)
     function sendImage(input) {
       if (!currentUser) return;
       const file = input.files[0];
@@ -511,15 +512,15 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 300; // تصغير العرض ليناسب الشات فقط
+          const MAX_WIDTH = 200; // تصغير قوي للصورة
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // تحويل الصورة لصيغة webp الخفيفة بجودة 60%
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
+          // ضغط الجودة لـ 40% فقط لجعلها خفيفة كالريشة
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.4); 
           db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: compressedDataUrl, time: Date.now(), isSystem: false });
           db.ref(`typing/${userId}`).remove();
         };
@@ -529,13 +530,13 @@
       input.value = "";
     }
 
-    // زر التفريغ المعزول (لحذف الشات والسجل وتخفيف الحمل)
+    // زر التفريغ المعزول والمحدث (يحذف الشات، السجل، وأوقات المشاهدة)
     function clearDatabase() {
-      if(confirm("هل أنت متأكد من رغبتك في مسح الشات وسجل الروابط نهائياً؟ (لا يمكن التراجع)")) {
+      if(confirm("هل أنت متأكد من رغبتك في مسح الشات والسجل وتوقيت المشاهدة نهائياً؟")) {
         db.ref('chat').remove();
         db.ref('history').remove();
-        db.ref('typing').remove(); // ينظف أي زائر معلق فوراً
-        sendSystemMessage(`قام ${currentUser.name} بتنظيف الغرفة 🧹`);
+        db.ref('typing').remove(); 
+        db.ref('playbackPositions').remove(); // مسح وقت المشاهدة لكل الأطراف
       }
     }
 
@@ -729,6 +730,7 @@
       renderStickers();
     }
 
+        // ضغط الملصقات بأقصى درجة ممكنة
     function uploadSticker(input) {
       const file = input.files[0];
       if(!file) return;
@@ -738,21 +740,28 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 120; // حجم الملصقات صغير جداً ومناسب للشبكة 8 أعمدة
+          const MAX_WIDTH = 80; // حجم مجهري للملصق يمنع أي لاق
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // الحفاظ على الشفافية مع جودة مخفضة (50%)
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.5); 
+          // ضغط الجودة لـ 30% مع الحفاظ على الشفافية
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.3); 
           db.ref('savedStickers').push({ img: compressedDataUrl, order: Date.now() });
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
       input.value = "";
+    }
+
+    // دالة حذف كل الملصقات
+    function deleteAllStickers() {
+      if(confirm("هل أنت متأكد من حذف جميع الملصقات المحفوظة دفعة واحدة؟ ⚠️")) {
+        db.ref('savedStickers').remove();
+      }
     }
 
     function sendSavedSticker(imgSrc) {
