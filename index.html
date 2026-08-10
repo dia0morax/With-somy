@@ -452,9 +452,10 @@
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
         
-        // الحل السحري: استخدام Google API المباشر مع مفتاح الوصول (Access Token)
-        // هذا الرابط يتجاوز صفحة فحص الفيروسات ويعطي Video.js دفق MP4 خام وسريع جداً
-        const streamUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&access_token=${accessToken}`;
+        // استخدام مسار lh3.googleusercontent.com
+        // هذا المسار يوفر تجربة تشغيل أفضل للفيديوهات ويتجاوز شاشة الفيروسات
+        // مع العلم أننا نمرر type: 'video/mp4' في دالة المزامنة لضمان تشغيله
+        const streamUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
         
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
         db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
