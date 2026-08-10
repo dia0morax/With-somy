@@ -14,74 +14,68 @@
   <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
   <style>
-    /* تنسيقات عامة وسكرول بار مخفي وجميل */
+    :root {
+      --bg-main: #070b14; --bg-content: #0b1120; --bg-panel: #1e293b; --bg-hover: #334155; --text-main: #f8fafc; --text-muted: #94a3b8; --accent: #6366f1; --accent-hover: #4f46e5;
+    }
+    body.theme-pink { --bg-main: #fdf2f8; --bg-content: #fce7f3; --bg-panel: #fbcfe8; --bg-hover: #f9a8d4; --text-main: #1e293b; --text-muted: #475569; --accent: #ec4899; --accent-hover: #be185d; }
+    body.theme-blue { --bg-main: #f0f9ff; --bg-content: #e0f2fe; --bg-panel: #bae6fd; --bg-hover: #7dd3fc; --text-main: #0f172a; --text-muted: #334155; --accent: #0284c7; --accent-hover: #0369a1; }
+    body.theme-cozy { --bg-main: #1c1917; --bg-content: #292524; --bg-panel: #44403c; --bg-hover: #57534e; --text-main: #fafaf9; --text-muted: #a8a29e; --accent: #d97706; --accent-hover: #b45309; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-content); } ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
 
-        body { background: #070b14; color: #f8fafc; height: 100vh; overflow: hidden; position: relative; }
+    body { background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; position: relative; transition: 0.3s; }
 
-    /* حاوية الفيديو (مثبتة في الأعلى) */
-    .video-container { width: 100%; height: 40vh; background: #000; position: fixed; top: 0; left: 0; z-index: 100; border-bottom: 3px solid #6366f1; box-shadow: 0 4px 30px rgba(99, 102, 241, 0.2); }
-    .video-js { width: 100%; height: 100%; }
-    .vjs-default-skin .vjs-control-bar { background: #000; }
-    .video-js .vjs-play-progress { background-color: #6366f1; }    
+    .video-container { width: 100%; height: 40vh; background: #000; position: fixed; top: 0; left: 0; z-index: 100; border-bottom: 3px solid var(--accent); }
+    .video-js { width: 100%; height: 100%; } .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.8); } .video-js .vjs-play-progress { background-color: var(--accent); }    
 
-    /* منطقة المحتوى السفلي (تأخذ المساحة المتبقية تحت الفيديو) */
-    .content-area { position: absolute; top: 40vh; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: hidden; background: #0b1120; }    
+    .content-area { position: absolute; top: 40vh; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); transition: 0.3s; }    
 
-    /* شريط المتصلين */
-    .status-bar { display: flex; gap: 10px; align-items: center; background: #1e293b; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #334155; white-space: nowrap; }
-    .user-badge { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 4px 12px; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; }
-    .user-badge:hover { border-color: #6366f1; }
-    .user-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: #334155; }
+    /* أزرار السلايد الأنيقة */
+    details { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--bg-hover); margin-bottom: 2px; }
+    summary { padding: 10px 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--accent); list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    summary::-webkit-details-marker { display: none; }
+    .details-content { padding: 10px; border-top: 1px solid var(--bg-hover); display: flex; flex-direction: column; gap: 8px; }
+
+    .status-bar { display: flex; gap: 10px; align-items: center; background: var(--bg-panel); padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; overflow-x: auto; border: 1px solid var(--bg-hover); white-space: nowrap; }
+    .user-badge { display: flex; align-items: center; gap: 6px; background: var(--bg-content); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--bg-hover); }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: var(--bg-hover); }
     .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
-
-    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     .kick-btn { margin-right: auto; padding-right: 8px; color: #ef4444; cursor: pointer; background: none; border: none; font-size: 0.9rem; font-weight: bold; }
-    .kick-btn:hover { color: #b91c1c; }    
+    
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-    /* أدوات التحكم (الإدخال والأزرار) */
     .input-group { display: flex; gap: 8px; }
-    input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 0.9rem; outline: none; transition: 0.3s; }
-    input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
-    button { padding: 10px 16px; background: #6366f1; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: 0.2s; }
-    button:hover { background: #4f46e5; transform: translateY(-1px); }
-    button:active { transform: translateY(0); }
-    button.drive-btn { background: #2563eb; }
-    button.drive-btn:hover { background: #1d4ed8; }
+    input[type="text"] { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--bg-hover); background: var(--bg-panel); color: var(--text-main); font-size: 0.9rem; outline: none; }
+    input[type="text"]:focus { border-color: var(--accent); }
+    button { padding: 10px 16px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: 0.2s; white-space: nowrap; }
+    button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    button.icon-btn { padding: 8px 12px; font-size: 1.1rem; background: var(--bg-hover); }
 
-    /* سجل المشاهدة */
-    .history-box { background: #1e293b; border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; max-height: 60px; overflow-y: auto; border: 1px solid #334155; display: flex; flex-direction: column; gap: 4px; }
-    .history-item { background: #0f172a; border-radius: 6px; padding: 5px 8px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; transition: 0.2s; }
-    .history-item:hover { background: #334155; color: #818cf8; }
+    .history-item { background: var(--bg-content); border-radius: 6px; padding: 5px 8px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.8rem; margin-bottom: 4px; border: 1px solid transparent; }
+    .history-item:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* منطقة الشات */
-    .chat-container { flex: 1; display: flex; flex-direction: column; background: #1e293b; border-radius: 10px; padding: 12px; overflow: hidden; border: 1px solid #334155; }
+    .chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); border-radius: 10px; padding: 12px; overflow: hidden; border: 1px solid var(--bg-hover); min-height: 250px; }
     #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
     .msg-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #475569; }
-    .msg-content { background: #0f172a; padding: 8px 12px; border-radius: 10px; border-top-right-radius: 2px; max-width: 85%; word-break: break-word; border: 1px solid #334155; }
-    .msg-content.mine { background: #4f46e5; border-color: #6366f1; border-top-right-radius: 10px; border-top-left-radius: 2px; }
-    .msg-name { font-weight: bold; color: #a5b4fc; font-size: 0.75rem; display: block; margin-bottom: 4px; }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .msg-content { background: var(--bg-content); padding: 8px 12px; border-radius: 10px; border-top-right-radius: 2px; max-width: 85%; word-break: break-word; border: 1px solid var(--bg-hover); }
+    .msg-content.mine { background: var(--accent); border-color: var(--accent-hover); border-top-right-radius: 10px; border-top-left-radius: 2px; color: #fff; }
+    .msg-name { font-weight: bold; color: var(--accent); font-size: 0.75rem; display: block; margin-bottom: 4px; }
     .msg-content.mine .msg-name { color: #e0e7ff; }
+    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; } /* تنسيق الملصقات */
     
-    /* رسائل النظام */
-    .msg-system { text-align: center; font-size: 0.8rem; color: #94a3b8; font-style: italic; margin: 4px 0; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; align-self: center; }
+    .msg-system { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin: 4px 0; }
+    .typing-indicator { font-size: 0.8rem; color: var(--accent); font-style: italic; min-height: 20px; margin-top: 4px; }
 
-    .typing-indicator { font-size: 0.8rem; color: #a5b4fc; font-style: italic; min-height: 20px; margin-top: 4px; }
-
-    /* نافذة التسجيل */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(8px); }
-    .modal-card { background: #1e293b; width: 100%; max-width: 350px; border-radius: 16px; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 16px; border: 1px solid #475569; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-    .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
-    .avatar-opt { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; transition: 0.2s; background: #0f172a; }
-    .avatar-opt:hover { transform: scale(1.1); }
-    .avatar-opt.selected { border-color: #6366f1; transform: scale(1.15); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-card { background: var(--bg-panel); width: 100%; max-width: 350px; border-radius: 16px; padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--bg-hover); }
+    .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 10px 0; align-items: center; }
+    .avatar-opt { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; background: var(--bg-content); transition: 0.2s; }
+    .avatar-opt.selected { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
   </style>
+
 </head>
 <body>
 
@@ -91,15 +85,16 @@
       <p style="font-size:0.9rem; color:#94a3b8;">اختر صورتك الرمزية واسمك للدخول:</p>
       <div class="avatar-picker">
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Alien" class="avatar-opt selected" onclick="selectAvatar(this)" />
-        <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=VampireGirl&backgroundColor=fca5a5" class="avatar-opt" onclick="selectAvatar(this)" />
+        <!-- فامب كيوت أنمي بلمسة حمراء -->
+        <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=VampireGirl&backgroundColor=fca5a5&hair=variant12" class="avatar-opt" onclick="selectAvatar(this)" title="Vamp" />
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Cat" class="avatar-opt" onclick="selectAvatar(this)" />
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Bandit" class="avatar-opt" onclick="selectAvatar(this)" />
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Nerd" class="avatar-opt" onclick="selectAvatar(this)" />
+        <!-- زر رفع صورة مخصصة من الاستوديو (لأجنحة الخفاش وأي تصميم خاص بكما) -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <label for="customAvatar" class="avatar-opt" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--bg-hover);" title="صورة من الاستوديو">➕</label>
+          <input type="file" id="customAvatar" accept="image/*" style="display:none;" onchange="handleCustomAvatar(this)">
+        </div>
       </div>
-      <input type="text" id="initUsername" placeholder="اكتب اسمك هنا..." />
-      <button onclick="saveProfile()" style="padding: 12px; font-size: 1rem;">دخول الغرفة</button>
-    </div>
-  </div>
 
   <div class="video-container">
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline muted preload="auto"></video>
@@ -115,21 +110,45 @@
       <b>توقيت المشاهدة:</b> جاري التحميل...
     </div>
 
-    <div class="input-group">
-      <button onclick="openDrivePicker()" class="drive-btn" title="اختر من درايف">📁 Drive</button>
-      <input type="text" id="videoUrlInput" placeholder="ضع رابط MP4 مباشر هنا..." />
-      <button onclick="changeVideoManual()">تشغيل ومزامنة</button>
-    </div>
+    <!-- 1. سلايد التحكم بالتزامن ورابط الفيديو (ينطوي ويفتح بالضغط) -->
+    <details>
+      <summary>📺 التحكم والتزامن (انقر للفتح)</summary>
+      <div class="details-content">
+        <div class="input-group">
+          <button onclick="openDrivePicker()" style="background: #2563eb;">📁 Drive</button>
+          <input type="text" id="videoUrlInput" placeholder="ضع رابط MP4 مباشر هنا..." />
+          <button onclick="changeVideoManual()">تشغيل</button>
+        </div>
+      </div>
+    </details>
 
-    <div class="history-box">
-      <div style="font-weight:bold; color:#a5b4fc; margin-bottom:4px; font-size:0.75rem;">السجل (انقر لتشغيل المقطع مجدداً):</div>
-      <div id="historyList">لا توجد مقاطع سابقة</div>
-    </div>
+    <!-- 2. سلايد السجل والألوان وزر التنظيف العميق (ينطوي ويفتح بالضغط) -->
+    <details>
+      <summary>🛠️ السجل والمظهر وإفراغ الذاكرة</summary>
+      <div class="details-content">
+        <!-- أزرار تغيير الثيمات -->
+        <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 4px;">
+          <button onclick="setTheme('default')" style="background: #0f172a; flex:1;">داكن</button>
+          <button onclick="setTheme('pink')" style="background: #ec4899; flex:1;">وردي</button>
+          <button onclick="setTheme('blue')" style="background: #0284c7; flex:1;">سمائي</button>
+          <button onclick="setTheme('cozy')" style="background: #d97706; flex:1;">مريح</button>
+        </div>
+        <hr style="border-color: var(--bg-hover); margin: 4px 0;">
+        <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
+        <!-- الزر المعزول لمسح السجل والشات -->
+        <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px; width: 100%;">🗑️ مسح بيانات الشات والسجل</button>
+      </div>
+    </details>
 
+    <!-- 3. منطقة الشات وبداخلها زر إرسال الصور والملصقات بجانب حقل الكتابة -->
     <div class="chat-container">
       <div id="messages"></div>
       <div id="typingArea" class="typing-indicator"></div>
       <div class="input-group" style="margin-top: 8px;">
+        <!-- زر اختيار الصورة/الملصق (🖼️) مخفي خلف زر ليفتح الاستوديو -->
+        <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
+        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال ملصق">🖼️</button>
+        
         <input type="text" id="messageInput" placeholder="تحدث مع صديقتك..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
         <button onclick="sendMessage()">إرسال</button>
       </div>
@@ -159,11 +178,35 @@
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
         let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('app_user_id', userId);
+    // تفعيل الثيمات
+    const savedTheme = localStorage.getItem('app_theme') || 'default';
+    setTheme(savedTheme);
+    function setTheme(themeName) {
+      document.body.className = themeName === 'default' ? '' : 'theme-' + themeName;
+      localStorage.setItem('app_theme', themeName);
+    }
+
     let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
-        function selectAvatar(el) {
-      document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
+    function selectAvatar(el) {
+      document.querySelectorAll('.avatar-opt, label.avatar-opt').forEach(img => img.classList.remove('selected'));
       el.classList.add('selected');
       selectedAvatarUrl = el.src;
+    }
+
+    // معالجة الأفاتار من الاستوديو وتحويله لداتا
+    function handleCustomAvatar(input) {
+      const file = input.files[0];
+      if(!file) return;
+      if(file.size > 500000) { alert("حجم الصورة كبير جداً، اختر صورة أصغر للأفاتار."); return; }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        selectedAvatarUrl = e.target.result;
+        const label = input.previousElementSibling;
+        label.innerHTML = `<img src="${selectedAvatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
+        label.classList.add('selected');
+      };
+      reader.readAsDataURL(file);
     }
 
     function saveProfile() {
@@ -365,15 +408,35 @@
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       if (text) {
-        db.ref('chat').push({ 
-          name: currentUser.name, 
-          avatar: currentUser.avatar, 
-          text: text, 
-          time: Date.now(),
-          isSystem: false
-        });
+        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, text: text, time: Date.now(), isSystem: false });
         input.value = "";
-        db.ref(`typing/${currentUser.name}`).remove();
+        db.ref(`typing/${userId}`).remove(); // إصلاح التوجيه لـ userId
+      }
+    }
+
+    // إرسال الملصقات والصور
+    function sendImage(input) {
+      if (!currentUser) return;
+      const file = input.files[0];
+      if(!file) return;
+      if(file.size > 900000) { alert("الملصق كبير جداً! الحد الأقصى أقل من 1 ميجا."); input.value = ""; return; }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: e.target.result, time: Date.now(), isSystem: false });
+        db.ref(`typing/${userId}`).remove();
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    }
+
+    // زر التفريغ المعزول (لحذف الشات والسجل وتخفيف الحمل)
+    function clearDatabase() {
+      if(confirm("هل أنت متأكد من رغبتك في مسح الشات وسجل الروابط نهائياً؟ (لا يمكن التراجع)")) {
+        db.ref('chat').remove();
+        db.ref('history').remove();
+        db.ref('typing').remove(); // ينظف أي زائر معلق فوراً
+        sendSystemMessage(`قام ${currentUser.name} بتنظيف الغرفة 🧹`);
       }
     }
 
@@ -391,17 +454,21 @@
           msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
         } else {
           const isMine = currentUser && m.name === currentUser.name;
+          // التحقق مما إذا كانت الرسالة تحتوي على ملصق/صورة
+          let contentHtml = m.text ? `<div>${m.text}</div>` : '';
+          if(m.img) contentHtml += `<img src="${m.img}" class="chat-img" onclick="window.open('${m.img}', '_blank')">`;
+          
           msgDiv.innerHTML += `
             <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
               <img src="${m.avatar}" class="msg-avatar" />
               <div class="msg-content ${isMine ? 'mine' : ''}">
                 <span class="msg-name">${m.name}</span>
-                <div>${m.text}</div>
+                ${contentHtml}
               </div>
             </div>
           `;
         }
-      });
+      }); // <--- هذه هي القفلة المفقودة لحلقة التكرار!
 
       // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
       if (isScrolledToBottom) {
@@ -428,10 +495,14 @@
     db.ref('typing').on('value', (snap) => {
       const area = document.getElementById('typingArea');
       const typists = [];
-      snap.forEach(c => {
-        // التحقق من أن الكاتب ليس أنا عبر الـ ID
-        if (currentUser && c.key !== userId) typists.push(c.val());
-      });
+      if(snap.exists()) {
+        snap.forEach(c => { 
+          // نتأكد أن الاسم موجود وليس فارغاً، وأنه ليس أنا
+          if (currentUser && c.key !== userId && c.val()) {
+            typists.push(c.val());
+          }
+        });
+      }
 
       if (typists.length === 1) {
         area.innerHTML = `${typists[0]} يكتب الآن... ✍️`;
