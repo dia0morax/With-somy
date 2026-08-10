@@ -24,12 +24,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-content); } ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
 
-    body { background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; position: relative; transition: 0.3s; }
+    /* تثبيت البودي لمنع المتصفح من العبث بالارتفاع الكلي */
+    body { background: var(--bg-main); color: var(--text-main); height: 100%; position: fixed; width: 100%; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
 
-    .video-container { width: 100%; height: 40vh; background: #000; position: fixed; top: 0; left: 0; z-index: 100; border-bottom: 3px solid var(--accent); }
+    /* جعل الفيديو مقدساً وارتفاعه ثابت لا ينضغط أبداً */
+    .video-container { width: 100%; flex: 0 0 40vh; background: #000; z-index: 100; border-bottom: 3px solid var(--accent); }
     .video-js { width: 100%; height: 100%; } .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.8); } .video-js .vjs-play-progress { background-color: var(--accent); }    
 
-    .content-area { position: absolute; top: 40vh; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); transition: 0.3s; }    
+    /* جعل منطقة المحتوى تأخذ المساحة المتبقية فقط، والشات بداخلها يتمدد */
+    .content-area { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); transition: 0.3s; }    
 
     /* أزرار السلايد الأنيقة */
     details { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--bg-hover); margin-bottom: 2px; }
@@ -136,39 +139,44 @@
       <button onclick="document.getElementById('profileModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">⚙️ تعديل</button>
     </div>
     
-    <div class="status-bar" id="syncStatus" style="font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
-      <b>توقيت المشاهدة:</b> جاري التحميل...
+    <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
+      <div id="syncStatus"><b>توقيت المشاهدة:</b> جاري التحميل...</div>
+      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent);">⚙️ إعدادات المشاهدة</button>
     </div>
 
-    <!-- 1. سلايد التحكم بالتزامن ورابط الفيديو (ينطوي ويفتح بالضغط) -->
-    <details>
-      <summary>📺 التحكم والتزامن (انقر للفتح)</summary>
-      <div class="details-content">
+  <!-- النافذة المنبثقة لإعدادات المشاهدة (الطلب الثالث) -->
+  <div id="settingsModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-card" style="max-width: 90%; gap: 10px;" onclick="event.stopPropagation()">
+      <h3 style="color: var(--accent); margin-bottom: 10px;">إعدادات المشاهدة ⚙️</h3>
+      
+      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
+        <b style="color: var(--text-main); font-size: 0.85rem;">📺 تشغيل رابط جديد:</b>
         <div class="input-group">
-          <button onclick="openDrivePicker()" style="background: #2563eb;">📁 Drive</button>
-          <input type="text" id="videoUrlInput" placeholder="ضع رابط MP4 مباشر هنا..." />
-          <button onclick="changeVideoManual()">تشغيل</button>
+          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px;">📁 Drive</button>
+          <input type="text" id="videoUrlInput" placeholder="رابط MP4 مباشر..." style="padding: 8px;" />
+          <button onclick="changeVideoManual()" style="padding: 8px;">تشغيل</button>
         </div>
       </div>
-    </details>
 
-    <!-- 2. سلايد السجل والألوان وزر التنظيف العميق (ينطوي ويفتح بالضغط) -->
-    <details>
-      <summary>🛠️ السجل والمظهر وإفراغ الذاكرة</summary>
-      <div class="details-content">
-        <!-- أزرار تغيير الثيمات -->
-        <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 4px;">
-          <button onclick="setTheme('default')" style="background: #0f172a; flex:1;">داكن</button>
-          <button onclick="setTheme('pink')" style="background: #ec4899; flex:1;">وردي</button>
-          <button onclick="setTheme('blue')" style="background: #0284c7; flex:1;">سمائي</button>
-          <button onclick="setTheme('cozy')" style="background: #d97706; flex:1;">مريح</button>
+      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
+        <b style="color: var(--text-main); font-size: 0.85rem;">🎨 المظهر:</b>
+        <div style="display: flex; gap: 5px; justify-content: center;">
+          <button onclick="setTheme('default')" style="background: #0f172a; flex:1; padding: 6px;">داكن</button>
+          <button onclick="setTheme('pink')" style="background: #ec4899; flex:1; padding: 6px;">وردي</button>
+          <button onclick="setTheme('blue')" style="background: #0284c7; flex:1; padding: 6px;">سمائي</button>
+          <button onclick="setTheme('cozy')" style="background: #d97706; flex:1; padding: 6px;">مريح</button>
         </div>
-        <hr style="border-color: var(--bg-hover); margin: 4px 0;">
-        <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
-        <!-- الزر المعزول لمسح السجل والشات -->
-        <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px; width: 100%;">🗑️ مسح بيانات الشات والسجل</button>
       </div>
-    </details>
+
+      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
+         <b style="color: var(--text-main); font-size: 0.85rem;">🎬 سجل المشاهدة:</b>
+         <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
+      </div>
+
+      <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;">🗑️ مسح بيانات الشات والسجل</button>
+      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;">إغلاق</button>
+    </div>
+  </div>
 
     <!-- 3. منطقة الشات وبداخلها زر إرسال الصور والملصقات بجانب حقل الكتابة -->
     <div class="chat-container">
@@ -310,7 +318,8 @@
     // استقبال التوقيت وعرضه
     db.ref('playbackPositions').on('value', (snap) => {
       const syncBar = document.getElementById('syncStatus');
-      let html = "<b>توقيت المشاهدة:</b> ";
+      if(!syncBar) return;
+      let html = "<b>التوقيت:</b> ";
       let count = 0;
       snap.forEach(c => {
         const d = c.val();
@@ -726,23 +735,6 @@
       });
     }
 
-    // إصلاح ارتفاع الكيبورد في الآيباد (تثبيت الفيديو)
-    const videoCont = document.querySelector('.video-container');
-    const contentArea = document.querySelector('.content-area');
-    
-    if (window.visualViewport) {
-      // نثبت ارتفاع الفيديو كقيمة بيكسل حقيقية في البداية حتى لا ينضغط
-      window.addEventListener('load', () => {
-        const h = videoCont.offsetHeight;
-        videoCont.style.height = h + 'px';
-        contentArea.style.top = h + 'px';
-      });
-
-      window.visualViewport.addEventListener('resize', () => {
-        document.body.style.height = window.visualViewport.height + 'px';
-        // لن يصغر الفيديو لأننا أعطيناه height ثابت بالبيكسل، والشات سيتكيف تلقائياً لمرونته
-      });
-    }
   </script>
 </body>
 </html>
