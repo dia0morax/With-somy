@@ -24,15 +24,22 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-content); } ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
 
-    /* تثبيت البودي لمنع المتصفح من العبث بالارتفاع الكلي */
-    body { background: var(--bg-main); color: var(--text-main); height: 100%; position: fixed; width: 100%; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+    /* تثبيت أساسي يمنع السكرول الخارجي */
+    html, body { background: var(--bg-main); color: var(--text-main); height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; position: fixed; touch-action: none; }
 
-    /* جعل الفيديو مقدساً وارتفاعه ثابت لا ينضغط أبداً */
-    .video-container { width: 100%; flex: 0 0 40vh; background: #000; z-index: 100; border-bottom: 3px solid var(--accent); }
+    /* الفيديو: ارتفاعه ثابت ومحصن ضد الكيبورد */
+    .video-container { width: 100%; height: 35vh; background: #000; position: absolute; top: 0; left: 0; right: 0; z-index: 100; border-bottom: 3px solid var(--accent); }
     .video-js { width: 100%; height: 100%; } .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.8); } .video-js .vjs-play-progress { background-color: var(--accent); }    
 
-    /* جعل منطقة المحتوى تأخذ المساحة المتبقية فقط، والشات بداخلها يتمدد */
-    .content-area { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); transition: 0.3s; }    
+    /* منطقة المحتوى (الشات): تتمدد للأعلى والأسفل وتتجاهل الفيديو */
+    .content-area { position: absolute; top: 35vh; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); z-index: 10; }
+    
+    /* عند فتح الكيبورد في الموبايل والآيباد، الشات يأخذ المساحة المتاحة فقط ولا يلمس الفيديو */
+    @media (pointer: coarse) {
+       body { position: relative; } /* تحرير البودي للسماح بتمدد الكيبورد */
+       .video-container { position: sticky; top: 0; } /* يلتصق بالأعلى */
+       .content-area { position: relative; top: auto; flex: 1; height: calc(100vh - 35vh); } /* يحسب الارتفاع المتبقي */
+    }
 
     /* أزرار السلايد الأنيقة */
     details { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--bg-hover); margin-bottom: 2px; }
@@ -134,8 +141,15 @@
   </div>
 
   <div class="content-area">
-    <div class="status-bar" style="justify-content: space-between;">
-      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; width: 100%;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+    <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
+      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+      
+      <!-- ميزة القفز السريع المضافة هنا -->
+      <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
+        <input type="text" id="jumpTimeInput" placeholder="مثال: 06:35" style="width: 75px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid var(--accent); background: var(--bg-content); color: #fff;">
+        <button onclick="jumpToTime()" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent);">🚀 قفز</button>
+      </div>
+
       <button onclick="document.getElementById('profileModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">⚙️ تعديل</button>
     </div>
     
@@ -349,6 +363,35 @@
       db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
       sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
       document.getElementById('videoUrlInput').value = "";
+    }
+
+    // دالة القفز الزمني السريع (الجديدة)
+    function jumpToTime() {
+      if(!currentUser) return;
+      const input = document.getElementById('jumpTimeInput').value.trim();
+      if(!input) return;
+
+      // تحويل التنسيق 06:35 إلى ثوانٍ
+      const parts = input.split(':');
+      let totalSeconds = 0;
+      if (parts.length === 2) {
+        totalSeconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      } else if (parts.length === 3) { // لدعم الساعات إن وجدت 01:06:35
+        totalSeconds = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+      } else {
+        totalSeconds = parseInt(input); // إذا كتب رقماً واحداً يعتبره ثواني
+      }
+
+      if(!isNaN(totalSeconds)) {
+        isSystemAction = true;
+        player.currentTime(totalSeconds);
+        db.ref('videoState').update({ time: totalSeconds, timestamp: Date.now(), sender: currentUser.name });
+        sendSystemMessage(`${currentUser.name} قام بالقفز إلى ⏱️ ${input}`);
+        setTimeout(() => { isSystemAction = false; }, 500);
+      } else {
+        alert("يرجى إدخال الوقت بتنسيق صحيح مثل 06:35");
+      }
+      document.getElementById('jumpTimeInput').value = ""; // تفريغ الحقل بعد القفز
     }
 
         // --- أحداث المشغل (ترسل إلى Firebase) ---
