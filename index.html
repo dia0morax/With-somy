@@ -581,28 +581,15 @@
       }
     }
 
-    // استماع للشات مع الحذف التلقائي الصارم (الحد الآمن: 14 رسالة)
-    db.ref('chat').on('value', (snap) => {
+    // استماع للشات مع عرض الحد الآمن فقط (14 رسالة) بدون تكرار
+    db.ref('chat').limitToLast(14).on('value', (snap) => {
       const msgDiv = document.getElementById('messages');
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
       
       msgDiv.innerHTML = "";
       
-      const msgs = [];
-      snap.forEach(c => { msgs.push({ key: c.key, val: c.val() }); });
-      
-      // إذا تجاوزت الرسائل 14، نحذف القديم من الداتابيز فوراً
-      if (msgs.length > 14) {
-         const extrasCount = msgs.length - 14;
-         for(let i = 0; i < extrasCount; i++) {
-            db.ref('chat/' + msgs[i].key).remove();
-         }
-         // نزيلها من مصفوفة العرض حتى لا تظهر على الشاشة
-         msgs.splice(0, extrasCount);
-      }
-
-      msgs.forEach(c => {
-        const m = c.val;
+      snap.forEach(c => {
+        const m = c.val();
         
         if(m.isSystem) {
           msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
@@ -639,6 +626,19 @@
       if (isScrolledToBottom) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
       }
+    });
+
+    // مراقب صامت لحذف الرسائل القديمة في الخلفية (منعاً للتشويش)
+    db.ref('chat').on('value', (snap) => {
+        const msgs = [];
+        snap.forEach(c => { msgs.push({ key: c.key }); });
+        
+        if (msgs.length > 14) {
+            const extrasCount = msgs.length - 14;
+            for(let i = 0; i < extrasCount; i++) {
+                db.ref('chat/' + msgs[i].key).remove();
+            }
+        }
     });
 
     // ==========================================
