@@ -210,7 +210,7 @@
   </div>
 
   <div class="video-container">
-    <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline muted preload="auto"></video>
+    <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
   </div>
 
   <div class="content-area">
@@ -885,25 +885,39 @@
       renderStickers();
     }
 
-        // ضغط الملصقات بأقصى درجة ممكنة
+    // رفع الملصقات بجودة عالية ودعم الـ GIF المتحرك
     function uploadSticker(input) {
       const file = input.files[0];
       if(!file) return;
       
+      // حماية: منع رفع GIF ضخم جداً لكي لا ينهار الشات (الحد: 2.5 ميجابايت)
+      if (file.type === 'image/gif' && file.size > 2500000) {
+        alert("حجم الـ GIF كبير جداً! اختر ملفاً أصغر من 2.5 ميجا للحفاظ على سرعة الغرفة.");
+        input.value = "";
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = function(e) {
+        // إذا كان الملف GIF، نرفعه مباشرة كما هو للحفاظ على الأنيميشن
+        if (file.type === 'image/gif') {
+           db.ref('savedStickers').push({ img: e.target.result, order: Date.now() });
+           return;
+        }
+        
+        // إذا كانت صورة عادية، نطبق ضغطاً خفيفاً جداً 10% (جودة 90%)
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 250; // رفعنا أبعاد الملصق ليصبح فائق الدقة (HD)
+          const MAX_WIDTH = 250; // عرض ممتاز يحافظ على التفاصيل
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // الجودة 70% (أقل بـ 30% من الأصلية كما طلبت)
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.7); 
+          // 0.9 تعني 90% جودة (أي تم تقليل 10% فقط)
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.9); 
           db.ref('savedStickers').push({ img: compressedDataUrl, order: Date.now() });
         };
         img.src = e.target.result;
