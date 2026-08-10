@@ -581,7 +581,7 @@
       }
     }
 
-    // استماع للشات مع الحذف التلقائي الصارم (أقصى حد 10 رسائل)
+    // استماع للشات مع الحذف التلقائي الصارم (أقصى حد 20 رسالة)
     db.ref('chat').on('value', (snap) => {
       const msgDiv = document.getElementById('messages');
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
@@ -591,9 +591,9 @@
       const msgs = [];
       snap.forEach(c => { msgs.push({ key: c.key, val: c.val() }); });
       
-      // السحر هنا: إذا تجاوزت الرسائل 10، نحذف القديم من الداتابيز فوراً
-      if (msgs.length > 10) {
-         const extrasCount = msgs.length - 10;
+      // السحر هنا: إذا تجاوزت الرسائل 20، نحذف القديم من الداتابيز فوراً
+      if (msgs.length > 20) {
+         const extrasCount = msgs.length - 20;
          for(let i = 0; i < extrasCount; i++) {
             db.ref('chat/' + msgs[i].key).remove();
          }
