@@ -658,7 +658,6 @@
               contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
-          const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن المطلوب
           const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن
           const isFemale = m.gender ? m.gender === 'female' : isMine;
           const flexDir = isFemale ? 'row-reverse' : 'row';
