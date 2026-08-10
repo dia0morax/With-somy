@@ -581,22 +581,35 @@
       }
     }
 
-    // استماع للشات
-    db.ref('chat').limitToLast(50).on('value', (snap) => {
+    // استماع للشات مع الحذف التلقائي (الحد الأقصى 10 رسائل)
+    db.ref('chat').limitToLast(12).on('value', (snap) => {
       const msgDiv = document.getElementById('messages');
-      // نحتفظ بمسافة السكرول الحالية لمعرفة ما إذا كان المستخدم يقرأ رسائل قديمة
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
       
       msgDiv.innerHTML = "";
-      snap.forEach(c => {
-        const m = c.val();
+      
+      // تحويل البيانات إلى مصفوفة لتسهيل الحذف
+      const msgs = [];
+      snap.forEach(c => { msgs.push({ key: c.key, val: c.val() }); });
+      
+      // الحذف التلقائي الفوري لأي شيء يتجاوز 10 عناصر من السيرفر
+      if (msgs.length > 10) {
+         const extrasCount = msgs.length - 10;
+         for(let i = 0; i < extrasCount; i++) {
+            db.ref('chat/' + msgs[i].key).remove();
+         }
+         // إزالتها من العرض فوراً
+         msgs.splice(0, extrasCount);
+      }
+
+      msgs.forEach(c => {
+        const m = c.val;
         
         if(m.isSystem) {
           msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
         } else {
           const isMine = currentUser && m.name === currentUser.name;
           
-          // 1. التفريق بين الصورة العادية والملصق الصغير الشفاف
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
           if(m.img && m.isSticker) {
               contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
@@ -604,29 +617,21 @@
               contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
-          // تحديد الاتجاه والتصميم حسب جنس صاحب الرسالة
-          const isFemale = m.gender ? m.gender === 'female' : isMine; // دعم للرسائل القديمة
-          const flexDir = isFemale ? 'row-reverse' : 'row';
-          const floatDir = isFemale ? 'left' : 'right';
-          const textAlign = isFemale ? 'right' : 'left';
-          
-          // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
           const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${isMine ? 'left' : 'right'};" title="حذف الرسالة">✖</span>`;
 
           msgDiv.innerHTML += `
-            <div class="msg-item" style="flex-direction: ${flexDir};">
+            <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
               <img src="${m.avatar}" class="msg-avatar" />
-              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
-                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
-                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'};">${contentHtml}</div>
+              <div class="msg-content ${isMine ? 'mine' : ''} ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%;">
+                <span class="msg-name" style="display: block;">${m.name} ${deleteBtn}</span>
+                ${contentHtml}
               </div>
             </div>
           `;
         }
-      }); // <--- هذه هي القفلة المفقودة لحلقة التكرار!
+      }); 
 
-      // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
       if (isScrolledToBottom) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
       }
