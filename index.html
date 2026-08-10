@@ -451,23 +451,31 @@
     // ==========================================
     // المحلل الذكي للروابط (YouTube + Google Drive Bypass)
     // ==========================================
+    // رابط سيرفرك الخاص من Cloudflare
+    const MY_WORKER_URL = "https://with-somy.dia2001alamer.workers.dev";
+
     function parseSmartUrl(inputUrl) {
       let src = inputUrl;
       let type = 'video/mp4'; 
 
-      // 1. دعم يوتيوب (يتعرف على الرابط ويجهزه للمشغل)
+      // 1. روابط يوتيوب (تذهب مباشرة ليوتيوب)
       if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
         type = 'video/youtube';
         src = inputUrl;
       } 
-      // 2. الحل الجذري لجوجل درايف (بدون بروكسيات ضعيفة)
+      // 2. روابط Google Drive (تمر عبر سيرفر Cloudflare الخاص بك للتخطي)
       else if (inputUrl.includes('drive.google.com')) {
-        const match = inputUrl.match(/[-\w]{25,}/); // استخراج الـ ID بذكاء
+        const match = inputUrl.match(/[-\w]{25,}/);
         if (match && match[0]) {
-          // السحر هنا: confirm=t يتخطى فحص الفيروسات ويبدأ البث فوراً
-          src = `https://drive.google.com/uc?export=download&confirm=t&id=${match[0]}`;
+          const directDrive = `https://drive.google.com/uc?export=download&confirm=t&id=${match[0]}`;
+          src = `${MY_WORKER_URL}/?url=${encodeURIComponent(directDrive)}`;
         }
+      } 
+      // 3. أي رابط MP4 محجوب
+      else if (inputUrl.endsWith('.mp4') || inputUrl.includes('.mp4?')) {
+        src = `${MY_WORKER_URL}/?url=${encodeURIComponent(inputUrl)}`;
       }
+
       return { src, type };
     }
 
