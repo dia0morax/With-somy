@@ -15,30 +15,25 @@
 
   <!-- السطر الجديد يوضع هنا بالضبط -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- مكتبة الأيقونات الاحترافية -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <style>
     :root {
-      /* ثيم ليلي عميق وفاخر (Obsidian & Neon) */
-      --bg-color-1: #020617;
-      --bg-color-2: #0f172a;
-      --bg-color-3: #1e1b4b;
-      --text-main: #f8fafc; 
-      --text-muted: #94a3b8; 
-      --accent: #8b5cf6; 
-      --accent-hover: #a855f7;
-      --glass-bg: rgba(15, 23, 42, 0.45);
+      --bg-color-1: #020617; --bg-color-2: #0f172a; --bg-color-3: #1e1b4b;
+      --text-main: #f8fafc; --text-muted: #94a3b8; 
+      --accent: #8b5cf6; --accent-hover: #a855f7;
+      --glass-bg: rgba(15, 23, 42, 0.55);
       --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       --msg-mine-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       --btn-gradient: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
     }
 
-    /* ثيمات إضافية بلمسة Gradient فاخرة */
     body.theme-pink { --bg-color-1: #2e1026; --bg-color-2: #4a044e; --bg-color-3: #170312; --accent: #ec4899; --accent-hover: #d946ef; --msg-mine-gradient: linear-gradient(135deg, #db2777 0%, #c026d3 100%); --btn-gradient: linear-gradient(135deg, #f43f5e 0%, #d946ef 100%); }
     body.theme-blue { --bg-color-1: #082f49; --bg-color-2: #0c4a6e; --bg-color-3: #020617; --accent: #0ea5e9; --accent-hover: #38bdf8; --msg-mine-gradient: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); --btn-gradient: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%); }
     body.theme-cozy { --bg-color-1: #292524; --bg-color-2: #44403c; --bg-color-3: #1c1917; --accent: #d97706; --accent-hover: #f59e0b; --msg-mine-gradient: linear-gradient(135deg, #b45309 0%, #d97706 100%); --btn-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
 
-    /* خط Cairo يغير شكل الموقع 180 درجة */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', system-ui, sans-serif; }
     
     ::-webkit-scrollbar { width: 4px; height: 4px; } 
@@ -46,57 +41,43 @@
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-    /* خلفية حية تتحرك ببطء لفخامة أكثر */
-    html, body { 
-      color: var(--text-main); height: 100dvh; width: 100%; overflow: hidden; display: flex; flex-direction: column; 
-      background: linear-gradient(-45deg, var(--bg-color-1), var(--bg-color-2), var(--bg-color-3), var(--bg-color-2));
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-    }
-    @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    /* الخلفية الاحترافية مع الأجرام الضبابية المتحركة */
+    html, body { background: var(--bg-color-1); color: var(--text-main); height: 100dvh; width: 100%; overflow: hidden; display: flex; flex-direction: column; position: relative; z-index: 1; }
+    
+    body::before, body::after { content: ''; position: absolute; border-radius: 50%; filter: blur(100px); z-index: -1; animation: floatOrbs 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+    body::before { width: 60vw; height: 60vw; background: rgba(139, 92, 246, 0.25); top: -20%; left: -20%; }
+    body::after { width: 50vw; height: 50vw; background: rgba(14, 165, 233, 0.2); bottom: -10%; right: -10%; animation-delay: -10s; }
+    @keyframes floatOrbs { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(20vw, 20vh) scale(1.3); } }
 
-    /* إطار الفيديو */
     .video-container { width: 100%; height: 35vh; min-height: 35vh; background: #000; z-index: 100; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
     .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--btn-gradient); z-index: 101; }
     .video-js { width: 100%; height: 100%; } 
     .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } 
     .video-js .vjs-play-progress { background: var(--btn-gradient); }    
 
-    .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; }
+    .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
-    /* التصميم الزجاجي الموحد (Glassmorphism 3.0) */
-    .status-bar, .chat-container, details, .modal-card, #stickersPanel {
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow);
-      border-radius: 18px;
-    }
+    .status-bar, .chat-container, details, .modal-card, #stickersPanel { background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 18px; }
 
-    /* شرائط الحالة (المتصلين والتوقيت) */
-    .status-bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 0.85rem; overflow-x: auto; white-space: nowrap; transition: 0.3s; }
+    .status-bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 0.85rem; overflow-x: auto; white-space: nowrap; }
     
     .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .user-badge:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); border-color: var(--accent); }
     .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); padding: 1px; }
-    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; box-shadow: 0 0 15px #10b981; } 100% { opacity: 0.5; } }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; animation: pulseDot 2s infinite; }
+    @keyframes pulseDot { 0% { opacity: 0.5; } 50% { opacity: 1; box-shadow: 0 0 15px #10b981; } 100% { opacity: 0.5; } }
 
-    /* الأزرار الفخمة (Gradients & Glow) */
-    button { padding: 10px 20px; background: var(--btn-gradient); border: none; border-radius: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); letter-spacing: 0.5px; }
+    button { padding: 10px 20px; background: var(--btn-gradient); border: none; border-radius: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); filter: brightness(1.1); }
     button:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
     button.icon-btn { padding: 12px; font-size: 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); box-shadow: none; border-radius: 14px; }
     button.icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
 
-    /* حقول الإدخال الدائرية */
     .input-group { display: flex; gap: 10px; width: 100%; align-items: center; }
     input[type="text"], select { flex: 1; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.3s; backdrop-filter: blur(10px); }
     input[type="text"]:focus, select:focus { border-color: var(--accent); background: rgba(0,0,0,0.6); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); }
     input[type="text"]::placeholder { color: var(--text-muted); font-weight: 400; }
 
-    /* حاوية الشات والفقاعات (iMessage / Telegram Style) */
     .chat-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; position: relative; min-height: 250px; }
     #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 10px; scroll-behavior: smooth; }
     
@@ -104,28 +85,26 @@
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    
     .msg-content { padding: 12px 16px; border-radius: 20px; max-width: 82%; word-break: break-word; line-height: 1.5; position: relative; font-weight: 600; }
     
-    /* فقاعة رسائلي (متوهجة) مقابل رسائل الآخرين (زجاجية) */
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
     .msg-item[style*="row"] .msg-content { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; }
 
     .msg-name { font-weight: 800; font-size: 0.75rem; margin-bottom: 6px; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; }
     
-    /* الصور والملصقات */
     .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     .chat-img:hover { transform: scale(1.03); }
     .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .chat-sticker:hover { transform: scale(1.15) rotate(5deg); }
     .msg-content.sticker-bg { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
 
-    /* إشعارات النظام */
     .msg-system { text-align: center; font-size: 0.75rem; color: #fff; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); padding: 6px 16px; border-radius: 20px; margin: 8px auto; width: fit-content; border: 1px solid rgba(255,255,255,0.05); font-weight: 600; letter-spacing: 0.5px; }
-    .typing-indicator { font-size: 0.85rem; color: var(--accent-hover); font-weight: 600; min-height: 20px; margin-top: 8px; padding-left: 5px; animation: pulse 1.5s infinite; }
+    
+    /* إصلاح توهج الكتابة (تم إزالة صندوق الظل السيء واستبداله بتوهج نصي ناعم) */
+    .typing-indicator { font-size: 0.85rem; color: var(--accent-hover); font-weight: 600; min-height: 20px; margin-top: 8px; padding-left: 5px; animation: textPulse 1.5s infinite; }
+    @keyframes textPulse { 0% { opacity: 0.4; } 50% { opacity: 1; text-shadow: 0 0 10px var(--accent); } 100% { opacity: 0.4; } }
 
-    /* النوافذ المنبثقة (Modals) الساحرة */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(12px); } }
     
@@ -134,25 +113,22 @@
     .modal-card > * { z-index: 1; }
     .modal-card h2, .modal-card h3 { font-weight: 800; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     
-    /* اختيار الأفاتار */
     .avatar-picker { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 10px 0; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 4px 20px rgba(0,0,0,0.3); }
     .avatar-opt { width: 60px; height: 60px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; background: rgba(255,255,255,0.05); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .avatar-opt:hover { transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
     .avatar-opt.selected { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 20px var(--accent); background: var(--accent-hover); }
 
-    /* إعدادات وسجل */
     details { margin-bottom: 2px; }
     summary { padding: 14px 16px; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: #fff; display: flex; justify-content: space-between; align-items: center; border-radius: 14px; transition: 0.3s; background: rgba(255,255,255,0.03); }
     summary:hover { background: rgba(255,255,255,0.08); }
     summary::-webkit-details-marker { display: none; }
     .details-content { padding: 16px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2) !important; border-radius: 0 0 14px 14px; }
     
-    .history-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; border: 1px solid transparent; transition: 0.3s; display: flex; align-items: center; }
+    .history-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; border: 1px solid transparent; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
     .history-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); transform: translateX(-5px); }
 
-    /* زر الحذف الأنيق */
     .delete-btn-msg { color: #f87171; opacity: 0.6; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 0 6px; }
-    .delete-btn-msg:hover { opacity: 1; transform: scale(1.3) rotate(90deg); color: #ef4444; }
+    .delete-btn-msg:hover { opacity: 1; transform: scale(1.3); color: #ef4444; }
   </style>
 
 </head>
@@ -221,41 +197,63 @@
   </div>
 
   <div class="content-area">
+  <!-- لوحة الملصقات (تم استبدال الإيموجيز) -->
+  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 45vh; z-index: 500; flex-direction: column; gap: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+      <b style="color: var(--text-main); font-size: 0.95rem;"><i class="fa-solid fa-icons" style="color: var(--accent); margin-left: 5px;"></i> الملصقات</b>
+      <div style="display: flex; gap: 6px;">
+        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 6px 10px; background: rgba(255,255,255,0.1);"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button onclick="deleteAllStickers()" style="padding: 6px 10px; background: rgba(239, 68, 68, 0.2); color: #ef4444;" title="حذف الكل"><i class="fa-solid fa-trash-can"></i></button>
+        <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
+        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 6px 10px;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
+        <button onclick="toggleStickers()" style="padding: 6px 10px; background: rgba(255,255,255,0.1);"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
+       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">جاري تحميل الملصقات...</span>
+    </div>
+  </div>
+
+  <div class="video-container">
+    <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline muted preload="auto"></video>
+  </div>
+
+  <div class="content-area">
     <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
-      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><i class="fa-solid fa-users" style="color: var(--accent);"></i> جاري التحميل...</div>
       
-      <!-- ميزات القفز والتقديم والتأخير السريع -->
-      <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
-        <button onclick="skipTime(-5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تأخير 5 ثواني">⏪ 5ث</button>
-        <input type="text" id="jumpTimeInput" placeholder="مثال: 06:35" style="width: 75px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid var(--accent); background: var(--bg-content); color: #fff;">
-        <button onclick="jumpToTime()" style="padding: 4px 6px; font-size: 0.75rem; background: var(--accent);" title="انتقال">🚀</button>
-        <button onclick="skipTime(5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تقديم 5 ثواني">5ث ⏩</button>
+      <!-- ميزات القفز والتقديم بالأيقونات -->
+      <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+        <button onclick="skipTime(-5)" style="padding: 6px 10px; background: transparent; box-shadow: none;" title="تأخير 5 ثواني"><i class="fa-solid fa-backward-step"></i></button>
+        <input type="text" id="jumpTimeInput" placeholder="06:35" style="width: 65px; padding: 6px; text-align: center; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff;">
+        <button onclick="jumpToTime()" style="padding: 6px 12px; background: var(--accent);" title="انتقال"><i class="fa-solid fa-bolt"></i></button>
+        <button onclick="skipTime(5)" style="padding: 6px 10px; background: transparent; box-shadow: none;" title="تقديم 5 ثواني"><i class="fa-solid fa-forward-step"></i></button>
       </div>
 
-      <button onclick="openProfileModal()" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">👤 حسابي</button>
+      <button onclick="openProfileModal()" style="padding: 8px 12px; background: rgba(255,255,255,0.1);"><i class="fa-solid fa-user-astronaut"></i></button>
     </div>
     
-    <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
-      <div id="syncStatus"><b>توقيت المشاهدة:</b> جاري التحميل...</div>
-      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent);">⚙️ إعدادات المشاهدة</button>
+    <div class="status-bar" style="justify-content: space-between; font-size: 0.8rem; margin-top: -5px; margin-bottom: 5px;">
+      <div id="syncStatus"><i class="fa-regular fa-clock" style="color: var(--accent);"></i> جاري التحميل...</div>
+      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 8px 12px; background: rgba(255,255,255,0.1);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
     </div>
 
-  <!-- النافذة المنبثقة لإعدادات المشاهدة (الطلب الثالث) -->
+  <!-- النافذة المنبثقة لإعدادات المشاهدة -->
   <div id="settingsModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; gap: 10px;" onclick="event.stopPropagation()">
-      <h3 style="color: var(--accent); margin-bottom: 10px;">إعدادات المشاهدة ⚙️</h3>
+      <h3 style="color: var(--text-main); margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> إعدادات المشاهدة</h3>
       
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;">📺 تشغيل رابط جديد:</b>
+      <div class="details-content" style="text-align: right;">
+        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-link"></i> تشغيل رابط جديد:</b>
         <div class="input-group">
-          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px;">📁 Drive</button>
+          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px 12px;"><i class="fa-brands fa-google-drive"></i> Drive</button>
           <input type="text" id="videoUrlInput" placeholder="رابط MP4 مباشر..." style="padding: 8px;" />
-          <button onclick="changeVideoManual()" style="padding: 8px;">تشغيل</button>
+          <button onclick="changeVideoManual()" style="padding: 8px 12px;"><i class="fa-solid fa-play"></i></button>
         </div>
       </div>
 
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;">🎨 المظهر:</b>
+      <div class="details-content" style="text-align: right;">
+        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-palette"></i> المظهر:</b>
         <div style="display: flex; gap: 5px; justify-content: center;">
           <button onclick="setTheme('default')" style="background: #0f172a; flex:1; padding: 6px;">داكن</button>
           <button onclick="setTheme('pink')" style="background: #ec4899; flex:1; padding: 6px;">وردي</button>
@@ -264,31 +262,28 @@
         </div>
       </div>
 
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-         <b style="color: var(--text-main); font-size: 0.85rem;">🎬 سجل المشاهدة:</b>
+      <div class="details-content" style="text-align: right;">
+         <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-clock-rotate-left"></i> سجل المشاهدة:</b>
          <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
       </div>
 
-      <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;">🗑️ مسح بيانات الشات والسجل</button>
-      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;">إغلاق</button>
+      <button onclick="clearDatabase()" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); margin-top: 8px;"><i class="fa-solid fa-trash-can"></i> مسح بيانات الشات والسجل</button>
+      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: rgba(255,255,255,0.1); margin-top: 5px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
     </div>
   </div>
 
-    <!-- 3. منطقة الشات وبداخلها زر إرسال الصور والملصقات بجانب حقل الكتابة -->
+    <!-- منطقة الشات (الأيقونات بدلاً من الإيموجيز) -->
     <div class="chat-container">
       <div id="messages"></div>
       <div id="typingArea" class="typing-indicator"></div>
       <div class="input-group" style="margin-top: 8px;">
-        <!-- 1. الزر الأول: لرفع صورة جديدة من الاستوديو (🖼️) -->
         <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
-        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة">🖼️</button>
+        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة"><i class="fa-solid fa-image"></i></button>
         
-        <!-- 2. الزر الثاني (الجديد): لفتح لوحة الملصقات المحفوظة الدائمة (🌟) -->
-        <button onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة">🌟</button>
+        <button onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة"><i class="fa-solid fa-face-smile"></i></button>
         
-        <!-- حقل الكتابة وزر الإرسال -->
-        <input type="text" id="messageInput" placeholder="تحدث مع صديقتك..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
-        <button onclick="sendMessage()">إرسال</button>
+        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
@@ -400,7 +395,7 @@
               <span class="user-dot"></span>
               <img src="${u.avatar}" class="user-avatar" />
               <span>${u.name}</span>
-              <button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد هذا المستخدم">✖</button>
+<button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>
             </div>
           `;
         });
@@ -677,7 +672,7 @@
           const textAlign = isFemale ? 'right' : 'left';
           
           const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
+const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
           msgDiv.innerHTML += `
             <div class="msg-item" style="flex-direction: ${flexDir};">
