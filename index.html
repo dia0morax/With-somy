@@ -124,8 +124,8 @@
         <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;">✖</button>
       </div>
     </div>
-    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
-       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 4; text-align: center;">جاري تحميل الملصقات...</span>
+    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
+       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">جاري تحميل الملصقات...</span>
     </div>
   </div>
 
@@ -457,17 +457,30 @@
       }
     }
 
-    // إرسال الملصقات والصور
+    // إرسال الصور (مع ضغط الحجم آلياً لتقليل اللاق)
     function sendImage(input) {
       if (!currentUser) return;
       const file = input.files[0];
       if(!file) return;
-      if(file.size > 900000) { alert("الملصق كبير جداً! الحد الأقصى أقل من 1 ميجا."); input.value = ""; return; }
       
       const reader = new FileReader();
       reader.onload = function(e) {
-        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: e.target.result, time: Date.now(), isSystem: false });
-        db.ref(`typing/${userId}`).remove();
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 300; // تصغير العرض ليناسب الشات فقط
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // تحويل الصورة لصيغة webp الخفيفة بجودة 60%
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
+          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: compressedDataUrl, time: Date.now(), isSystem: false });
+          db.ref(`typing/${userId}`).remove();
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
       input.value = "";
@@ -676,10 +689,24 @@
     function uploadSticker(input) {
       const file = input.files[0];
       if(!file) return;
-      if(file.size > 800000) { alert("الملصق كبير جداً! يجب أن يكون أقل من 1 ميجا."); return; }
+      
       const reader = new FileReader();
       reader.onload = function(e) {
-        db.ref('savedStickers').push({ img: e.target.result, order: Date.now() });
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 120; // حجم الملصقات صغير جداً ومناسب للشبكة 8 أعمدة
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // الحفاظ على الشفافية مع جودة مخفضة (50%)
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.5); 
+          db.ref('savedStickers').push({ img: compressedDataUrl, order: Date.now() });
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
       input.value = "";
