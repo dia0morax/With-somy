@@ -175,17 +175,16 @@
     <span style="color: #fff; margin-top: 10px; font-size: 0.9rem;">انقر في أي مكان للإغلاق</span>
   </div>
 
-  <!-- لوحة الملصقات المحفوظة الدائمة (شبكة عمودية 4 أعمدة) -->
+  <!-- لوحة الملصقات المحفوظة الدائمة (بدون إيموجيز) -->
   <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 45vh; background: var(--bg-panel); border: 1px solid var(--accent); border-radius: 12px; padding: 10px; z-index: 500; flex-direction: column; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-hover); padding-bottom: 5px;">
-      <b style="color: var(--accent); font-size: 0.85rem;">الملصقات 🌟</b>
+      <b style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-icons" style="margin-left: 5px;"></i> الملصقات</b>
       <div style="display: flex; gap: 5px;">
-        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #f59e0b;">✏️ تعديل</button>
-        <!-- زر حذف كل الملصقات -->
-        <button onclick="deleteAllStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #991b1b;" title="حذف كل الملصقات">🗑️ الكل</button>
+        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button onclick="deleteAllStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #991b1b;" title="حذف كل الملصقات"><i class="fa-solid fa-trash-can"></i></button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
-        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;">➕ رفع</button>
-        <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;">✖</button>
+        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
+        <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
     <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
@@ -201,38 +200,38 @@
     <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
       <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
       
-      <!-- ميزات القفز والتقديم والتأخير السريع -->
+      <!-- ميزات القفز والتقديم والتأخير السريع (بدون إيموجيز) -->
       <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
-        <button onclick="skipTime(-5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تأخير 5 ثواني">⏪ 5ث</button>
-        <input type="text" id="jumpTimeInput" placeholder="مثال: 06:35" style="width: 75px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid var(--accent); background: var(--bg-content); color: #fff;">
-        <button onclick="jumpToTime()" style="padding: 4px 6px; font-size: 0.75rem; background: var(--accent);" title="انتقال">🚀</button>
-        <button onclick="skipTime(5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تقديم 5 ثواني">5ث ⏩</button>
+        <button onclick="skipTime(-5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تأخير 5 ثواني"><i class="fa-solid fa-backward-step"></i></button>
+        <input type="text" id="jumpTimeInput" placeholder="06:35" style="width: 65px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff;">
+        <button onclick="jumpToTime()" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);" title="انتقال"><i class="fa-solid fa-bolt"></i></button>
+        <button onclick="skipTime(5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تقديم 5 ثواني"><i class="fa-solid fa-forward-step"></i></button>
       </div>
 
-      <button onclick="openProfileModal()" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">👤 حسابي</button>
+      <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
     </div>
     
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
-      <div id="syncStatus"><b>توقيت المشاهدة:</b> جاري التحميل...</div>
-      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent);">⚙️ إعدادات المشاهدة</button>
+      <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
+      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
     </div>
 
-  <!-- النافذة المنبثقة لإعدادات المشاهدة (الطلب الثالث) -->
+  <!-- النافذة المنبثقة لإعدادات المشاهدة (تم وضع أيقونات FontAwesome) -->
   <div id="settingsModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; gap: 10px;" onclick="event.stopPropagation()">
-      <h3 style="color: var(--accent); margin-bottom: 10px;">إعدادات المشاهدة ⚙️</h3>
+      <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="margin-left: 8px;"></i> إعدادات المشاهدة</h3>
       
       <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;">📺 تشغيل رابط جديد:</b>
+        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-link" style="margin-left: 5px;"></i> تشغيل رابط جديد:</b>
         <div class="input-group">
-          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px;">📁 Drive</button>
+          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px;"><i class="fa-brands fa-google-drive" style="margin-left: 4px;"></i> Drive</button>
           <input type="text" id="videoUrlInput" placeholder="رابط MP4 مباشر..." style="padding: 8px;" />
-          <button onclick="changeVideoManual()" style="padding: 8px;">تشغيل</button>
+          <button onclick="changeVideoManual()" style="padding: 8px;"><i class="fa-solid fa-play"></i></button>
         </div>
       </div>
 
       <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;">🎨 المظهر:</b>
+        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-palette" style="margin-left: 5px;"></i> المظهر:</b>
         <div style="display: flex; gap: 5px; justify-content: center;">
           <button onclick="setTheme('default')" style="background: #0f172a; flex:1; padding: 6px;">داكن</button>
           <button onclick="setTheme('pink')" style="background: #ec4899; flex:1; padding: 6px;">وردي</button>
@@ -242,12 +241,12 @@
       </div>
 
       <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-         <b style="color: var(--text-main); font-size: 0.85rem;">🎬 سجل المشاهدة:</b>
+         <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 5px;"></i> سجل المشاهدة:</b>
          <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
       </div>
 
-      <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;">🗑️ مسح بيانات الشات والسجل</button>
-      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;">إغلاق</button>
+      <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;"><i class="fa-solid fa-trash-can" style="margin-left: 5px;"></i> مسح بيانات الشات والسجل</button>
+      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark" style="margin-left: 5px;"></i> إغلاق</button>
     </div>
   </div>
 
@@ -256,16 +255,14 @@
       <div id="messages"></div>
       <div id="typingArea" class="typing-indicator"></div>
       <div class="input-group" style="margin-top: 8px;">
-        <!-- 1. الزر الأول: لرفع صورة جديدة من الاستوديو (🖼️) -->
+        <!-- تم استبدال الإيموجيز بأيقونات احترافية -->
         <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
-        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة">🖼️</button>
+        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة"><i class="fa-solid fa-image"></i></button>
         
-        <!-- 2. الزر الثاني (الجديد): لفتح لوحة الملصقات المحفوظة الدائمة (🌟) -->
-        <button onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة">🌟</button>
+        <button onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة"><i class="fa-solid fa-face-smile"></i></button>
         
-        <!-- حقل الكتابة وزر الإرسال -->
-        <input type="text" id="messageInput" placeholder="تحدث مع صديقتك..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
-        <button onclick="sendMessage()">إرسال</button>
+        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
@@ -377,7 +374,7 @@
               <span class="user-dot"></span>
               <img src="${u.avatar}" class="user-avatar" />
               <span>${u.name}</span>
-              <button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد هذا المستخدم">✖</button>
+              <button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
             </div>
           `;
         });
@@ -654,7 +651,7 @@
           const textAlign = isFemale ? 'right' : 'left';
           
           const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
           msgDiv.innerHTML += `
             <div class="msg-item" style="flex-direction: ${flexDir};">
