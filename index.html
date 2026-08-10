@@ -70,7 +70,7 @@
     
     /* تم التغيير لـ inline-block لتستجيب للمحاذاة (يمين/يسار) بناءً على الجنس */
     .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: inline-block; }
-    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: inline-block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
+    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: inline-block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }    
     .msg-content.sticker-bg { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
     
     .msg-system { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin: 4px 0; }
@@ -619,7 +619,7 @@
           const floatDir = isFemale ? 'left' : 'right';
           const textAlign = isFemale ? 'right' : 'left';
           
-          // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
+          // 2. زر الحذف الحقيقي المربوط بم مفتاح الرسالة
           const msgKey = c.key;
           const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
 
@@ -634,43 +634,6 @@
           `;
         }
       }); 
-
-      // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
-      if (isScrolledToBottom) {
-        msgDiv.scrollTop = msgDiv.scrollHeight;
-      }
-    });
-          const isMine = currentUser && m.name === currentUser.name;
-          
-          // 1. التفريق بين الصورة العادية والملصق الصغير الشفاف
-          let contentHtml = m.text ? `<div>${m.text}</div>` : '';
-          if(m.img && m.isSticker) {
-              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
-          } else if(m.img) {
-              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
-          }
-          
-          // تحديد الاتجاه والتصميم حسب جنس صاحب الرسالة
-          const isFemale = m.gender ? m.gender === 'female' : isMine; // دعم للرسائل القديمة
-          const flexDir = isFemale ? 'row-reverse' : 'row';
-          const floatDir = isFemale ? 'left' : 'right';
-          const textAlign = isFemale ? 'right' : 'left';
-          
-          // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
-          const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
-
-          msgDiv.innerHTML += `
-            <div class="msg-item" style="flex-direction: ${flexDir};">
-              <img src="${m.avatar}" class="msg-avatar" />
-              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
-                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
-                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'};">${contentHtml}</div>
-              </div>
-            </div>
-          `;
-        }
-      }); // <--- هذه هي القفلة المفقودة لحلقة التكرار!
 
       // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
       if (isScrolledToBottom) {
@@ -889,8 +852,7 @@
           container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 4; text-align: center;">لا توجد ملصقات، أضف ملصقاتك الآن!</span>`;
           return;
       }
-      
-      globalStickers.forEach((s) => {
+         globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
          if(isEditingStickers) {
              container.innerHTML += `
@@ -906,6 +868,45 @@
              container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
          }
       });
+    }
+
+    // ==========================================
+    // 10. الدمج الجذري للكيبورد مع الشات (TikTok/Instagram Style)
+    // ==========================================
+    const videoCont = document.querySelector('.video-container');
+    const contentArea = document.querySelector('.content-area');
+    
+    // 1. تحديد حجم الفيديو بالبيكسل فور تحميل الصفحة وتجميده
+    window.addEventListener('load', () => {
+      const vh = window.innerHeight * 0.35; // 35% من الشاشة للفيديو كحد أقصى
+      videoCont.style.height = vh + 'px';
+      contentArea.style.top = vh + 'px';
+    });
+
+    // 2. تتبع حجم الشاشة الفعلي (Visual Viewport) عند صعود الكيبورد
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        // تحديث ارتفاع الـ html والـ body ليطابق المساحة المتبقية من الشاشة بالضبط
+        document.documentElement.style.height = window.visualViewport.height + 'px';
+        document.body.style.height = window.visualViewport.height + 'px';
+        
+        // إجبار المتصفح على عدم دفع الصفحة بأكملها للأعلى
+        window.scrollTo(0, 0); 
+        
+        // إبقاء الرسائل تظهر لآخر رسالة عند صعود الكيبورد
+        const msgDiv = document.getElementById('messages');
+        if(msgDiv) {
+          setTimeout(() => { msgDiv.scrollTop = msgDiv.scrollHeight; }, 50);
+        }
+      });
+      
+      // حل إضافي لسفاري الآيباد: عند تركيز حقل الكتابة، نمنع المتصفح من العبث
+      const msgInput = document.getElementById('messageInput');
+      if(msgInput) {
+          msgInput.addEventListener('focus', () => {
+              setTimeout(() => { window.scrollTo(0, 0); }, 100);
+          });
+      }
     }
 
   </script>
