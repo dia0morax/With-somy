@@ -581,24 +581,23 @@
       }
     }
 
-    // استماع للشات مع الحذف التلقائي (الحد الأقصى 10 رسائل)
-    db.ref('chat').limitToLast(12).on('value', (snap) => {
+    // استماع للشات مع الحذف التلقائي الصارم (أقصى حد 10 رسائل)
+    db.ref('chat').on('value', (snap) => {
       const msgDiv = document.getElementById('messages');
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
       
       msgDiv.innerHTML = "";
       
-      // تحويل البيانات إلى مصفوفة لتسهيل الحذف
       const msgs = [];
       snap.forEach(c => { msgs.push({ key: c.key, val: c.val() }); });
       
-      // الحذف التلقائي الفوري لأي شيء يتجاوز 10 عناصر من السيرفر
+      // السحر هنا: إذا تجاوزت الرسائل 10، نحذف القديم من الداتابيز فوراً
       if (msgs.length > 10) {
          const extrasCount = msgs.length - 10;
          for(let i = 0; i < extrasCount; i++) {
             db.ref('chat/' + msgs[i].key).remove();
          }
-         // إزالتها من العرض فوراً
+         // نزيلها من مصفوفة العرض حتى لا تظهر على الشاشة ولو لثانية
          msgs.splice(0, extrasCount);
       }
 
@@ -617,15 +616,20 @@
               contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
+          const isFemale = m.gender ? m.gender === 'female' : isMine;
+          const flexDir = isFemale ? 'row-reverse' : 'row';
+          const floatDir = isFemale ? 'left' : 'right';
+          const textAlign = isFemale ? 'right' : 'left';
+          
           const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${isMine ? 'left' : 'right'};" title="حذف الرسالة">✖</span>`;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
 
           msgDiv.innerHTML += `
-            <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
+            <div class="msg-item" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" class="msg-avatar" />
-              <div class="msg-content ${isMine ? 'mine' : ''} ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%;">
-                <span class="msg-name" style="display: block;">${m.name} ${deleteBtn}</span>
-                ${contentHtml}
+              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
+                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
               </div>
             </div>
           `;
