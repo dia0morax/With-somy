@@ -33,13 +33,6 @@
 
     /* منطقة المحتوى (الشات): تتمدد للأعلى والأسفل وتتجاهل الفيديو */
     .content-area { position: absolute; top: 35vh; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; background: var(--bg-content); z-index: 10; }
-    
-    /* عند فتح الكيبورد في الموبايل والآيباد، الشات يأخذ المساحة المتاحة فقط ولا يلمس الفيديو */
-    @media (pointer: coarse) {
-       body { position: relative; } /* تحرير البودي للسماح بتمدد الكيبورد */
-       .video-container { position: sticky; top: 0; } /* يلتصق بالأعلى */
-       .content-area { position: relative; top: auto; flex: 1; height: calc(100vh - 35vh); } /* يحسب الارتفاع المتبقي */
-    }
 
     /* أزرار السلايد الأنيقة */
     details { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--bg-hover); margin-bottom: 2px; }
@@ -74,8 +67,10 @@
     .msg-content.mine { background: var(--accent); border-color: var(--accent-hover); border-top-right-radius: 10px; border-top-left-radius: 2px; color: #fff; }
     .msg-name { font-weight: bold; color: var(--accent); font-size: 0.75rem; display: block; margin-bottom: 4px; }
     .msg-content.mine .msg-name { color: #e0e7ff; }
-    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }
-    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
+    
+    /* تم التغيير لـ inline-block لتستجيب للمحاذاة (يمين/يسار) بناءً على الجنس */
+    .chat-img { max-width: 160px; border-radius: 8px; margin-top: 4px; cursor: pointer; display: inline-block; }
+    .chat-sticker { max-width: 90px; margin-top: 4px; cursor: pointer; display: inline-block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); }
     .msg-content.sticker-bg { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
     
     .msg-system { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin: 4px 0; }
@@ -581,19 +576,70 @@
       }
     }
 
-    // استماع للشات
-    db.ref('chat').limitToLast(50).on('value', (snap) => {
+    // استماع للشات وحذف القديم تلقائياً (الحد الأقصى 10)
+    db.ref('chat').limitToLast(15).on('value', (snap) => {
       const msgDiv = document.getElementById('messages');
-      // نحتفظ بمسافة السكرول الحالية لمعرفة ما إذا كان المستخدم يقرأ رسائل قديمة
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
       
       msgDiv.innerHTML = "";
-      snap.forEach(c => {
-        const m = c.val();
+      
+      // تحويل البيانات إلى مصفوفة لمعالجتها
+      const msgs = [];
+      snap.forEach(c => { msgs.push({ key: c.key, val: c.val() }); });
+      
+      // حذف الرسائل الزائدة عن 10 للحفاظ على السلاسة الفائقة
+      if (msgs.length > 10) {
+         const extrasCount = msgs.length - 10;
+         for(let i = 0; i < extrasCount; i++) {
+            db.ref('chat/' + msgs[i].key).remove();
+         }
+         // إزالة الزوائد من العرض فوراً ليبقى الشات نظيفاً
+         msgs.splice(0, extrasCount);
+      }
+
+      msgs.forEach(c => {
+        const m = c.val;
         
         if(m.isSystem) {
           msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
         } else {
+          const isMine = currentUser && m.name === currentUser.name;
+          
+          // 1. التفريق بين الصورة العادية والملصق الصغير الشفاف
+          let contentHtml = m.text ? `<div>${m.text}</div>` : '';
+          if(m.img && m.isSticker) {
+              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+          } else if(m.img) {
+              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
+          }
+          
+          // تحديد الاتجاه والتصميم حسب جنس صاحب الرسالة
+          const isFemale = m.gender ? m.gender === 'female' : isMine;
+          const flexDir = isFemale ? 'row-reverse' : 'row';
+          const floatDir = isFemale ? 'left' : 'right';
+          const textAlign = isFemale ? 'right' : 'left';
+          
+          // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
+          const msgKey = c.key;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
+
+          msgDiv.innerHTML += `
+            <div class="msg-item" style="flex-direction: ${flexDir};">
+              <img src="${m.avatar}" class="msg-avatar" />
+              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
+                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
+              </div>
+            </div>
+          `;
+        }
+      }); 
+
+      // النزول التلقائي إذا كان المستخدم في الأسفل أصلاً
+      if (isScrolledToBottom) {
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      }
+    });
           const isMine = currentUser && m.name === currentUser.name;
           
           // 1. التفريق بين الصورة العادية والملصق الصغير الشفاف
@@ -860,6 +906,45 @@
              container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
          }
       });
+    }
+
+    // ==========================================
+    // 10. الدمج الجذري للكيبورد مع الشات (TikTok/Instagram Style)
+    // ==========================================
+    const videoCont = document.querySelector('.video-container');
+    const contentArea = document.querySelector('.content-area');
+    
+    // 1. تحديد حجم الفيديو بالبيكسل فور تحميل الصفحة وتجميده
+    window.addEventListener('load', () => {
+      const vh = window.innerHeight * 0.35; // 35% من الشاشة للفيديو كحد أقصى
+      videoCont.style.height = vh + 'px';
+      contentArea.style.top = vh + 'px';
+    });
+
+    // 2. تتبع حجم الشاشة الفعلي (Visual Viewport) عند صعود الكيبورد
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        // تحديث ارتفاع الـ html والـ body ليطابق المساحة المتبقية من الشاشة بالضبط
+        document.documentElement.style.height = window.visualViewport.height + 'px';
+        document.body.style.height = window.visualViewport.height + 'px';
+        
+        // إجبار المتصفح على عدم دفع الصفحة بأكملها للأعلى
+        window.scrollTo(0, 0); 
+        
+        // إبقاء الرسائل تظهر لآخر رسالة عند صعود الكيبورد
+        const msgDiv = document.getElementById('messages');
+        if(msgDiv) {
+          setTimeout(() => { msgDiv.scrollTop = msgDiv.scrollHeight; }, 50);
+        }
+      });
+      
+      // حل إضافي لسفاري الآيباد: عند تركيز حقل الكتابة، نمنع المتصفح من العبث
+      const msgInput = document.getElementById('messageInput');
+      if(msgInput) {
+          msgInput.addEventListener('focus', () => {
+              setTimeout(() => { window.scrollTo(0, 0); }, 100);
+          });
+      }
     }
 
   </script>
