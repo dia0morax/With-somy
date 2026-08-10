@@ -230,7 +230,11 @@
     
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
       <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
-      <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
+      <div style="display: flex; gap: 6px;">
+        <!-- زر قفل الشات الجديد -->
+        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
+        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
+      </div>
     </div>
 
   <!-- النافذة المنبثقة لإعدادات المشاهدة (تم وضع أيقونات FontAwesome) -->
@@ -684,10 +688,36 @@
         }
       }); 
 
-      if (isScrolledToBottom) {
+      // السطر السحري: إذا كان المستخدم في الأسفل، أو إذا كان "قفل الشات" مفعلاً، أجبر الرسائل على النزول لآخر خط
+      if (isScrolledToBottom || window.isChatLocked) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
       }
     });
+
+    // ==========================================
+    // ميزة قفل الشات (منع التمرير للأعلى)
+    // ==========================================
+    window.isChatLocked = false;
+    function toggleChatLock() {
+      window.isChatLocked = !window.isChatLocked;
+      const btn = document.getElementById('lockChatBtn');
+      const msgDiv = document.getElementById('messages');
+      
+      if (window.isChatLocked) {
+          // حالة القفل: أيقونة مقفلة، لون أحمر تنبيهي، ومنع السكرول اليدوي (إخفاء الشريط)
+          btn.innerHTML = '<i class="fa-solid fa-lock"></i>';
+          btn.style.color = '#ef4444';
+          btn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          msgDiv.style.overflowY = 'hidden'; 
+          msgDiv.scrollTop = msgDiv.scrollHeight; // إجبار النزول لآخر رسالة فوراً
+      } else {
+          // حالة الفتح: أيقونة مفتوحة، لون طبيعي، وعودة السكرول اليدوي
+          btn.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+          btn.style.color = '#fff';
+          btn.style.borderColor = 'rgba(255,255,255,0.05)';
+          msgDiv.style.overflowY = 'auto';
+      }
+    }
 
     // مراقب صامت لحذف الرسائل القديمة في الخلفية (منعاً للتشويش)
     db.ref('chat').on('value', (snap) => {
@@ -824,12 +854,12 @@
       document.getElementById('imageModal').style.display = 'flex';
     }
 
-    // [الحذف الحقيقي للرسالة مع ترك أثر ساخر 😂]
     function deleteMessage(msgKey) {
       if (!currentUser) return;
       if(confirm("هل أنت متأكد من مسح الرسالة؟ 👀")) {
         db.ref('chat/' + msgKey).update({ 
-          text: "(افا حذفتي ، يلا عاد شنسوي somy is being somy)", 
+          // نص مميز، شفاف قليلاً، مائل، مع أيقونة X احترافية وحمراء
+          text: "<span style='opacity: 0.6; font-style: italic; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;'><i class='fa-solid fa-ban' style='color: #ef4444;'></i> تم حذف رسالة</span>", 
           img: null,
           isSticker: false
         });
@@ -865,15 +895,15 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 80; // حجم مجهري للملصق يمنع أي لاق
+          const MAX_WIDTH = 250; // رفعنا أبعاد الملصق ليصبح فائق الدقة (HD)
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // ضغط الجودة لـ 30% مع الحفاظ على الشفافية
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.3); 
+          // الجودة 70% (أقل بـ 30% من الأصلية كما طلبت)
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.7); 
           db.ref('savedStickers').push({ img: compressedDataUrl, order: Date.now() });
         };
         img.src = e.target.result;
