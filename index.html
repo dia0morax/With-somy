@@ -79,11 +79,22 @@
     input[type="text"]:focus, select:focus { border-color: var(--accent); background: rgba(0,0,0,0.6); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); }
     input[type="text"]::placeholder { color: var(--text-muted); font-weight: 400; }
 
-    .chat-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; position: relative; min-height: 250px; }
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 10px; scroll-behavior: smooth; }
+    /* حاوية الشات - الوهج الداخلي والرسائل */
+    .chat-container { flex: 1; display: flex; flex-direction: column; padding: 18px; overflow: hidden; position: relative; min-height: 250px; }
     
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    /* الجرم المضيء الخاص بصندوق الشات */
+    .chat-container::before { content: ''; position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); filter: blur(40px); z-index: 0; animation: chatGlow 8s infinite alternate ease-in-out; pointer-events: none; }
+    @keyframes chatGlow { 0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+    
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 10px; scroll-behavior: smooth; z-index: 2; position: relative; }
+    
+    /* أنيميشن الرسائل العادية (iMessage Pop) */
+    .msg-item { display: flex; align-items: flex-end; gap: 12px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+    @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    
+    /* أنيميشن سقوط الملصقات الاحترافي */
+    .msg-item.is-sticker { animation: stickerDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+    @keyframes stickerDrop { 0% { opacity: 0; transform: translateY(-50px) scale(1.8) rotate(-15deg); } 50% { transform: translateY(0) scale(0.95) rotate(5deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); } }
     
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .msg-content { padding: 12px 16px; border-radius: 20px; max-width: 82%; word-break: break-word; line-height: 1.5; position: relative; font-weight: 600; }
@@ -102,9 +113,10 @@
 
     .msg-system { text-align: center; font-size: 0.75rem; color: #fff; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); padding: 6px 16px; border-radius: 20px; margin: 8px auto; width: fit-content; border: 1px solid rgba(255,255,255,0.05); font-weight: 600; letter-spacing: 0.5px; }
     
-    /* إصلاح توهج الكتابة (تم إزالة صندوق الظل السيء واستبداله بتوهج نصي ناعم) */
-    .typing-indicator { font-size: 0.85rem; color: var(--accent-hover); font-weight: 600; min-height: 20px; margin-top: 8px; padding-left: 5px; animation: textPulse 1.5s infinite; }
-    @keyframes textPulse { 0% { opacity: 0.4; } 50% { opacity: 1; text-shadow: 0 0 10px var(--accent); } 100% { opacity: 0.4; } }
+    /* نقاط الكتابة (Bouncing Dots) iOS Style */
+    .typing-indicator { min-height: 25px; margin-top: 5px; margin-bottom: -5px; padding-left: 5px; z-index: 2; position: relative; }
+    .typing-dot { width: 6px; height: 6px; background-color: var(--accent-hover); border-radius: 50%; animation: bounceDot 1.4s infinite ease-in-out both; box-shadow: 0 0 5px var(--accent); }
+    @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(12px); } }
@@ -645,6 +657,7 @@
               contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
+          const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن المطلوب
           const isFemale = m.gender ? m.gender === 'female' : isMine;
           const flexDir = isFemale ? 'row-reverse' : 'row';
           const floatDir = isFemale ? 'left' : 'right';
@@ -654,7 +667,7 @@
           const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
           msgDiv.innerHTML += `
-            <div class="msg-item" style="flex-direction: ${flexDir};">
+            <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" class="msg-avatar" />
               <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
                 <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
@@ -711,10 +724,18 @@
         });
       }
 
-      if (typists.length === 1) {
-        area.innerHTML = `${typists[0]} يكتب الآن... ✍️`;
-      } else if (typists.length > 1) {
-        area.innerHTML = `عدة أشخاص يكتبون الآن... ✍️`;
+      if (typists.length > 0) {
+        const names = typists.join(' و ');
+        area.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">${names} يكتب</span>
+            <div style="display:flex; gap:4px; padding-top:2px;">
+                <div class="typing-dot" style="animation-delay: -0.32s;"></div>
+                <div class="typing-dot" style="animation-delay: -0.16s;"></div>
+                <div class="typing-dot"></div>
+            </div>
+          </div>
+        `;
       } else {
         area.innerHTML = "";
       }
