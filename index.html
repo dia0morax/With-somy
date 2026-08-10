@@ -908,45 +908,6 @@
       });
     }
 
-    // ==========================================
-    // 10. الدمج الجذري للكيبورد مع الشات (TikTok/Instagram Style)
-    // ==========================================
-    const videoCont = document.querySelector('.video-container');
-    const contentArea = document.querySelector('.content-area');
-    
-    // 1. تحديد حجم الفيديو بالبيكسل فور تحميل الصفحة وتجميده
-    window.addEventListener('load', () => {
-      const vh = window.innerHeight * 0.35; // 35% من الشاشة للفيديو كحد أقصى
-      videoCont.style.height = vh + 'px';
-      contentArea.style.top = vh + 'px';
-    });
-
-    // 2. تتبع حجم الشاشة الفعلي (Visual Viewport) عند صعود الكيبورد
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        // تحديث ارتفاع الـ html والـ body ليطابق المساحة المتبقية من الشاشة بالضبط
-        document.documentElement.style.height = window.visualViewport.height + 'px';
-        document.body.style.height = window.visualViewport.height + 'px';
-        
-        // إجبار المتصفح على عدم دفع الصفحة بأكملها للأعلى
-        window.scrollTo(0, 0); 
-        
-        // إبقاء الرسائل تظهر لآخر رسالة عند صعود الكيبورد
-        const msgDiv = document.getElementById('messages');
-        if(msgDiv) {
-          setTimeout(() => { msgDiv.scrollTop = msgDiv.scrollHeight; }, 50);
-        }
-      });
-      
-      // حل إضافي لسفاري الآيباد: عند تركيز حقل الكتابة، نمنع المتصفح من العبث
-      const msgInput = document.getElementById('messageInput');
-      if(msgInput) {
-          msgInput.addEventListener('focus', () => {
-              setTimeout(() => { window.scrollTo(0, 0); }, 100);
-          });
-      }
-    }
-
   </script>
 </body>
 </html>
