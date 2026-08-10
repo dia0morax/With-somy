@@ -107,8 +107,19 @@
           <input type="file" id="customAvatar" accept="image/*" style="display:none;" onchange="handleCustomAvatar(this)">
         </div>
       </div>
-      <input type="text" id="initUsername" placeholder="اكتب اسمك هنا..." />
-      <button onclick="saveProfile()" style="padding: 12px; font-size: 1rem;">دخول الغرفة</button>
+      
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <select id="initGender" style="padding: 10px; border-radius: 8px; background: var(--bg-content); color: var(--text-main); border: 1px solid var(--accent); width: 35%;">
+          <option value="male">ولد 👦</option>
+          <option value="female">بنت 👧</option>
+        </select>
+        <input type="text" id="initUsername" placeholder="اكتب اسمك هنا..." style="flex: 1;" />
+      </div>
+      
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button onclick="saveProfile()" style="flex: 2; padding: 12px; font-size: 1rem;">حفظ ودخول</button>
+        <button onclick="closeProfileModal()" style="flex: 1; padding: 12px; font-size: 1rem; background: var(--bg-hover);">إلغاء</button>
+      </div>
     </div>
   </div>
 
@@ -146,13 +157,15 @@
     <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
       <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
       
-      <!-- ميزة القفز السريع المضافة هنا -->
+      <!-- ميزات القفز والتقديم والتأخير السريع -->
       <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
+        <button onclick="skipTime(-5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تأخير 5 ثواني">⏪ 5ث</button>
         <input type="text" id="jumpTimeInput" placeholder="مثال: 06:35" style="width: 75px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid var(--accent); background: var(--bg-content); color: #fff;">
-        <button onclick="jumpToTime()" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent);">🚀 قفز</button>
+        <button onclick="jumpToTime()" style="padding: 4px 6px; font-size: 0.75rem; background: var(--accent);" title="انتقال">🚀</button>
+        <button onclick="skipTime(5)" style="padding: 4px 6px; font-size: 0.75rem; background: var(--bg-hover);" title="تقديم 5 ثواني">5ث ⏩</button>
       </div>
 
-      <button onclick="document.getElementById('profileModal').style.display='flex';" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">⚙️ تعديل</button>
+      <button onclick="openProfileModal()" style="padding: 4px 8px; font-size: 0.75rem; background: #475569;">👤 حسابي</button>
     </div>
     
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
@@ -269,18 +282,33 @@
 
     function saveProfile() {
       const name = document.getElementById('initUsername').value.trim() || "زائر";
-      currentUser = { name: name, avatar: selectedAvatarUrl };
+      const gender = document.getElementById('initGender').value;
+      currentUser = { name: name, avatar: selectedAvatarUrl, gender: gender };
       localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
       document.getElementById('profileModal').style.display = 'none';
       initPresence();
-      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
     }    
+
+    function closeProfileModal() {
+      if(currentUser) {
+        document.getElementById('profileModal').style.display = 'none';
+      } else {
+        alert("يجب اختيار اسم وصورة أولاً لدخول الغرفة!");
+      }
+    }
+
+    function openProfileModal() {
+      if(currentUser) {
+        document.getElementById('initUsername').value = currentUser.name || "";
+        document.getElementById('initGender').value = currentUser.gender || 'male';
+      }
+      document.getElementById('profileModal').style.display = 'flex';
+    }
 
     if (!currentUser) {
       document.getElementById('profileModal').style.display = 'flex';
     } else {
       initPresence();
-      sendSystemMessage(`دخل(ت) ${currentUser.name} إلى الغرفة 👋`);
     }
 
     // 4. نظام المتواجدين الآن (Presence)
@@ -396,6 +424,18 @@
       document.getElementById('jumpTimeInput').value = ""; // تفريغ الحقل بعد القفز
     }
 
+    // دالة التقديم والتأخير 5 ثواني
+    function skipTime(seconds) {
+      if(!currentUser) return;
+      const newTime = player.currentTime() + seconds;
+      if(newTime < 0) return;
+      
+      isSystemAction = true;
+      player.currentTime(newTime);
+      db.ref('videoState').update({ time: newTime, timestamp: Date.now(), sender: currentUser.name });
+      setTimeout(() => { isSystemAction = false; }, 500);
+    }
+
         // --- أحداث المشغل (ترسل إلى Firebase) ---
     player.on('play', () => {
       if (isSystemAction) return; 
@@ -495,13 +535,14 @@
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       if (text) {
-        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, text: text, time: Date.now(), isSystem: false });
+        // تمت إضافة الجنس (gender) هنا
+        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false });
         input.value = "";
-        db.ref(`typing/${userId}`).remove(); // إصلاح التوجيه لـ userId
+        db.ref(`typing/${userId}`).remove();
       }
     }
 
-    // إرسال الصور (ضغط أقوى لتقليل اللاق)
+    // إرسال الصور (مع ضغط الحجم وإضافة الجنس)
     function sendImage(input) {
       if (!currentUser) return;
       const file = input.files[0];
@@ -512,16 +553,16 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 200; // تصغير قوي للصورة
+          const MAX_WIDTH = 300; 
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // ضغط الجودة لـ 40% فقط لجعلها خفيفة كالريشة
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.4); 
-          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: compressedDataUrl, time: Date.now(), isSystem: false });
+          const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
+          // تمت إضافة الجنس (gender) هنا
+          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false });
           db.ref(`typing/${userId}`).remove();
         };
         img.src = e.target.result;
@@ -563,16 +604,22 @@
               contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
+          // تحديد الاتجاه والتصميم حسب جنس صاحب الرسالة
+          const isFemale = m.gender ? m.gender === 'female' : isMine; // دعم للرسائل القديمة
+          const flexDir = isFemale ? 'row-reverse' : 'row';
+          const floatDir = isFemale ? 'left' : 'right';
+          const textAlign = isFemale ? 'right' : 'left';
+          
           // 2. زر الحذف الحقيقي المربوط بمفتاح الرسالة
           const msgKey = c.key;
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${isMine ? 'left' : 'right'};" title="حذف الرسالة">✖</span>`;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" style="color: #ef4444; cursor: pointer; font-size: 0.8rem; margin: 0 4px; float: ${floatDir};" title="حذف الرسالة">✖</span>`;
 
           msgDiv.innerHTML += `
-            <div class="msg-item ${isMine ? 'mine' : ''}" style="${isMine ? 'flex-direction: row-reverse;' : ''}">
+            <div class="msg-item" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" class="msg-avatar" />
-              <div class="msg-content ${isMine ? 'mine' : ''} ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%;">
-                <span class="msg-name" style="display: block;">${m.name} ${deleteBtn}</span>
-                ${contentHtml}
+              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
+                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'};">${contentHtml}</div>
               </div>
             </div>
           `;
@@ -766,7 +813,8 @@
 
     function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
-      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
+      // تمت إضافة الجنس (gender) هنا
+      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
       toggleStickers();
     }
 
