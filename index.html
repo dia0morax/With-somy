@@ -448,14 +448,16 @@
       picker.setVisible(true);
     }
 
-        function pickerCallback(data) {
+    function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
         
-        // الحل السحري لتجاوز حظر CORS وصفحة فحص الفيروسات في جوجل درايف
-        const streamUrl = `https://lh3.googleusercontent.com/d/${file.id}`;
+        // الحل السحري: استخدام Google API المباشر مع مفتاح الوصول (Access Token)
+        // هذا الرابط يتجاوز صفحة فحص الفيروسات ويعطي Video.js دفق MP4 خام وسريع جداً
+        const streamUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&access_token=${accessToken}`;
         
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
+        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
         sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
       }
     }
