@@ -103,7 +103,7 @@
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .msg-content { padding: 12px 16px; border-radius: 20px; max-width: 82%; word-break: break-word; line-height: 1.5; position: relative; font-weight: 600; }
+    .msg-content { padding: 12px 16px; border-radius: 20px; max-width: 82%; overflow-wrap: anywhere; word-break: normal; line-height: 1.5; position: relative; font-weight: 600; }
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
@@ -263,12 +263,14 @@
     <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
       <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
       
-      <!-- ميزات القفز والتقديم والتأخير السريع (بدون إيموجيز) -->
+      <!-- ميزات القفز والتقديم والتأخير السريع -->
       <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
         <button onclick="skipTime(-5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تأخير 5 ثواني"><i class="fa-solid fa-backward-step"></i></button>
         <input type="text" id="jumpTimeInput" placeholder="06:35" style="width: 65px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff;">
         <button onclick="jumpToTime()" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);" title="انتقال"><i class="fa-solid fa-bolt"></i></button>
         <button onclick="skipTime(5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تقديم 5 ثواني"><i class="fa-solid fa-forward-step"></i></button>
+        <!-- زر تخطي الشارة 85 ثانية -->
+        <button onclick="skipTime(85)" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #ec4899; box-shadow: none; border-radius: 6px;" title="تخطي الشارة (85 ثانية)"><i class="fa-solid fa-forward-fast"></i></button>
       </div>
 
       <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
@@ -277,7 +279,10 @@
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
       <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
       <div style="display: flex; gap: 6px;">
-        <!-- زر قفل الشات الجديد -->
+        <!-- زر المزامنة الإجبارية للجميع (Beacon) -->
+        <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية (إجبار الجميع على وقتك الحالي)"><i class="fa-solid fa-tower-broadcast"></i></button>
+        
+        <!-- زر قفل الشات -->
         <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
         <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
       </div>
@@ -558,6 +563,23 @@
       setTimeout(() => { isSystemAction = false; }, 500);
     }
 
+    // دالة المزامنة الإجبارية للجميع (Sync Beacon) - تم وضعها هنا بالضبط
+    function forceSync() {
+      if (!currentUser || !player) return;
+      isSystemAction = true;
+      const currentT = player.currentTime();
+      db.ref('videoState').update({ time: currentT, timestamp: Date.now(), sender: currentUser.name, action: player.paused() ? 'pause' : 'play' });
+      
+      // تفاعل بصري صغير للزر عند الضغط ليؤكد الإرسال
+      if (event && event.currentTarget) {
+        const btn = event.currentTarget;
+        btn.style.transform = "scale(0.8)";
+        setTimeout(() => { btn.style.transform = "scale(1)"; isSystemAction = false; }, 200);
+      } else {
+        isSystemAction = false;
+      }
+    }
+
         // --- أحداث المشغل (ترسل إلى Firebase) ---
     player.on('play', () => {
       if (isSystemAction) return; 
@@ -751,7 +773,7 @@
               <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
               <div style="display:flex; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; max-width: 82%;">
                   <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
-                       style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
+                       style="width: fit-content; min-width: 50px; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
                        ondblclick="addReaction('${msgKey}', '❤️')" 
                        onmousedown="startLongPress(event, '${msgKey}')" 
                        onmouseup="cancelLongPress()" 
