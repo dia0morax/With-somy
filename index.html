@@ -312,15 +312,10 @@
       <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
       <div style="display: flex; gap: 6px;">
         <!-- 🎬 زر وضع السينما -->
-        <button id="theaterBtn" onclick="toggleTheaterMode()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #a855f7; box-shadow: none;" title="وضع السينما (توسيع الفيديو وتخفيف الإضاءة)"><i class="fa-solid fa-film"></i></button>
+        <button id="theaterBtn" onclick="toggleTheaterMode()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #a855f7; box-shadow: none;" title="وضع السينما"><i class="fa-solid fa-film"></i></button>
 
         <!-- زر المزامنة الإجبارية للجميع (Beacon) -->
-        <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية (إجبار الجميع على وقتك الحالي)"><i class="fa-solid fa-tower-broadcast"></i></button>
-        
-        <!-- زر قفل الشات -->
-        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
-        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
-      </div>
+        <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية"><i class="fa-solid fa-tower-broadcast"></i></button>
         
         <!-- زر قفل الشات -->
         <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
