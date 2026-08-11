@@ -115,6 +115,17 @@
     .chat-img:hover { transform: scale(1.03); }
     .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .chat-sticker:hover { transform: scale(1.15) rotate(5deg); }
+        /* نظام التفاعلات السريعة (Reactions) */
+    .reaction-menu { position: fixed; display: flex; gap: 8px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 10px 16px; border-radius: 30px; border: 1px solid var(--accent); box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 9999; transform: scale(0); opacity: 0; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; transform-origin: bottom center; }
+    .reaction-menu.show { transform: scale(1); opacity: 1; pointer-events: auto; }
+    .reaction-menu span { font-size: 1.4rem; cursor: pointer; transition: 0.2s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); display: inline-block; }
+    .reaction-menu span:hover { transform: scale(1.35) translateY(-5px); }
+    .reaction-menu .more-btn { background: rgba(255,255,255,0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1rem; color: #fff; margin-right: 4px; }
+    
+    .reactions-badge-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: -8px; z-index: 3; position: relative; padding: 0 10px; }
+    .reaction-badge { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 2px 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: popBadge 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; transition: 0.2s; }
+    .reaction-badge:hover { transform: scale(1.1); border-color: var(--accent); }
+    @keyframes popBadge { 0% { transform: scale(0); } 100% { transform: scale(1); } }
     /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
     .msg-item[style*="row"] .msg-content.sticker-bg, 
     .msg-item[style*="row-reverse"] .msg-content.sticker-bg { 
@@ -217,6 +228,18 @@
     <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
        <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">جاري تحميل الملصقات...</span>
     </div>
+  </div>
+
+  <!-- قائمة التفاعلات السريعة المنبثقة -->
+  <div id="reactionMenu" class="reaction-menu">
+    <span onclick="addReactionAndClose('😭')">😭</span>
+    <span onclick="addReactionAndClose('❤️')">❤️</span>
+    <span onclick="addReactionAndClose('😔')">😔</span>
+    <span onclick="addReactionAndClose('😡')">😡</span>
+    <span onclick="addReactionAndClose('😖')">😖</span>
+    <span onclick="addReactionAndClose('🫩')">🫩</span>
+    <span onclick="addReactionAndClose('🧛‍♀️')">🧛‍♀️</span>
+    <span onclick="customReactionPrompt()" class="more-btn" title="المزيد..."><i class="fa-solid fa-plus"></i></span>
   </div>
 
   <div class="video-container" id="videoBox">
@@ -691,13 +714,43 @@
           const msgKey = c.key;
           const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
-          // 3. نجمع الـ HTML داخل المتغير بدلاً من ضخه للشاشة فوراً
+          // حساب وبناء شارات التفاعل (Reactions Badges)
+          let reactionsHtml = '';
+          if (m.reactions) {
+              const counts = {};
+              let iReactedWith = null;
+              Object.keys(m.reactions).forEach(uid => {
+                  const emo = m.reactions[uid];
+                  counts[emo] = (counts[emo] || 0) + 1;
+                  if (uid === userId) iReactedWith = emo;
+              });
+              
+              reactionsHtml = `<div class="reactions-badge-container" style="justify-content: ${isFemale ? 'flex-end' : 'flex-start'};">`;
+              Object.keys(counts).forEach(emo => {
+                  const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(139, 92, 246, 0.4);' : '';
+                  reactionsHtml += `<div class="reaction-badge" style="${isMineClass}" onclick="addReaction('${msgKey}', '${emo}')">${emo} <span style="font-weight:bold; font-size:0.75rem; color:#fff;">${counts[emo]}</span></div>`;
+              });
+              reactionsHtml += `</div>`;
+          }
+
+          // تم إضافة أحداث الضغط المطول والمزدوج لصندوق الرسالة
           htmlBuilder += `
             <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
-              <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
-                <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
-                <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
+              <div style="display:flex; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; max-width: 82%;">
+                  <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
+                       style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
+                       ondblclick="addReaction('${msgKey}', '❤️')" 
+                       onmousedown="startLongPress(event, '${msgKey}')" 
+                       onmouseup="cancelLongPress()" 
+                       onmouseleave="cancelLongPress()" 
+                       ontouchstart="startLongPress(event, '${msgKey}')" 
+                       ontouchend="cancelLongPress()"
+                       oncontextmenu="event.preventDefault(); showReactionMenu(event, '${msgKey}');">
+                    <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                    <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
+                  </div>
+                  ${reactionsHtml}
               </div>
             </div>
           `;
@@ -1045,6 +1098,85 @@
         player.play();
       } else {
         player.pause();
+      }
+    }
+
+    // ==========================================
+    // محرك التفاعلات السريعة (Reactions System)
+    // ==========================================
+    let longPressTimer;
+    let currentReactionMsgKey = null;
+
+    function startLongPress(e, msgKey) {
+      cancelLongPress();
+      longPressTimer = setTimeout(() => {
+        showReactionMenu(e, msgKey);
+      }, 500); // 500 ملي ثانية كافية لاعتبارها ضغطة مطولة
+    }
+
+    function cancelLongPress() {
+      clearTimeout(longPressTimer);
+    }
+
+    function showReactionMenu(e, msgKey) {
+      e.preventDefault(); 
+      currentReactionMsgKey = msgKey;
+      
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      const menu = document.getElementById('reactionMenu');
+      menu.classList.add('show');
+      
+      // حساب ذكي لمكان ظهور القائمة لكي لا تخرج خارج الشاشة
+      let top = clientY - 70; 
+      if (top < 20) top = clientY + 40; 
+      
+      let left = clientX - (menu.offsetWidth / 2);
+      if (left < 10) left = 10;
+      if (left + menu.offsetWidth > window.innerWidth - 10) left = window.innerWidth - menu.offsetWidth - 10;
+
+      menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+    }
+
+    function closeReactionMenu() {
+      document.getElementById('reactionMenu').classList.remove('show');
+      currentReactionMsgKey = null;
+    }
+
+    // إغلاق القائمة عند النقر في أي مكان فارغ
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('.reaction-menu') && !e.target.closest('.msg-content')) {
+        closeReactionMenu();
+      }
+    });
+
+    function addReaction(msgKey, emoji) {
+      if (!currentUser) return;
+      // كل مستخدم يملك تفاعل واحد فقط لكل رسالة لتجنب السبام
+      db.ref(`chat/${msgKey}/reactions/${userId}`).set(emoji);
+    }
+
+    function addReactionAndClose(emoji) {
+      if (currentReactionMsgKey) {
+        addReaction(currentReactionMsgKey, emoji);
+      }
+      closeReactionMenu();
+    }
+
+    function customReactionPrompt() {
+      const emo = prompt("أدخل إيموجي (Emoji) للتفاعل 🌟:");
+      if (emo) {
+        addReactionAndClose(emo.substring(0, 4)); // قص النص للحماية
+      } else {
+        closeReactionMenu();
       }
     }
 
