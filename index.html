@@ -449,31 +449,32 @@
     const SYNC_THRESHOLD = 1.0; // فارق الثواني المسموح به قبل الإجبار على المزامنة
 
     // ==========================================
-    // المحلل الذكي للروابط (YouTube + Google Drive Bypass)
+    // المحلل الذكي للروابط المتوافق مع حجب الشبكات
     // ==========================================
-    // رابط سيرفرك الخاص من Cloudflare
     const MY_WORKER_URL = "https://with-somy.dia2001alamer.workers.dev";
 
     function parseSmartUrl(inputUrl) {
       let src = inputUrl;
       let type = 'video/mp4'; 
 
-      // 1. روابط يوتيوب (تذهب مباشرة ليوتيوب)
+      // 1. روابط يوتيوب
       if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
         type = 'video/youtube';
         src = inputUrl;
       } 
-      // 2. روابط Google Drive (تمر عبر سيرفر Cloudflare الخاص بك للتخطي)
+      // 2. روابط Google Drive
       else if (inputUrl.includes('drive.google.com')) {
         const match = inputUrl.match(/[-\w]{25,}/);
         if (match && match[0]) {
           const directDrive = `https://drive.google.com/uc?export=download&confirm=t&id=${match[0]}`;
+          // استخدام رابط مباشر مدعوم مع تجاوز البروكسي عند تعثره
           src = `${MY_WORKER_URL}/?url=${encodeURIComponent(directDrive)}`;
         }
       } 
-      // 3. أي رابط MP4 محجوب
-      else if (inputUrl.endsWith('.mp4') || inputUrl.includes('.mp4?')) {
-        src = `${MY_WORKER_URL}/?url=${encodeURIComponent(inputUrl)}`;
+      // 3. روابط MP4 المباشرة
+      else {
+        type = 'video/mp4';
+        src = inputUrl.startsWith('http') ? inputUrl : `${MY_WORKER_URL}/?url=${encodeURIComponent(inputUrl)}`;
       }
 
       return { src, type };
@@ -566,15 +567,17 @@
         player.pause();
         player.reset();
 
-        // نمرر الرابط مع تحديد النوع لكي يتمكن من تشغيل يوتيوب بامتياز
+        // التمرير المباشر مع دعم التراجع في حال حظر نطاق workers.dev
         player.src({ src: st.src, type: st.type || 'video/mp4' });
 
-        // ننتظر حتى يصبح المشغل مستعداً تماماً لقراءة البيانات (أهم خطوة للموبايل)
         player.ready(function() {
             setTimeout(() => {
-                // محاولة التشغيل مع معالجة خطأ سياسات المتصفح بصمت
                 player.play().catch(error => {
-                    console.log("متصفح الموبايل يحتاج لتفاعل يدوي لبدء التشغيل");
+                    // في حال الحظر من مزود الخدمة، يحول المشغل تلقائياً للمصدر المباشر الخالي من الـ Worker
+                    if (st.src.includes(MY_WORKER_URL)) {
+                        const originalUrl = decodeURIComponent(st.src.split('?url=')[1]);
+                        if (originalUrl) player.src({ src: originalUrl, type: 'video/mp4' });
+                    }
                 });
                 isSystemAction = false;
             }, 1000);
