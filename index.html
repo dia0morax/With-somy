@@ -12,7 +12,7 @@
 
   <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
   <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-  <!-- مكتبة تمكين مشغل Video.js من قراءة وتشغيل روابط يوتيوب -->
+  <!-- مكتبة دعم تشغيل اليوتيوب المتوافقة مع المزامنة -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
 
   <!-- السطر الجديد يوضع هنا بالضبط -->
@@ -213,8 +213,6 @@
 
   <div class="video-container">
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
-    <!-- إطار يوتيوب الرسمي (يكون مخفياً بشكل افتراضي) -->
-    <iframe id="youtubePlayer" style="display: none; width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
   </div>
 
   <div class="content-area">
@@ -306,8 +304,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Video.js (البديل الأقوى)
+    // 2. تهيئة مشغل Video.js (البديل الأقوى مع دعم اليوتيوب)
     const player = videojs('videoPlayer', {
+      techOrder: ['html5', 'youtube'], // السماح بالتبديل بين MP4 ويوتيوب
       userActions: { hotkeys: true }
     });
 
@@ -450,21 +449,15 @@
     let isSystemAction = false; // هذا المتغير السحري يمنع التكرار اللانهائي
     const SYNC_THRESHOLD = 1.0; // فارق الثواني المسموح به قبل الإجبار على المزامنة
 
+    // محلل الروابط الذكي (للتعرف على اليوتيوب)
     function parseSmartUrl(inputUrl) {
       let src = inputUrl;
       let type = 'video/mp4'; 
-      let ytId = null;
-
-      // استخراج الـ ID الخاص بالفيديو من كافة أشكال روابط يوتيوب
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = inputUrl.match(regExp);
-
-      if (match && match[2].length === 11) {
+      if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
         type = 'video/youtube';
-        ytId = match[2];
+        src = inputUrl;
       }
-
-      return { src, type, ytId };
+      return { src, type };
     }
 
     function changeVideoManual() {
@@ -473,18 +466,10 @@
       
       const media = parseSmartUrl(url);
       
-      const videoData = { 
-        src: media.src, 
-        type: media.type, 
-        ytId: media.ytId || null, 
-        action: 'load', 
-        time: 0, 
-        timestamp: Date.now(), 
-        sender: currentUser.name 
-      };
-      
+      const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
       db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
+      sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
       document.getElementById('videoUrlInput').value = "";
     }
 
@@ -553,45 +538,25 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد (يتعرف على اليوتيوب ويدعمه)
+      // 1. تحميل مقطع جديد (مُحصّن لمتصفحات الموبايل ويدعم يوتيوب)
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        const videoEl = document.getElementById('videoPlayer');
-        const ytIframe = document.getElementById('youtubePlayer');
+        player.pause();
+        // تم حذف player.reset() لأنها تدمر محرك اليوتيوب عند التبديل!
 
-        // إذا كان الفيديو القادم من نوع يوتيوب
-        if (st.type === 'video/youtube' && st.ytId) {
-          player.pause();
-          if (videoEl) videoEl.style.display = 'none'; // إخفاء مشغل Video.js
-          if (ytIframe) {
-            ytIframe.style.display = 'block'; // إظهار مشغل يوتيوب الرسمي
-            ytIframe.src = `https://www.youtube.com/embed/${st.ytId}?enablejsapi=1&autoplay=1&rel=0`;
-          }
-          isSystemAction = false;
-        } 
-        // إذا كان رابط فيديو مباشر عالي الجودة (MP4)
-        else {
-          if (ytIframe) {
-            ytIframe.style.display = 'none'; // إخفاء إطار يوتيوب
-            ytIframe.src = ''; 
-          }
-          if (videoEl) videoEl.style.display = 'block'; // إظهار مشغل الفيديو الأصلي
-          
-          player.pause();
-          player.reset();
-          player.src(st.src);
-          
-          player.ready(function() {
+        // تمرير الرابط مع تحديد النوع ليعرف المشغل متى يستخدم محرك يوتيوب
+        player.src({ src: st.src, type: st.type || 'video/mp4' });
+
+        player.ready(function() {
             setTimeout(() => {
-              player.play().catch(error => {
-                console.log("تفاعل يدوي مطلوب لبدء التشغيل");
-              });
-              isSystemAction = false;
+                player.play().catch(error => {
+                    console.log("متصفح الموبايل يحتاج لتفاعل يدوي لبدء التشغيل");
+                });
+                isSystemAction = false;
             }, 1000);
-          });
-        }
+        });
         return;
       }
 
