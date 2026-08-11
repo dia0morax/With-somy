@@ -103,7 +103,7 @@
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .msg-content { padding: 12px 16px; border-radius: 20px; max-width: 82%; overflow-wrap: anywhere; word-break: normal; line-height: 1.5; position: relative; font-weight: 600; }
+    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: keep-all; overflow-wrap: break-word; width: fit-content; min-width: 80px; }
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
@@ -771,9 +771,9 @@
           htmlBuilder += `
             <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
-              <div style="display:flex; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; max-width: 82%;">
+              <div style="display:flex; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; max-width: 82%; min-width: fit-content;">
                   <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
-                       style="width: fit-content; min-width: 50px; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
+                       style="width: max-content; max-width: 100%; min-width: 70px; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
                        ondblclick="addReaction('${msgKey}', '❤️')" 
                        onmousedown="startLongPress(event, '${msgKey}')" 
                        onmouseup="cancelLongPress()" 
