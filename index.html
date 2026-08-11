@@ -12,7 +12,7 @@
 
   <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
   <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-  <!-- مكتبة دعم تشغيل اليوتيوب -->
+  <!-- مكتبة تمكين مشغل Video.js من قراءة وتشغيل روابط يوتيوب -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.min.js"></script>
 
   <!-- السطر الجديد يوضع هنا بالضبط -->
@@ -448,35 +448,16 @@
     let isSystemAction = false; // هذا المتغير السحري يمنع التكرار اللانهائي
     const SYNC_THRESHOLD = 1.0; // فارق الثواني المسموح به قبل الإجبار على المزامنة
 
-    // ==========================================
-    // المحلل الذكي للروابط المتوافق مع حجب الشبكات
-    // ==========================================
-    const MY_WORKER_URL = "https://with-somy.dia2001alamer.workers.dev";
-
+    // تحليل الرابط وتحديد ما إذا كان يوتيوب أم فيديو مباشر
     function parseSmartUrl(inputUrl) {
       let src = inputUrl;
       let type = 'video/mp4'; 
 
-      // 1. روابط يوتيوب
+      // التعرّف على كافة صيغ روابط يوتيوب (الموبايل والكمبيوتر)
       if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
         type = 'video/youtube';
         src = inputUrl;
-      } 
-      // 2. روابط Google Drive
-      else if (inputUrl.includes('drive.google.com')) {
-        const match = inputUrl.match(/[-\w]{25,}/);
-        if (match && match[0]) {
-          const directDrive = `https://drive.google.com/uc?export=download&confirm=t&id=${match[0]}`;
-          // استخدام رابط مباشر مدعوم مع تجاوز البروكسي عند تعثره
-          src = `${MY_WORKER_URL}/?url=${encodeURIComponent(directDrive)}`;
-        }
-      } 
-      // 3. روابط MP4 المباشرة
-      else {
-        type = 'video/mp4';
-        src = inputUrl.startsWith('http') ? inputUrl : `${MY_WORKER_URL}/?url=${encodeURIComponent(inputUrl)}`;
       }
-
       return { src, type };
     }
 
@@ -484,12 +465,11 @@
       const url = document.getElementById('videoUrlInput').value.trim();
       if (!url) return;
       
-      const mediaInfo = parseSmartUrl(url); // تحليل الرابط قبل إرساله للجميع
+      const media = parseSmartUrl(url);
       
-      const videoData = { src: mediaInfo.src, type: mediaInfo.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
+      const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
-      
-      db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name }); // نحفظ الرابط الأصلي بشكله المألوف
+      db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
       document.getElementById('videoUrlInput').value = "";
     }
 
@@ -567,17 +547,15 @@
         player.pause();
         player.reset();
 
-        // التمرير المباشر مع دعم التراجع في حال حظر نطاق workers.dev
+        // تمرير المصدر والنوع لضمان تشغيل اليوتيوب بسلاسة
         player.src({ src: st.src, type: st.type || 'video/mp4' });
 
+        // ننتظر حتى يصبح المشغل مستعداً تماماً لقراءة البيانات (أهم خطوة للموبايل)
         player.ready(function() {
             setTimeout(() => {
+                // محاولة التشغيل مع معالجة خطأ سياسات المتصفح بصمت
                 player.play().catch(error => {
-                    // في حال الحظر من مزود الخدمة، يحول المشغل تلقائياً للمصدر المباشر الخالي من الـ Worker
-                    if (st.src.includes(MY_WORKER_URL)) {
-                        const originalUrl = decodeURIComponent(st.src.split('?url=')[1]);
-                        if (originalUrl) player.src({ src: originalUrl, type: 'video/mp4' });
-                    }
+                    console.log("متصفح الموبايل يحتاج لتفاعل يدوي لبدء التشغيل");
                 });
                 isSystemAction = false;
             }, 1000);
@@ -872,11 +850,13 @@
       if (data.action === google.picker.Action.PICKED) {
         const file = data.docs[0];
         
-        // استخدام الحل الجذري المباشر (بدون بروكسي يخرب الملفات الكبيرة)
-        const streamUrl = `https://drive.google.com/uc?export=download&confirm=t&id=${file.id}`;
+        // استخدام خدمة Worker/Proxy مفتوحة المصدر لتجاوز قيود درايف
+        // هذا الرابط يأخذ الـ ID الخاص بالفيديو ويعيد دفق MP4 حقيقي
+        const streamUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id=' + file.id)}`;
         
-        db.ref('videoState').set({ src: streamUrl, type: 'video/mp4', action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
+        db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
         db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
+        sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
       }
     }
 
