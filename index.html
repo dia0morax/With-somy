@@ -113,8 +113,9 @@
     
     .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     .chat-img:hover { transform: scale(1.03); }
-    .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .chat-sticker:hover { transform: scale(1.15) rotate(5deg); }
+    /* تسريع الأداء بالاعتماد على كرت الشاشة (GPU) لمنع اللاج في الـ GIFs */
+    .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); will-change: transform; transform: translateZ(0); backface-visibility: hidden; }
+    .chat-sticker:hover { transform: scale(1.15) rotate(5deg) translateZ(0); }
     /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
     .msg-item[style*="row"] .msg-content.sticker-bg, 
     .msg-item[style*="row-reverse"] .msg-content.sticker-bg { 
@@ -677,9 +678,9 @@
           
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
           if(m.img && m.isSticker) {
-              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" class="chat-sticker" loading="lazy" decoding="async" onclick="openImageModal('${m.img}')">`;
           } else if(m.img) {
-              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" class="chat-img" loading="lazy" decoding="async" onclick="openImageModal('${m.img}')">`;
           }
           
           const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن
@@ -984,10 +985,11 @@
       
       globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
+         // تفعيل Lazy Loading, Async Decoding, و GPU Acceleration لملصقات اللوحة
          if(isEditingStickers) {
              container.innerHTML += `
              <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
-                <img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
+                <img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: contain; will-change: transform; transform: translateZ(0);">
                 <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
                 <div style="display:flex; width: 100%; gap: 2px; margin-top: 2px;">
                   <button onclick="moveSticker('${s.key}', ${orderNum}, 'up')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">◀</button>
@@ -995,7 +997,7 @@
                 </div>
              </div>`;
          } else {
-             container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
+             container.innerHTML += `<img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); will-change: transform; transform: translateZ(0);" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
          }
       });
     }
