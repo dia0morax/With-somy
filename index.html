@@ -55,9 +55,9 @@
 
     .video-container { width: 100%; height: 35vh; min-height: 35vh; background: #000; z-index: 100; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
     
-    /* طبقة شفافة تعطي إشارة تفاعل للمتصفح لتشغيل اليوتيوب فوراً بدون تعليق */
-    .yt-click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
-    .is-youtube .yt-click-overlay { display: block; }
+    /* طبقة تفاعل ذكية لإجبار المتصفح على تشغيل أي فيديو (يوتيوب أو درايف) */
+    .click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
+    .require-interaction .click-overlay { display: block; }
     .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--btn-gradient); z-index: 101; }
     .video-js { width: 100%; height: 100%; } 
     .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } 
@@ -216,7 +216,7 @@
   </div>
 
   <div class="video-container" id="videoBox">
-    <div class="yt-click-overlay" onclick="triggerYtPlay()"></div>
+    <div class="click-overlay" onclick="triggerSmartPlay()"></div>
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
   </div>
 
@@ -543,17 +543,14 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد (يتجاوز تقييد المتصفح للموبايل)
+      // 1. تحميل مقطع جديد (تجاوز ذكي لتقييد المتصفح لكل الروابط)
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
+        // تفعيل طبقة اللمس السحرية لأي فيديو جديد (يوتيوب أو جوجل درايف)
         const videoBox = document.getElementById('videoBox');
-        if (st.type === 'video/youtube') {
-            videoBox.classList.add('is-youtube');
-        } else {
-            videoBox.classList.remove('is-youtube');
-        }
+        if (videoBox) videoBox.classList.add('require-interaction');
 
         player.pause();
         player.src({ src: st.src, type: st.type || 'video/mp4' });
@@ -1025,11 +1022,11 @@
     });
 
     // ==========================================
-    // دالة لتجاوز حظر اللمس في متصفحات الموبايل عند تشغيل اليوتيوب
+    // دالة سحرية لتجاوز حظر المتصفحات لجميع الفيديوهات (درايف ويوتيوب)
     // ==========================================
-    function triggerYtPlay() {
+    function triggerSmartPlay() {
       const videoBox = document.getElementById('videoBox');
-      if (videoBox) videoBox.classList.remove('is-youtube'); // إخفاء الطبقة الشفافة بعد أول نقرة
+      if (videoBox) videoBox.classList.remove('require-interaction'); // إخفاء الطبقة الشفافة
       if (player.paused()) {
         player.play();
       } else {
