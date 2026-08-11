@@ -538,25 +538,22 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد (مُحصّن لمتصفحات الموبايل ويدعم يوتيوب)
+      // 1. تحميل مقطع جديد (متوافق 100% مع حماية يوتيوب للموبايل)
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
         player.pause();
-        // تم حذف player.reset() لأنها تدمر محرك اليوتيوب عند التبديل!
 
-        // تمرير الرابط مع تحديد النوع ليعرف المشغل متى يستخدم محرك يوتيوب
+        // تمرير الرابط للمشغل ليتعرف عليه
         player.src({ src: st.src, type: st.type || 'video/mp4' });
 
-        player.ready(function() {
-            setTimeout(() => {
-                player.play().catch(error => {
-                    console.log("متصفح الموبايل يحتاج لتفاعل يدوي لبدء التشغيل");
-                });
-                isSystemAction = false;
-            }, 1000);
-        });
+        // السر هنا: حذفنا محاولة التشغيل الإجبارية التي كانت تدمر محرك اليوتيوب وتجمده!
+        // نكتفي بفك القفل وننتظر من المستخدم أن يضغط زر التشغيل بيده.
+        setTimeout(() => {
+            isSystemAction = false;
+        }, 500);
+        
         return;
       }
 
