@@ -177,10 +177,11 @@
     .delete-btn-msg { color: #f87171; opacity: 0.6; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 0 6px; }
     .delete-btn-msg:hover { opacity: 1; transform: scale(1.3); color: #ef4444; }
     
- /* ======================================= */
+    /* ======================================= */
     /* 🎬 ستايلات وضع السينما (Theater Mode) 🎬 */
     /* ======================================= */
-    .video-container, .content-area { transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+    /* جعلنا الاستجابة للأبعاد لحظية لمنع الشاشة السوداء عند فتح الكيبورد */
+    .video-container, .content-area { transition: background 0.3s ease, border-color 0.3s ease; }
     
     /* تعتيم الخلفية وإخفاء المشتتات */
     body.theater-mode { background: #000 !important; }
@@ -194,15 +195,17 @@
     
     /* 📱 وضع الهاتف (طولي) - تكبير الفيديو للأسفل */
     @media (orientation: portrait) {
-        body.theater-mode .video-container { height: 55dvh !important; min-height: 55dvh !important; border-bottom: 2px solid var(--accent); }
+        /* استخدام vh بدلاً من dvh يمنع المتصفح من إعادة رسم الشاشة مع كل لمسة */
+        body.theater-mode .video-container { height: 55vh !important; min-height: 55vh !important; border-bottom: 2px solid var(--accent); }
         body.theater-mode .content-area { padding: 8px !important; }
     }
     
     /* 💻 وضع العرض (أفقي/لابتوب) - قسم الشاشة لجزئين (الفيديو يمين والشات يسار) */
     @media (orientation: landscape) {
         body.theater-mode { flex-direction: row !important; }
-        body.theater-mode .video-container { width: 75vw !important; height: 100dvh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: 20px 0 50px rgba(0,0,0,0.9); z-index: 200; }
-        body.theater-mode .content-area { width: 25vw !important; height: 100dvh !important; padding: 10px !important; z-index: 100; }
+        /* إلغاء box-shadow الثقيل واستخدام حدود خفيفة لتسريع كرت الشاشة (GPU) */
+        body.theater-mode .video-container { width: 75vw !important; height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
+        body.theater-mode .content-area { width: 25vw !important; height: 100vh !important; padding: 10px !important; z-index: 100; }
         body.theater-mode .msg-content { padding: 8px 12px; font-size: 0.8rem; }
         body.theater-mode .chat-img, body.theater-mode .chat-sticker { max-width: 100px; }
         body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
