@@ -210,6 +210,28 @@
         body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
     }
 
+    /* 📱 إصلاح حجم الفيديو للآيباد والتابلت في الوضع الطولي */
+    @media (min-width: 650px) and (orientation: portrait) {
+        .video-container { height: 45vh !important; min-height: 400px !important; }
+    }
+
+    /* 🌟 ستايلات جدولنا وشجرة الذكريات (Timeline) */
+    .schedule-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; transition: 0.3s; }
+    .schedule-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
+    .schedule-item.completed { opacity: 0.7; border-color: #10b981; }
+    
+    .timeline-container { border-right: 2px solid var(--accent); padding-right: 18px; margin-right: 10px; margin-top: 15px; display: flex; flex-direction: column; gap: 20px; }
+    .memory-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; position: relative; backdrop-filter: blur(10px); }
+    .memory-card::before { content: ''; position: absolute; right: -25px; top: 15px; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+    .memory-date { font-size: 0.7rem; color: #10b981; font-weight: bold; margin-bottom: 4px; }
+    
+    .rating-stars i { color: #475569; cursor: pointer; transition: 0.2s; }
+    .rating-stars i:hover, .rating-stars i.active { color: #f59e0b; transform: scale(1.2); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+    
+    /* ملصقات الذكريات الملتصقة بالبطاقة */
+    .memory-sticker { position: absolute; max-width: 50px; bottom: -10px; left: -10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); transform: rotate(-15deg); cursor: pointer; transition: 0.3s; }
+    .memory-sticker:hover { transform: scale(1.5) rotate(0deg); z-index: 10; }
+
  </style>
 
 </head>
@@ -322,6 +344,55 @@
     </div>
   </div>
 
+  <!-- 🌟 نافذة المميزات (جدول الأعمال) -->
+  <div id="featuresModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-card" style="max-width: 90%; max-height: 80vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="color: var(--accent);"><i class="fa-solid fa-sparkles"></i> المميزات</h3>
+          <button onclick="openTreeMode()" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;"><i class="fa-solid fa-tree"></i> شجرة الذكريات</button>
+      </div>
+      
+      <div class="details-content" style="background: var(--bg-content); border-radius: 8px;">
+        <b style="color: var(--text-main); font-size: 0.9rem; display: block; margin-bottom: 10px;">📋 جدولنا (الأنمي والأفلام)</b>
+        <div class="input-group" style="margin-bottom: 15px;">
+          <input type="text" id="newAnimeInput" placeholder="اسم الأنمي أو الفيلم..." style="padding: 8px;" />
+          <button onclick="addScheduleItem()" style="padding: 8px 15px;"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <!-- سيتم توليد الأعمال هنا -->
+        <div id="scheduleContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 40vh; overflow-y: auto;">
+           <span style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">جاري التحميل...</span>
+        </div>
+      </div>
+      <button onclick="document.getElementById('featuresModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+    </div>
+  </div>
+
+  <!-- 🌳 نافذة شجرة الذكريات -->
+  <div id="treeModal" class="modal-overlay" style="display: none; z-index: 2001;" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-card" style="max-width: 90%; max-height: 85vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
+      <h3 style="color: #10b981; text-align: center;"><i class="fa-solid fa-seedling"></i> شجرة ذكرياتنا</h3>
+      <div id="treeContainer" class="timeline-container">
+          <!-- ستُبنى الشجرة هنا -->
+      </div>
+      <button onclick="document.getElementById('treeModal').style.display='none'" style="background: var(--bg-hover); margin-top: 15px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+    </div>
+  </div>
+
+  <!-- ⭐ نافذة التقييم الجماعي (تظهر للكل) -->
+  <div id="ratingModal" class="modal-overlay" style="display: none; z-index: 3000;">
+    <div class="modal-card" style="max-width: 300px; text-align: center; gap: 15px;">
+      <h3 id="ratingTitle" style="color: #f59e0b;">تقييم العمل</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">اختر تقييمك من 5 للعمل الذي أنهيناه للتو!</p>
+      <div class="rating-stars" style="font-size: 2rem; display: flex; justify-content: center; gap: 10px; direction: ltr;">
+          <i class="fa-solid fa-star" onclick="submitRating(1)"></i>
+          <i class="fa-solid fa-star" onclick="submitRating(2)"></i>
+          <i class="fa-solid fa-star" onclick="submitRating(3)"></i>
+          <i class="fa-solid fa-star" onclick="submitRating(4)"></i>
+          <i class="fa-solid fa-star" onclick="submitRating(5)"></i>
+      </div>
+    </div>
+  </div>
+
   <div class="video-container" id="videoBox">
     <div class="click-overlay" onclick="triggerSmartPlay()"></div>
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
@@ -350,12 +421,17 @@
         <!-- 🎬 زر وضع السينما -->
         <button id="theaterBtn" onclick="toggleTheaterMode()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #a855f7; box-shadow: none;" title="وضع السينما"><i class="fa-solid fa-film"></i></button>
 
-        <!-- زر المزامنة الإجبارية للجميع (Beacon) -->
+        <!-- زر المزامنة -->
         <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية"><i class="fa-solid fa-tower-broadcast"></i></button>
         
-        <!-- زر قفل الشات -->
-        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
-        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
+        <!-- قفل الشات -->
+        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات"><i class="fa-solid fa-lock-open"></i></button>
+        
+        <!-- زر الإعدادات (مصغر) -->
+        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="الإعدادات"><i class="fa-solid fa-gear"></i></button>
+        
+        <!-- 🌟 زر المميزات الجديد -->
+        <button onclick="openFeatures()" style="padding: 4px 12px; font-size: 0.8rem; background: var(--btn-gradient);"><i class="fa-solid fa-sparkles"></i> المميزات</button>
       </div>
     </div>
 
@@ -1306,6 +1382,193 @@
             toggleTheaterMode();
         }
     });
+
+    // ==========================================
+    // 🌟 نظام جدولنا وشجرة الذكريات (Lazy Loaded)
+    // ==========================================
+    let isScheduleLoaded = false;
+    let globalSchedule = [];
+    let currentActiveRatingId = null;
+
+    // 1. فتح المميزات وتحميل البيانات لأول مرة فقط
+    function openFeatures() {
+        document.getElementById('featuresModal').style.display = 'flex';
+        if (!isScheduleLoaded) {
+            isScheduleLoaded = true;
+            db.ref('schedule').on('value', snap => {
+                globalSchedule = [];
+                snap.forEach(child => { globalSchedule.push({ key: child.key, ...child.val() }); });
+                renderSchedule();
+                renderTree();
+            });
+        }
+    }
+
+    // 2. إضافة عمل جديد
+    function addScheduleItem() {
+        if(!currentUser) return;
+        const input = document.getElementById('newAnimeInput');
+        const title = input.value.trim();
+        if(title) {
+            db.ref('schedule').push({ title: title, completed: false, addedBy: currentUser.name, timestamp: Date.now() });
+            input.value = "";
+        }
+    }
+
+    // 3. بناء الجدول (الأعمال المعلقة فوق، والمكتملة تحت)
+    function renderSchedule() {
+        const container = document.getElementById('scheduleContainer');
+        if(!container) return;
+        
+        // فرز: المعلق أولاً، ثم المكتمل. وداخل كل قسم الأحدث أولاً
+        const sorted = [...globalSchedule].sort((a, b) => {
+            if (a.completed === b.completed) return b.timestamp - a.timestamp;
+            return a.completed ? 1 : -1;
+        });
+
+        let html = "";
+        sorted.forEach(item => {
+            if (!item.completed) {
+                // عمل قيد المشاهدة (زر إكمال + زر حذف)
+                html += `
+                <div class="schedule-item">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:bold; font-size:0.95rem;">${item.title}</span>
+                        <span style="font-size:0.65rem; color:#94a3b8;">بواسطة: ${item.addedBy}</span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            } else {
+                // عمل مكتمل (تقييم جماعي + زر حذف)
+                html += `
+                <div class="schedule-item completed">
+                    <span style="font-weight:bold; font-size:0.9rem; text-decoration: line-through;">${item.title}</span>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-star"></i> تقييم</button>
+                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 4px 8px; font-size: 0.75rem; background: transparent; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }
+        });
+        container.innerHTML = html || "<span style='text-align:center; color:gray;'>لا توجد أعمال بعد!</span>";
+    }
+
+    // 4. إكمال العمل (يسجل تاريخ الإنجاز)
+    function markCompleted(key) {
+        db.ref(`schedule/${key}`).update({ completed: true, completedDate: Date.now() });
+    }
+
+    // ==========================================
+    // ⭐ نظام التقييم الجماعي اللحظي
+    // ==========================================
+    function triggerGlobalRating(id, title) {
+        // نرسل إشارة للجميع ببدء التقييم
+        db.ref('globalEvents/activeRating').set({ id: id, title: title, timestamp: Date.now() });
+    }
+
+    // مراقب التقييم (يعمل دائماً في الخلفية ليلتقط الإشارة)
+    db.ref('globalEvents/activeRating').on('value', snap => {
+        const data = snap.val();
+        // تأكد من أن الحدث جديد (خلال آخر 30 ثانية) لكي لا يظهر فجأة عند الدخول
+        if (data && (Date.now() - data.timestamp < 30000)) {
+            currentActiveRatingId = data.id;
+            document.getElementById('ratingTitle').innerText = data.title;
+            document.getElementById('ratingModal').style.display = 'flex';
+        }
+    });
+
+    function submitRating(stars) {
+        if(!currentUser || !currentActiveRatingId) return;
+        // حفظ التقييم باسم المستخدم
+        db.ref(`schedule/${currentActiveRatingId}/ratings/${currentUser.name}`).set(stars);
+        document.getElementById('ratingModal').style.display = 'none';
+        sendSystemMessage(`قيم ${currentUser.name} العمل بـ ${stars} نجوم ⭐`);
+    }
+
+    // ==========================================
+    // 🌳 نظام شجرة الذكريات
+    // ==========================================
+    function openTreeMode() {
+        document.getElementById('featuresModal').style.display = 'none';
+        document.getElementById('treeModal').style.display = 'flex';
+    }
+
+    function renderTree() {
+        const container = document.getElementById('treeContainer');
+        if(!container) return;
+        
+        // استخراج الأعمال المكتملة فقط وترتيبها حسب تاريخ الإنجاز (الأقدم للأحدث لبناء شجرة)
+        const completedItems = globalSchedule.filter(i => i.completed).sort((a, b) => (a.completedDate || 0) - (b.completedDate || 0));
+        
+        let html = "";
+        completedItems.forEach(item => {
+            const dateStr = item.completedDate ? new Date(item.completedDate).toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' }) : 'تاريخ غير معروف';
+            
+            // استخراج التقييمات كنص جميل
+            let ratingsHtml = "";
+            if (item.ratings) {
+                Object.keys(item.ratings).forEach(name => {
+                    ratingsHtml += `<span style="font-size:0.75rem; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:8px; margin-left:4px;">${name}: ${item.ratings[name]}⭐</span>`;
+                });
+            } else {
+                ratingsHtml = "<span style='font-size:0.7rem; color:gray;'>لم يتم التقييم بعد</span>";
+            }
+
+            // عرض الملصق إن وجد
+            let stickerHtml = item.sticker ? `<img src="${item.sticker}" class="memory-sticker" title="تغيير الملصق" onclick="addMemorySticker('${item.key}')">` : '';
+
+            html += `
+            <div class="memory-card">
+                ${stickerHtml}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                    <div class="memory-date">${dateStr} <i class="fa-solid fa-pen" onclick="editMemoryDate('${item.key}')" style="cursor:pointer; font-size:0.65rem; margin-right:5px;" title="تعديل التاريخ"></i></div>
+                    <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding:2px 6px; font-size:0.65rem; background:transparent; color:#94a3b8; border:none; box-shadow:none;"><i class="fa-solid fa-pen-to-square"></i> تعديل الاسم</button>
+                </div>
+                <h4 style="margin-bottom: 8px; color: var(--text-main); font-weight:800;">${item.title}</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">${ratingsHtml}</div>
+                <div style="display:flex; gap:6px;">
+                    <button onclick="addMemorySticker('${item.key}')" style="padding: 4px 8px; font-size: 0.7rem; background: rgba(255,255,255,0.1); border: 1px dashed var(--accent); box-shadow:none;"><i class="fa-solid fa-note-sticky"></i> الملصق</button>
+                    <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 4px 8px; font-size: 0.7rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; box-shadow:none;"><i class="fa-solid fa-star"></i> إعادة التقييم</button>
+                </div>
+            </div>`;
+        });
+        
+        container.innerHTML = html || "<span style='text-align:center; color:gray; margin-top:20px;'>لم تكملوا أي عمل بعد لبناء الشجرة 🌱</span>";
+    }
+
+    // إضافة ملصق للشجرة
+    function addMemorySticker(key) {
+        // بما أن النظام سريع، سنطلب رابط صورة أو نستخدم حيلة سريعة
+        const imgUrl = prompt("أدخل رابط الصورة/الملصق لتثبيته كذكرى هنا 📸\n(يمكنك نسخ رابط أي صورة من الشات ولصقه هنا):");
+        if(imgUrl) {
+            db.ref(`schedule/${key}`).update({ sticker: imgUrl });
+        }
+    }
+
+    // تعديل اسم العمل
+    function editScheduleTitle(key, currentTitle) {
+        const newTitle = prompt("تعديل اسم العمل ✏️:", currentTitle);
+        if (newTitle && newTitle.trim()) {
+            db.ref(`schedule/${key}`).update({ title: newTitle.trim() });
+        }
+    }
+
+    // تعديل تاريخ الذكرى بالشجرة
+    function editMemoryDate(key) {
+        const newDateStr = prompt("أدخل التاريخ الجديد بفرمتة (YYYY-MM-DD) 📅:");
+        if (newDateStr) {
+            const timestamp = new Date(newDateStr).getTime();
+            if (!isNaN(timestamp)) {
+                db.ref(`schedule/${key}`).update({ completedDate: timestamp });
+            } else {
+                alert("تنسيق التاريخ غير صحيح، يرجى كتابته مثل: 2026-08-12");
+            }
+        }
+    }
 
   </script>
 </body>
