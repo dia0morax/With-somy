@@ -176,7 +176,39 @@
 
     .delete-btn-msg { color: #f87171; opacity: 0.6; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 0 6px; }
     .delete-btn-msg:hover { opacity: 1; transform: scale(1.3); color: #ef4444; }
-  </style>
+    
+ /* ======================================= */
+    /* 🎬 ستايلات وضع السينما (Theater Mode) 🎬 */
+    /* ======================================= */
+    .video-container, .content-area { transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+    
+    /* تعتيم الخلفية وإخفاء المشتتات */
+    body.theater-mode { background: #000 !important; }
+    body.theater-mode::before, body.theater-mode::after { opacity: 0.05 !important; }
+    
+    /* إخفاء الشريط العلوي (المتصلين وأدوات القفز) للتركيز التام */
+    body.theater-mode .content-area > .status-bar:first-child { display: none !important; }
+    
+    /* تعتيم الشات قليلاً لكي لا يسرق النظر من الفيديو */
+    body.theater-mode .status-bar, body.theater-mode .chat-container { background: rgba(10, 10, 10, 0.8) !important; border-color: rgba(255,255,255,0.03) !important; }
+    
+    /* 📱 وضع الهاتف (طولي) - تكبير الفيديو للأسفل */
+    @media (orientation: portrait) {
+        body.theater-mode .video-container { height: 55dvh !important; min-height: 55dvh !important; border-bottom: 2px solid var(--accent); }
+        body.theater-mode .content-area { padding: 8px !important; }
+    }
+    
+    /* 💻 وضع العرض (أفقي/لابتوب) - قسم الشاشة لجزئين (الفيديو يمين والشات يسار) */
+    @media (orientation: landscape) {
+        body.theater-mode { flex-direction: row !important; }
+        body.theater-mode .video-container { width: 75vw !important; height: 100dvh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: 20px 0 50px rgba(0,0,0,0.9); z-index: 200; }
+        body.theater-mode .content-area { width: 25vw !important; height: 100dvh !important; padding: 10px !important; z-index: 100; }
+        body.theater-mode .msg-content { padding: 8px 12px; font-size: 0.8rem; }
+        body.theater-mode .chat-img, body.theater-mode .chat-sticker { max-width: 100px; }
+        body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
+    }
+
+ </style>
 
 </head>
 <body>
@@ -279,8 +311,16 @@
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
       <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
       <div style="display: flex; gap: 6px;">
+        <!-- 🎬 زر وضع السينما -->
+        <button id="theaterBtn" onclick="toggleTheaterMode()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #a855f7; box-shadow: none;" title="وضع السينما (توسيع الفيديو وتخفيف الإضاءة)"><i class="fa-solid fa-film"></i></button>
+
         <!-- زر المزامنة الإجبارية للجميع (Beacon) -->
         <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية (إجبار الجميع على وقتك الحالي)"><i class="fa-solid fa-tower-broadcast"></i></button>
+        
+        <!-- زر قفل الشات -->
+        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
+        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-solid fa-sliders"></i> إعدادات</button>
+      </div>
         
         <!-- زر قفل الشات -->
         <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات لآخر رسالة"><i class="fa-solid fa-lock-open"></i></button>
@@ -1224,6 +1264,51 @@
         closeReactionMenu();
       }
     }
+
+    // ==========================================
+    // 🎬 نظام وضع السينما والتكبير الذكي
+    // ==========================================
+    function toggleTheaterMode() {
+        const body = document.body;
+        body.classList.toggle('theater-mode');
+        
+        const btn = document.getElementById('theaterBtn');
+        if (body.classList.contains('theater-mode')) {
+            // تفعيل السينما
+            btn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+            btn.style.color = '#f59e0b';
+            btn.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            btn.style.background = 'rgba(245, 158, 11, 0.15)';
+            
+            // الدخول في وضع ملء الشاشة (Fullscreen) إن أمكن
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            }
+        } else {
+            // الخروج من السينما
+            btn.innerHTML = '<i class="fa-solid fa-film"></i>';
+            btn.style.color = '#a855f7';
+            btn.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+            btn.style.background = 'rgba(168, 85, 247, 0.15)';
+            
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+
+        // إجبار الشات على النزول لآخر رسالة بعد تغير أبعاد الشاشة (تأخير بسيط ليتمكن الـ CSS من أخذ مكانه)
+        setTimeout(() => {
+            const msgDiv = document.getElementById('messages');
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+        }, 650);
+    }
+
+    // مراقب ذكي: إذا قام المستخدم بالخروج من وضع الشاشة الكاملة عبر زر (Esc) في الكيبورد، نقوم بإلغاء وضع السينما تلقائياً
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && document.body.classList.contains('theater-mode')) {
+            toggleTheaterMode();
+        }
+    });
 
   </script>
 </body>
