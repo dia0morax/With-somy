@@ -98,8 +98,8 @@
 
     #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
     
-    /* أنيميشن الرسائل مع تقنية (Content Visibility) لإيقاف معالجة الـ GIFs غير المرئية */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; content-visibility: auto; contain-intrinsic-size: 60px; }
+    /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
@@ -111,9 +111,9 @@
 
     .msg-name { font-weight: 800; font-size: 0.75rem; margin-bottom: 6px; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; }
     
-    .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); content-visibility: auto; contain-intrinsic-size: 180px; }
+    .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     .chat-img:hover { transform: scale(1.03); }
-    .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); content-visibility: auto; contain-intrinsic-size: 110px; }
+    .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .chat-sticker:hover { transform: scale(1.15) rotate(5deg); }
     /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
     .msg-item[style*="row"] .msg-content.sticker-bg, 
@@ -677,9 +677,9 @@
           
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
           if(m.img && m.isSticker) {
-              contentHtml += `<img src="${m.img}" class="chat-sticker" loading="lazy" decoding="async" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
           } else if(m.img) {
-              contentHtml += `<img src="${m.img}" class="chat-img" loading="lazy" decoding="async" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
           const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن
@@ -949,16 +949,11 @@
       }
     }
 
-    // إرسال الملصق بدون تجميد الشاشة (Non-Blocking UI)
     function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
-      
-      toggleStickers(); // إغلاق اللوحة فوراً لتبدو الاستجابة لحظية
-      
-      // تأخير الإرسال قليلاً لكي لا يختنق المعالج وتتجمد الشاشة
-      setTimeout(() => {
-          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
-      }, 50);
+      // تمت إضافة الجنس (gender) هنا
+      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
+      toggleStickers();
     }
 
     function deleteSticker(sKey) {
@@ -992,7 +987,7 @@
          if(isEditingStickers) {
              container.innerHTML += `
              <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
-                <img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: contain; content-visibility: auto;">
+                <img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
                 <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
                 <div style="display:flex; width: 100%; gap: 2px; margin-top: 2px;">
                   <button onclick="moveSticker('${s.key}', ${orderNum}, 'up')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">◀</button>
@@ -1000,7 +995,7 @@
                 </div>
              </div>`;
          } else {
-             container.innerHTML += `<img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); content-visibility: auto;" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
+             container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
          }
       });
     }
