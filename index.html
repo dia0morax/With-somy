@@ -665,24 +665,24 @@
       const msgDiv = document.getElementById('messages');
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
       
-      msgDiv.innerHTML = "";
+      let htmlBuilder = ""; // 1. متغير لتجميع النص بالكامل في الذاكرة أولاً
       
       snap.forEach(c => {
         const m = c.val();
         
         if(m.isSystem) {
-          msgDiv.innerHTML += `<div class="msg-system">${m.text}</div>`;
+          htmlBuilder += `<div class="msg-system">${m.text}</div>`; // 2. استبدال msgDiv.innerHTML بـ htmlBuilder
         } else {
           const isMine = currentUser && m.name === currentUser.name;
           
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
           if(m.img && m.isSticker) {
-              contentHtml += `<img src="${m.img}" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" loading="lazy" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
           } else if(m.img) {
-              contentHtml += `<img src="${m.img}" class="chat-img" onclick="openImageModal('${m.img}')">`;
+              contentHtml += `<img src="${m.img}" loading="lazy" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
           
-          const isStickerMsg = m.img && m.isSticker; // للتحقق من نوع الأنيميشن
+          const isStickerMsg = m.img && m.isSticker;
           const isFemale = m.gender ? m.gender === 'female' : isMine;
           const flexDir = isFemale ? 'row-reverse' : 'row';
           const floatDir = isFemale ? 'left' : 'right';
@@ -691,10 +691,10 @@
           const msgKey = c.key;
           const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
-          // إضافة كلاس `is-sticker` لتفعيل أنيميشن السقوط 
-          msgDiv.innerHTML += `
+          // 3. نجمع الـ HTML داخل المتغير بدلاً من ضخه للشاشة فوراً
+          htmlBuilder += `
             <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
-              <img src="${m.avatar}" class="msg-avatar" />
+              <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
               <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" style="width: 100%; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'};">
                 <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
                 <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
@@ -703,6 +703,8 @@
           `;
         }
       }); 
+
+      msgDiv.innerHTML = htmlBuilder; // 4. نضخ النتيجة النهائية دفعة واحدة بعد نهاية التكرار!
 
       // السطر السحري: إذا كان المستخدم في الأسفل، أو إذا كان "قفل الشات" مفعلاً، أجبر الرسائل على النزول لآخر خط
       if (isScrolledToBottom || window.isChatLocked) {
@@ -951,9 +953,15 @@
 
     function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
-      // تمت إضافة الجنس (gender) هنا
-      db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
-      toggleStickers();
+      
+      toggleStickers(); // 1. إغلاق اللوحة فوراً لتبدو الاستجابة لحظية
+      
+      // 2. إرسال البيانات بعد أن ترتاح واجهة المستخدم لتجنب التجمد
+      requestAnimationFrame(() => {
+          setTimeout(() => {
+              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
+          }, 10);
+      });
     }
 
     function deleteSticker(sKey) {
@@ -976,18 +984,19 @@
     function renderStickers() {
       const container = document.getElementById('stickersContainer');
       if(!container) return;
-      container.innerHTML = "";
       if(globalStickers.length === 0) {
-          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 4; text-align: center;">لا توجد ملصقات، أضف ملصقاتك الآن!</span>`;
+          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">لا توجد ملصقات، أضف ملصقاتك الآن!</span>`;
           return;
       }
+      
+      let stickersHtml = ""; // تجميع الكود لسرعة البرق
       
       globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
          if(isEditingStickers) {
-             container.innerHTML += `
+             stickersHtml += `
              <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
-                <img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
+                <img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
                 <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
                 <div style="display:flex; width: 100%; gap: 2px; margin-top: 2px;">
                   <button onclick="moveSticker('${s.key}', ${orderNum}, 'up')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">◀</button>
@@ -995,9 +1004,10 @@
                 </div>
              </div>`;
          } else {
-             container.innerHTML += `<img src="${s.img}" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
+             stickersHtml += `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
          }
       });
+      container.innerHTML = stickersHtml; // ضخ الصور دفعة واحدة
     }
 
     // ==========================================
