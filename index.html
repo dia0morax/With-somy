@@ -274,12 +274,12 @@
     </div>
   </div>
 
-  <!-- نافذة عرض الصور المصغرة بشكل شفاف وجميل (الطلب الثاني) -->
-  <div id="imageModal" class="modal-overlay" style="display: none; z-index: 2000; flex-direction: column;" onclick="this.style.display='none'">
-    <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; max-width: 90%; max-height: 80vh; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);">
-      <img id="expandedImg" src="" style="max-width: 100%; max-height: 70vh; border-radius: 8px; display: block;" />
+  <!-- نافذة عرض الصور العالية الجودة فوق شجرة الذكريات مع الزوم -->
+  <div id="imageModal" class="modal-overlay" style="display: none; z-index: 4000; flex-direction: column;" onclick="this.style.display='none'">
+    <div style="background: rgba(0,0,0,0.85); padding: 10px; border-radius: 16px; max-width: 95vw; max-height: 85vh; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.15); overflow: auto; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation()">
+      <img id="expandedImg" src="" style="max-width: 100%; max-height: 80vh; border-radius: 12px; display: block; object-fit: contain; touch-action: pinch-zoom; cursor: zoom-in;" onclick="this.style.transform = this.style.transform === 'scale(2)' ? 'scale(1)' : 'scale(2)'; this.style.transition = '0.3s';" />
     </div>
-    <span style="color: #fff; margin-top: 10px; font-size: 0.9rem;">انقر في أي مكان للإغلاق</span>
+    <span style="color: #fff; margin-top: 12px; font-size: 0.85rem; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px;">انقر خارج الصورة للإغلاق | انقر على الصورة للزوم 🔍</span>
   </div>
 
   <!-- لوحة الملصقات المحفوظة الدائمة (بدون إيموجيز) -->
@@ -1526,6 +1526,7 @@
         document.getElementById('treeModal').style.display = 'flex';
     }
 
+    // 🌳 نظام شجرة الذكريات (صورة مصغرة للكرت + عالية الجودة للأرشيف المكبر)
     function renderTree() {
         const container = document.getElementById('treeContainer');
         if(!container) return;
@@ -1545,13 +1546,16 @@
                 ratingsHtml = "<span style='font-size:0.7rem; color:gray;'>لم يتم التقييم بعد</span>";
             }
 
+            // استخدام الصورة المصغرة للكرت والمضيئة العالية الجودة عند الضغط
+            const fullDoddy = item.imgDoddyFull || item.imgDoddy;
             const imgDoddy = item.imgDoddy 
-                ? `<img src="${item.imgDoddy}" loading="lazy" onclick="openImageModal('${item.imgDoddy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
+                ? `<img src="${item.imgDoddy}" loading="lazy" onclick="openImageModal('${fullDoddy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
                    <div onclick="triggerMemoryUpload('${item.key}', 'imgDoddy')" style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.7); padding:4px 6px; border-radius:50%; color:#fff; font-size:0.6rem; cursor:pointer;" title="تغيير الصورة"><i class="fa-solid fa-camera"></i></div>` 
                 : `<div onclick="triggerMemoryUpload('${item.key}', 'imgDoddy')" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.65rem; color:rgba(255,255,255,0.5); cursor:pointer;">أرسل صورة<br>ذكرياتك</div>`;
             
+            const fullSomy = item.imgSomyFull || item.imgSomy;
             const imgSomy = item.imgSomy 
-                ? `<img src="${item.imgSomy}" loading="lazy" onclick="openImageModal('${item.imgSomy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
+                ? `<img src="${item.imgSomy}" loading="lazy" onclick="openImageModal('${fullSomy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
                    <div onclick="triggerMemoryUpload('${item.key}', 'imgSomy')" style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.7); padding:4px 6px; border-radius:50%; color:#fff; font-size:0.6rem; cursor:pointer;" title="تغيير الصورة"><i class="fa-solid fa-camera"></i></div>` 
                 : `<div onclick="triggerMemoryUpload('${item.key}', 'imgSomy')" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.65rem; color:rgba(255,255,255,0.5); cursor:pointer;">أرسل صورة<br>ذكرياتك</div>`;
 
@@ -1588,7 +1592,7 @@
         container.innerHTML = html || "<span style='text-align:center; color:gray; margin-top:20px;'>لم تكملوا أي عمل بعد لبناء الشجرة 🌱</span>";
     }
 
-    // 📸 معالجة رفع صور الاستوديو المباشرة وضغطها
+    // 📸 معالجة الرفع المزدوج: صورة أصلية HD للمكبر وصورة خفيفة للبطاقة
     let currentMemoryKey = null;
     let currentMemoryField = null;
 
@@ -1605,20 +1609,36 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
+            const originalUrl = e.target.result;
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300;
-                const scaleSize = MAX_WIDTH / img.width;
-                canvas.width = MAX_WIDTH;
-                canvas.height = img.height * scaleSize;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // 1. إنشاء نسخة مصغرة وسريعة جداً للبطاقات (Thumb)
+                const canvasThumb = document.createElement('canvas');
+                const thumbWidth = 200;
+                const scaleThumb = thumbWidth / img.width;
+                canvasThumb.width = thumbWidth;
+                canvasThumb.height = img.height * scaleThumb;
+                const ctxThumb = canvasThumb.getContext('2d');
+                ctxThumb.drawImage(img, 0, 0, canvasThumb.width, canvasThumb.height);
+                const thumbDataUrl = canvasThumb.toDataURL('image/webp', 0.6);
 
-                const compressedDataUrl = canvas.toDataURL('image/webp', 0.7); 
-                db.ref(`schedule/${currentMemoryKey}`).update({ [currentMemoryField]: compressedDataUrl });
+                // 2. إنشاء نسخة عالية الجودة 100% للأرشيف المكبر
+                const canvasFull = document.createElement('canvas');
+                const maxFullWidth = 1280; // جودة HD عالية جداً للأرشيف
+                const scaleFull = Math.min(1, maxFullWidth / img.width);
+                canvasFull.width = img.width * scaleFull;
+                canvasFull.height = img.height * scaleFull;
+                const ctxFull = canvasFull.getContext('2d');
+                ctxFull.drawImage(img, 0, 0, canvasFull.width, canvasFull.height);
+                const fullDataUrl = canvasFull.toDataURL('image/jpeg', 0.92);
+
+                // حفظ النسختين
+                db.ref(`schedule/${currentMemoryKey}`).update({ 
+                    [currentMemoryField]: thumbDataUrl,
+                    [currentMemoryField + 'Full']: fullDataUrl 
+                });
             };
-            img.src = e.target.result;
+            img.src = originalUrl;
         };
         reader.readAsDataURL(file);
         input.value = "";
