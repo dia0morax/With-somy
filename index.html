@@ -222,7 +222,10 @@
 
     /* 🌟 ستايلات جدولنا وشجرة الذكريات (Timeline) */
     .schedule-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; transition: 0.3s; }
-    .schedule-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
+     /* 🏆 ستايل العمل المثبت (المشاهدة التالية) */
+    .schedule-item.pinned-next { border: 2px solid #f59e0b !important; background: rgba(245, 158, 11, 0.1) !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.25); position: relative; }
+    .pinned-badge { background: #f59e0b; color: #000; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; width: fit-content; }
+   .schedule-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
     .schedule-item.completed { opacity: 0.7; border-color: #10b981; }
     
     .timeline-container { border-right: 2px solid var(--accent); padding-right: 18px; margin-right: 10px; margin-top: 15px; display: flex; flex-direction: column; gap: 20px; }
@@ -1419,26 +1422,39 @@
         }
     }
 
-    // 3. بناء الجدول (مخفف وذكي للعمل على المدى الطويل)
+    // 3. بناء الجدول (مع إمكانية تثبيت "المشاهدة التالية" بالأعلى والذهبي)
     function renderSchedule() {
         const container = document.getElementById('scheduleContainer');
         if(!container) return;
         
-        const incomplete = globalSchedule.filter(i => !i.completed).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        const completed = globalSchedule.filter(i => i.completed).sort((a, b) => (b.completedDate || 0) - (a.completedDate || 0)); 
-        
+        // فرز العناصر: المثبت كـ "مشاهدة تالية" يأتي بأول القائمة فوراً، ثم المعلقة، ثم المكتملة
+        const sorted = [...globalSchedule].sort((a, b) => {
+            if (a.completed !== b.completed) return a.completed ? 1 : -1;
+            if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1; // المثبت فوق دائماً
+            return (a.timestamp || 0) - (b.timestamp || 0); // الأقدم فوق والجديد تحت
+        });
+
+        const incomplete = sorted.filter(i => !i.completed);
+        const completed = sorted.filter(i => i.completed);
         const recentCompleted = completed.slice(0, 10);
 
         let html = "";
         
         incomplete.forEach(item => {
+            const isPinned = item.isPinned || false;
+            const pinnedClass = isPinned ? 'pinned-next' : '';
+            const pinIconColor = isPinned ? '#f59e0b' : '#94a3b8';
+            const badgeHtml = isPinned ? `<div class="pinned-badge"><i class="fa-solid fa-star"></i> المشاهدة التالية</div>` : '';
+
             html += `
-            <div class="schedule-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+            <div class="schedule-item ${pinnedClass}" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                ${badgeHtml}
                 <div style="display:flex; justify-content: space-between; align-items: center;">
                     <div style="display:flex; flex-direction:column;">
                         <span style="font-weight:bold; font-size:0.95rem;">${item.title}</span>
                     </div>
                     <div style="display:flex; gap:6px;">
+                        <button onclick="togglePinSchedule('${item.key}', ${isPinned})" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid ${pinIconColor}; color: ${pinIconColor}; box-shadow:none;" title="${isPinned ? 'إلغاء التثبيت' : 'تثبيت كـ المشاهدة التالية'}"><i class="fa-solid fa-thumbtack"></i></button>
                         <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;" title="إنهاء وإرسال للذكريات"><i class="fa-solid fa-check"></i></button>
                         <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
@@ -1471,6 +1487,17 @@
         }
 
         container.innerHTML = html || "<span style='text-align:center; color:gray;'>الجدول فارغ!</span>";
+    }
+
+    // 📌 دالة تثبيت وإلغاء تثبيت العمل كـ "مشاهدة تالية"
+    function togglePinSchedule(key, currentStatus) {
+        // إزالة التثبيت عن أي عمل آخر أولاً لتكون "المشاهدة التالية" واحدة فقط
+        if (!currentStatus) {
+            globalSchedule.forEach(item => {
+                if(item.isPinned) db.ref(`schedule/${item.key}`).update({ isPinned: false });
+            });
+        }
+        db.ref(`schedule/${key}`).update({ isPinned: !currentStatus });
     }
 
     function updateScheduleField(key, field, value) {
