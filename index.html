@@ -1161,8 +1161,9 @@
       renderStickers();
     }
 
-    // ✂️ محرك قص الـ GIF والصور بمربع ثابت $1:1$ وزوم احترافي
+    // ✂️ محرك تحديد جزء الـ GIF المتحرك والصور العادية
     let cropperInstance = null;
+    let currentUploadFile = null;
 
     function uploadSticker(input) {
         const file = input.files[0];
@@ -1174,6 +1175,8 @@
             return;
         }
 
+        currentUploadFile = file;
+
         const reader = new FileReader();
         reader.onload = function (e) {
             const cropImg = document.getElementById('cropTargetImg');
@@ -1182,18 +1185,18 @@
 
             if (cropperInstance) cropperInstance.destroy();
 
-            // تهيئة مربع القص الثابت بنسبة 1:1 مع التعتيم والزوم
+            // نافذة قص بمربع ثابت 1:1 تتيح الزوم والسحب
             cropperInstance = new Cropper(cropImg, {
-                aspectRatio: 1, // مربع ثابت 1:1
-                viewMode: 1, // تعتيم الخافية الخارجية
-                dragMode: 'move', // السماح بسحب الصورة داخل المربع
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
                 autoCropArea: 1,
                 restore: false,
                 guides: true,
                 center: true,
                 highlight: false,
-                cropBoxMovable: false, // تثبيت المربع
-                cropBoxResizable: false, // تثبيت مقاس المربع
+                cropBoxMovable: false,
+                cropBoxResizable: false,
                 toggleDragModeOnDblclick: false
             });
         };
@@ -1202,20 +1205,39 @@
     }
 
     function confirmCropAndSave() {
-        if (!cropperInstance) return;
+        if (!cropperInstance || !currentUploadFile) return;
 
-        // استخراج المربع المقصوص بأبعاد متناسقة 250x250
-        const canvas = cropperInstance.getCroppedCanvas({
-            width: 250,
-            height: 250,
-            imageSmoothingEnabled: true,
-            imageSmoothingQuality: 'high'
-        });
+        const cropData = cropperInstance.getData(true); // الإحداثيات والزوم
+        const canvasData = cropperInstance.getCanvasData(); // أبعاد الصورة في العرض
 
-        const croppedDataUrl = canvas.toDataURL('image/webp', 0.85);
+        // حساب نسبة التكبير والإزاحة المئوية
+        const zoomX = (cropData.x / canvasData.naturalWidth) * 100;
+        const zoomY = (cropData.y / canvasData.naturalHeight) * 100;
+        const scaleWidth = (canvasData.naturalWidth / cropData.width) * 100;
 
-        // حفظ الصورة المقصوصة كملصق مربع متناسق في قاعدة البيانات
-        db.ref('savedStickers').push({ img: croppedDataUrl, order: Date.now() });
+        if (currentUploadFile.type === 'image/gif') {
+            // 🌟 للـ GIF: نحفظ الملف المتحرك الأصلي + أبعاد الجزء المختار (CSS Position)
+            const readerGif = new FileReader();
+            readerGif.onload = function(e) {
+                db.ref('savedStickers').push({ 
+                    img: e.target.result, 
+                    isGif: true,
+                    cropStyle: `background-image: url('${e.target.result}'); background-size: ${scaleWidth}%; background-position: ${zoomX}% ${zoomY}%;`,
+                    order: Date.now() 
+                });
+            };
+            readerGif.readAsDataURL(currentUploadFile);
+        } else {
+            // 📸 للصورة العادية: نقوم بقصها كالمعتاد
+            const canvas = cropperInstance.getCroppedCanvas({
+                width: 250,
+                height: 250,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+            const croppedDataUrl = canvas.toDataURL('image/webp', 0.85);
+            db.ref('savedStickers').push({ img: croppedDataUrl, order: Date.now() });
+        }
 
         closeCropModal();
     }
@@ -1225,25 +1247,26 @@
             cropperInstance.destroy();
             cropperInstance = null;
         }
+        currentUploadFile = null;
         document.getElementById('cropModal').style.display = 'none';
     }
 
-    // دالة حذف كل الملصقات
-    function deleteAllStickers() {
-      if(confirm("هل أنت متأكد من حذف جميع الملصقات المحفوظة دفعة واحدة؟ ⚠️")) {
-        db.ref('savedStickers').remove();
-      }
-    }
-
-    function sendSavedSticker(imgSrc) {
+    function sendSavedSticker(imgSrc, cropStyle) {
       if(isEditingStickers) return;
+      toggleStickers();
       
-      toggleStickers(); // 1. إغلاق اللوحة فوراً لتبدو الاستجابة لحظية
-      
-      // 2. إرسال البيانات بعد أن ترتاح واجهة المستخدم لتجنب التجمد
       requestAnimationFrame(() => {
           setTimeout(() => {
-              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
+              db.ref('chat').push({ 
+                  name: currentUser.name, 
+                  avatar: currentUser.avatar, 
+                  gender: currentUser.gender || 'male', 
+                  img: imgSrc, 
+                  cropStyle: cropStyle || null,
+                  isSticker: true, 
+                  time: Date.now(), 
+                  isSystem: false 
+              });
           }, 10);
       });
     }
@@ -1273,25 +1296,27 @@
           return;
       }
       
-      let stickersHtml = ""; // تجميع الكود لسرعة البرق
+      let stickersHtml = "";
       
       globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
+         
+         // إذا كان GIF مقصوص نستخدم أسلوب الـ background-position لمنح الحركة بالجزء المحدد
+         const imgElement = s.isGif && s.cropStyle
+            ? `<div onclick="sendSavedSticker('${s.img}', '${s.cropStyle.replace(/'/g, "\\'")}')" style="width: 100%; aspect-ratio: 1; border-radius: 8px; cursor: pointer; ${s.cropStyle}"></div>`
+            : `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
+
          if(isEditingStickers) {
              stickersHtml += `
              <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
-                <img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: contain;">
+                ${imgElement}
                 <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
-                <div style="display:flex; width: 100%; gap: 2px; margin-top: 2px;">
-                  <button onclick="moveSticker('${s.key}', ${orderNum}, 'up')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">◀</button>
-                  <button onclick="moveSticker('${s.key}', ${orderNum}, 'down')" style="flex:1; padding: 2px; font-size:0.7rem; background:#334155; border-radius: 4px;">▶</button>
-                </div>
              </div>`;
          } else {
-             stickersHtml += `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="sendSavedSticker('${s.img}')" title="إرسال">`;
+             stickersHtml += imgElement;
          }
       });
-      container.innerHTML = stickersHtml; // ضخ الصور دفعة واحدة
+      container.innerHTML = stickersHtml;
     }
 
     // ==========================================
