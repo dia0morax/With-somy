@@ -1078,27 +1078,30 @@
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => { typeRef.remove(); }, 1500);
 
-      // 2. تشغيل الاقتراحات الذكية للملصقات (النظام الدلالي)
+      // 2. تشغيل الاقتراحات الذكية للملصقات (للكلمة المفردة فقط وبدون مسافات)
       const input = document.getElementById('messageInput');
-      const text = input.value.trim();
-      const lastWord = text.split(' ').pop(); // أخذ الكلمة الحالية
+      if (!input) return;
+      
+      const rawText = input.value; // النص الأصلي لمعرفة وجود المساحات
       const suggestBox = document.getElementById('stickerSuggestions');
       if (!suggestBox) return;
 
-      if (lastWord.length >= 2) { 
-          // جلب كل الكلمات المرادفة للكلمة التي يكتبها الآن
-          const searchTags = getExpandedTags(lastWord);
+      // شرط ذكي: الاقتراح يظهر فقط إذا كانت كلمة واحدة بدون مسافات وأطول من حرفين
+      const words = rawText.trim().split(/\s+/);
+      const hasSpace = rawText.includes(' ');
+
+      if (words.length === 1 && !hasSpace && words[0].length >= 2) { 
+          const currentWord = words[0];
+          const searchTags = getExpandedTags(currentWord);
           
           const matched = globalStickers.filter(s => {
-              if(!s.tag) return false;
+              if (!s.tag) return false;
               const normTag = normalizeArabic(s.tag);
-              // التحقق: هل تاج الملصق يطابق أي كلمة من كلمات عائلة المشاعر؟
               return searchTags.some(searchTag => searchTag && (normTag.includes(searchTag) || searchTag.includes(normTag)));
           });
 
           if (matched.length > 0) {
               let html = '';
-              // عرض أول 5 ملصقات من عائلة المشاعر
               matched.slice(0, 5).forEach(s => {
                   html += `<img src="${s.img}" onclick="sendSuggestedSticker('${s.img}')">`;
               });
@@ -1108,16 +1111,28 @@
               suggestBox.classList.remove('active');
           }
       } else {
+          // إخفاء الاقتراحات فور إضافة مسافة أو كلمة ثانية
           suggestBox.classList.remove('active');
       }
     }
 
     function sendSuggestedSticker(imgUrl) {
-        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgUrl, isSticker: true, time: Date.now(), isSystem: false });
+        db.ref('chat').push({ 
+            name: currentUser.name, 
+            avatar: currentUser.avatar, 
+            gender: currentUser.gender || 'male', 
+            img: imgUrl, 
+            isSticker: true, 
+            time: Date.now(), 
+            isSystem: false 
+        });
         const input = document.getElementById('messageInput');
-        input.value = "";
-        input.focus();
-        document.getElementById('stickerSuggestions').classList.remove('active');
+        if (input) {
+            input.value = "";
+            input.focus();
+        }
+        const suggestBox = document.getElementById('stickerSuggestions');
+        if (suggestBox) suggestBox.classList.remove('active');
     }
 
     db.ref('typing').on('value', (snap) => {
