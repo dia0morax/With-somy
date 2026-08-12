@@ -370,6 +370,9 @@
     </div>
   </div>
 
+  <!-- زر الرفع المخفي لصور الذكريات من الاستوديو -->
+  <input type="file" id="memoryImageUploadInput" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="processMemoryImage(this)">
+
   <!-- 🌳 2. نافذة شجرة الذكريات -->
   <div id="treeModal" class="modal-overlay" style="display: none; z-index: 2001;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; max-height: 85vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
@@ -1416,59 +1419,160 @@
         }
     }
 
-    // 3. بناء الجدول (الأعمال الجديدة بالأسفل، والمكتملة بالأسفل)
+    // 3. بناء الجدول (مخفف وذكي للعمل على المدى الطويل)
     function renderSchedule() {
         const container = document.getElementById('scheduleContainer');
         if(!container) return;
         
-        // فرز: المعلق أولاً، ثم المكتمل. والجديد دائماً بالأسفل
-        const sorted = [...globalSchedule].sort((a, b) => {
-            if (a.completed === b.completed) {
-                if(a.completed) return (a.completedDate || 0) - (b.completedDate || 0);
-                return (a.timestamp || 0) - (b.timestamp || 0); // الأقدم فوق والجديد تحت
-            }
-            return a.completed ? 1 : -1;
-        });
+        // فصل الأعمال المعلقة والمكتملة
+        const incomplete = globalSchedule.filter(i => !i.completed).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        const completed = globalSchedule.filter(i => i.completed).sort((a, b) => (b.completedDate || 0) - (a.completedDate || 0)); 
+        
+        // تسريع الموقع: عرض أحدث 10 أعمال مكتملة فقط بالجدول السريع
+        const recentCompleted = completed.slice(0, 10);
 
         let html = "";
-        sorted.forEach(item => {
-            if (!item.completed) {
-                // عمل قيد المشاهدة (مع حقول الحلقة والتوقيت)
-                html += `
-                <div class="schedule-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <div style="display:flex; flex-direction:column;">
-                            <span style="font-weight:bold; font-size:0.95rem;">${item.title}</span>
-                            <span style="font-size:0.65rem; color:#94a3b8;">أضيف بواسطة: ${item.addedBy}</span>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                            <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;" title="إنهاء وإرسال للذكريات"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
-                        </div>
+        
+        // الأعمال قيد المشاهدة
+        incomplete.forEach(item => {
+            html += `
+            <div class="schedule-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:bold; font-size:0.95rem;">${item.title}</span>
                     </div>
-                    <div style="display:flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                        <input type="text" placeholder="الحلقة (مثال: 5)" value="${item.episode || ''}" onchange="updateScheduleField('${item.key}', 'episode', this.value)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
-                        <input type="text" placeholder="التوقيت (مثال: 14:20)" value="${item.time || ''}" onchange="updateScheduleField('${item.key}', 'time', this.value)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
-                    </div>
-                </div>`;
-            } else {
-                // عمل مكتمل (تختفي الحقول تلقائياً عند الإكمال)
-                html += `
-                <div class="schedule-item completed">
-                    <span style="font-weight:bold; font-size:0.9rem; text-decoration: line-through;">${item.title}</span>
                     <div style="display:flex; gap:6px;">
-                        <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-star"></i> تقييم</button>
-                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 4px 8px; font-size: 0.75rem; background: transparent; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;" title="إنهاء وإرسال للذكريات"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                </div>`;
-            }
+                </div>
+                <div style="display:flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                    <input type="text" placeholder="الحلقة (مثال: 5)" value="${item.episode || ''}" onchange="updateScheduleField('${item.key}', 'episode', this.value)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
+                    <input type="text" placeholder="التوقيت (مثال: 14:20)" value="${item.time || ''}" onchange="updateScheduleField('${item.key}', 'time', this.value)" style="flex: 1; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
+                </div>
+            </div>`;
         });
+
+        if (recentCompleted.length > 0) {
+            html += `<div style="text-align:center; color:var(--text-muted); font-size:0.75rem; margin: 10px 0;">-- أحدث الأعمال المكتملة --</div>`;
+        }
+
+        recentCompleted.forEach(item => {
+            html += `
+            <div class="schedule-item completed">
+                <span style="font-weight:bold; font-size:0.9rem; text-decoration: line-through;">${item.title}</span>
+                <div style="display:flex; gap:6px;">
+                    <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-star"></i> تقييم</button>
+                    <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 4px 8px; font-size: 0.75rem; background: transparent; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+
+        if (completed.length > 10) {
+            html += `<button onclick="openTreeMode()" style="width:100%; background:transparent; color:var(--accent); box-shadow:none; font-size:0.8rem; margin-top:5px;">عرض باقي الأعمال في الشجرة 🌳</button>`;
+        }
+
         container.innerHTML = html || "<span style='text-align:center; color:gray;'>الجدول فارغ!</span>";
     }
 
-    function updateScheduleField(key, field, value) {
-        db.ref(`schedule/${key}`).update({ [field]: value.trim() });
+    // 🌳 نظام شجرة الذكريات المطور (فتح الصورة بملء الشاشة والرفع المباشر)
+    function renderTree() {
+        const container = document.getElementById('treeContainer');
+        if(!container) return;
+        
+        const completedItems = globalSchedule.filter(i => i.completed).sort((a, b) => (a.completedDate || 0) - (b.completedDate || 0));
+        
+        let html = "";
+        completedItems.forEach(item => {
+            const dateStr = item.completedDate ? new Date(item.completedDate).toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' }) : 'تاريخ غير معروف';
+            
+            let ratingsHtml = "";
+            if (item.ratings) {
+                Object.keys(item.ratings).forEach(name => {
+                    ratingsHtml += `<span style="font-size:0.8rem; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:8px; color:#f59e0b; font-weight:bold;">${name}: ${item.ratings[name]}⭐</span>`;
+                });
+            } else {
+                ratingsHtml = "<span style='font-size:0.7rem; color:gray;'>لم يتم التقييم بعد</span>";
+            }
+
+            const imgDoddy = item.imgDoddy 
+                ? `<img src="${item.imgDoddy}" loading="lazy" onclick="openImageModal('${item.imgDoddy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
+                   <div onclick="triggerMemoryUpload('${item.key}', 'imgDoddy')" style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.7); padding:4px 6px; border-radius:50%; color:#fff; font-size:0.6rem; cursor:pointer;" title="تغيير الصورة"><i class="fa-solid fa-camera"></i></div>` 
+                : `<div onclick="triggerMemoryUpload('${item.key}', 'imgDoddy')" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.65rem; color:rgba(255,255,255,0.5); cursor:pointer;">أرسل صورة<br>ذكرياتك</div>`;
+            
+            const imgSomy = item.imgSomy 
+                ? `<img src="${item.imgSomy}" loading="lazy" onclick="openImageModal('${item.imgSomy}')" style="width:100%; height:100%; object-fit:cover; border-radius: 8px; cursor:pointer;">
+                   <div onclick="triggerMemoryUpload('${item.key}', 'imgSomy')" style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.7); padding:4px 6px; border-radius:50%; color:#fff; font-size:0.6rem; cursor:pointer;" title="تغيير الصورة"><i class="fa-solid fa-camera"></i></div>` 
+                : `<div onclick="triggerMemoryUpload('${item.key}', 'imgSomy')" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.65rem; color:rgba(255,255,255,0.5); cursor:pointer;">أرسل صورة<br>ذكرياتك</div>`;
+
+            html += `
+            <div class="memory-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <div class="memory-date">${dateStr} <i class="fa-solid fa-pen" onclick="editMemoryDate('${item.key}')" style="cursor:pointer; font-size:0.65rem; margin-right:5px; color:#94a3b8;" title="تعديل التاريخ"></i></div>
+                    <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding:2px 6px; font-size:0.7rem; background:transparent; color:#94a3b8; border:none; box-shadow:none;"><i class="fa-solid fa-pen-to-square"></i> تعديل الاسم</button>
+                </div>
+                <h4 style="margin-bottom: 12px; color: var(--text-main); font-weight:800; font-size:1.1rem;">${item.title}</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; justify-content:center;">${ratingsHtml}</div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center;">
+                    <div style="display:flex; flex-direction: column; align-items: center;">
+                        <b style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Doddy</b>
+                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(139, 92, 246, 0.4); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
+                            ${imgDoddy}
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction: column; align-items: center;">
+                        <b style="font-size: 0.85rem; color: #ec4899; margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Somy</b>
+                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(236, 72, 153, 0.4); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
+                            ${imgSomy}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; margin-top: 15px;">
+                    <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; box-shadow:none;"><i class="fa-solid fa-star"></i> إعادة التقييم</button>
+                </div>
+            </div>`;
+        });
+        
+        container.innerHTML = html || "<span style='text-align:center; color:gray; margin-top:20px;'>لم تكملوا أي عمل بعد لبناء الشجرة 🌱</span>";
+    }
+
+    // 📸 معالجة رفع صور الاستوديو وضغطها
+    let currentMemoryKey = null;
+    let currentMemoryField = null;
+
+    function triggerMemoryUpload(key, field) {
+        currentMemoryKey = key;
+        currentMemoryField = field;
+        document.getElementById('memoryImageUploadInput').click();
+    }
+
+    function processMemoryImage(input) {
+        if (!currentUser || !currentMemoryKey) return;
+        const file = input.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 300;
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                const compressedDataUrl = canvas.toDataURL('image/webp', 0.7); 
+                db.ref(`schedule/${currentMemoryKey}`).update({ [currentMemoryField]: compressedDataUrl });
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        input.value = "";
     }
 
     // 4. إكمال العمل (تسجيل تاريخ الإنجاز وتفريغ حقول الحلقة والتوقيت)
