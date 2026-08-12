@@ -1424,16 +1424,13 @@
         const container = document.getElementById('scheduleContainer');
         if(!container) return;
         
-        // فصل الأعمال المعلقة والمكتملة
         const incomplete = globalSchedule.filter(i => !i.completed).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         const completed = globalSchedule.filter(i => i.completed).sort((a, b) => (b.completedDate || 0) - (a.completedDate || 0)); 
         
-        // تسريع الموقع: عرض أحدث 10 أعمال مكتملة فقط بالجدول السريع
         const recentCompleted = completed.slice(0, 10);
 
         let html = "";
         
-        // الأعمال قيد المشاهدة
         incomplete.forEach(item => {
             html += `
             <div class="schedule-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
@@ -1476,7 +1473,59 @@
         container.innerHTML = html || "<span style='text-align:center; color:gray;'>الجدول فارغ!</span>";
     }
 
-    // 🌳 نظام شجرة الذكريات المطور (فتح الصورة بملء الشاشة والرفع المباشر)
+    function updateScheduleField(key, field, value) {
+        db.ref(`schedule/${key}`).update({ [field]: value.trim() });
+    }
+
+    function markCompleted(key) {
+        db.ref(`schedule/${key}`).update({ 
+            completed: true, 
+            completedDate: Date.now(),
+            episode: null,
+            time: null 
+        });
+    }
+
+    // ==========================================
+    // ⭐ نظام التقييم الجماعي اللحظي
+    // ==========================================
+    function triggerGlobalRating(id, title) {
+        db.ref('globalEvents/activeRating').set({ id: id, title: title, timestamp: Date.now() });
+    }
+
+    db.ref('globalEvents/activeRating').on('value', snap => {
+        const data = snap.val();
+        if (data && (Date.now() - data.timestamp < 30000)) {
+            currentActiveRatingId = data.id;
+            document.getElementById('ratingTitle').innerText = data.title;
+            document.getElementById('ratingModal').style.display = 'flex';
+        }
+    });
+
+    function submitSliderRating() {
+        if(!currentUser || !currentActiveRatingId) return;
+        const val = parseFloat(document.getElementById('ratingSlider').value).toFixed(1);
+        const title = document.getElementById('ratingTitle').innerText;
+        
+        db.ref(`schedule/${currentActiveRatingId}/ratings/${currentUser.name}`).set(val);
+        document.getElementById('ratingModal').style.display = 'none';
+        
+        db.ref('chat').push({ 
+            name: "نظام الشجرة 🌱", 
+            text: `لقد قيّم ${currentUser.name} عمل "${title}" بـ ${val} نجوم! ⭐🔥`, 
+            isSystem: true, 
+            time: Date.now() 
+        });
+    }
+
+    // ==========================================
+    // 🌳 نظام شجرة الذكريات المطور (الرفع المباشر)
+    // ==========================================
+    function openTreeMode() {
+        document.getElementById('featuresModal').style.display = 'none';
+        document.getElementById('treeModal').style.display = 'flex';
+    }
+
     function renderTree() {
         const container = document.getElementById('treeContainer');
         if(!container) return;
@@ -1539,7 +1588,7 @@
         container.innerHTML = html || "<span style='text-align:center; color:gray; margin-top:20px;'>لم تكملوا أي عمل بعد لبناء الشجرة 🌱</span>";
     }
 
-    // 📸 معالجة رفع صور الاستوديو وضغطها
+    // 📸 معالجة رفع صور الاستوديو المباشرة وضغطها
     let currentMemoryKey = null;
     let currentMemoryField = null;
 
@@ -1573,133 +1622,6 @@
         };
         reader.readAsDataURL(file);
         input.value = "";
-    }
-
-    // 4. إكمال العمل (تسجيل تاريخ الإنجاز وتفريغ حقول الحلقة والتوقيت)
-    function markCompleted(key) {
-        db.ref(`schedule/${key}`).update({ 
-            completed: true, 
-            completedDate: Date.now(),
-            episode: null,
-            time: null 
-        });
-    }
-
-    // ==========================================
-    // ⭐ نظام التقييم الجماعي اللحظي
-    // ==========================================
-    function triggerGlobalRating(id, title) {
-        // نرسل إشارة للجميع ببدء التقييم
-        db.ref('globalEvents/activeRating').set({ id: id, title: title, timestamp: Date.now() });
-    }
-
-    // مراقب التقييم (يعمل دائماً في الخلفية ليلتقط الإشارة)
-    db.ref('globalEvents/activeRating').on('value', snap => {
-        const data = snap.val();
-        // تأكد من أن الحدث جديد (خلال آخر 30 ثانية) لكي لا يظهر فجأة عند الدخول
-        if (data && (Date.now() - data.timestamp < 30000)) {
-            currentActiveRatingId = data.id;
-            document.getElementById('ratingTitle').innerText = data.title;
-            document.getElementById('ratingModal').style.display = 'flex';
-        }
-    });
-
-    function submitRating(stars) {
-        if(!currentUser || !currentActiveRatingId) return;
-        // حفظ التقييم باسم المستخدم
-        db.ref(`schedule/${currentActiveRatingId}/ratings/${currentUser.name}`).set(stars);
-        document.getElementById('ratingModal').style.display = 'none';
-        sendSystemMessage(`قيم ${currentUser.name} العمل بـ ${stars} نجوم ⭐`);
-    }
-
-    // ==========================================
-    // 🌳 نظام شجرة الذكريات
-    // ==========================================
-    function openTreeMode() {
-        document.getElementById('featuresModal').style.display = 'none';
-        document.getElementById('treeModal').style.display = 'flex';
-    }
-
-    function renderTree() {
-        const container = document.getElementById('treeContainer');
-        if(!container) return;
-        
-        const completedItems = globalSchedule.filter(i => i.completed).sort((a, b) => (a.completedDate || 0) - (b.completedDate || 0));
-        
-        let html = "";
-        completedItems.forEach(item => {
-            const dateStr = item.completedDate ? new Date(item.completedDate).toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' }) : 'تاريخ غير معروف';
-            
-            let ratingsHtml = "";
-            if (item.ratings) {
-                Object.keys(item.ratings).forEach(name => {
-                    ratingsHtml += `<span style="font-size:0.8rem; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:8px; color:#f59e0b; font-weight:bold;">${name}: ${item.ratings[name]}⭐</span>`;
-                });
-            } else {
-                ratingsHtml = "<span style='font-size:0.7rem; color:gray;'>لم يتم التقييم بعد</span>";
-            }
-
-            // إطارات الصور الثابتة المخصصة لكل من Doddy و Somy
-            const imgDoddy = item.imgDoddy ? `<img src="${item.imgDoddy}" style="width:100%; height:100%; object-fit:cover; border-radius: 8px;">` : `<span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-align: center; display:block; margin-top: 35px; line-height:1.4;">أرسل صورة<br>ذكرياتك</span>`;
-            const imgSomy = item.imgSomy ? `<img src="${item.imgSomy}" style="width:100%; height:100%; object-fit:cover; border-radius: 8px;">` : `<span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); text-align: center; display:block; margin-top: 35px; line-height:1.4;">أرسل صورة<br>ذكرياتك</span>`;
-
-            html += `
-            <div class="memory-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-                    <div class="memory-date">${dateStr} <i class="fa-solid fa-pen" onclick="editMemoryDate('${item.key}')" style="cursor:pointer; font-size:0.65rem; margin-right:5px; color:#94a3b8;" title="تعديل التاريخ"></i></div>
-                    <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding:2px 6px; font-size:0.7rem; background:transparent; color:#94a3b8; border:none; box-shadow:none;"><i class="fa-solid fa-pen-to-square"></i> تعديل الاسم</button>
-                </div>
-                <h4 style="margin-bottom: 12px; color: var(--text-main); font-weight:800; font-size:1.1rem;">${item.title}</h4>
-                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; justify-content:center;">${ratingsHtml}</div>
-                
-                <!-- إطارات الصور المخصصة لـ Doddy و Somy -->
-                <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center;">
-                    <div style="display:flex; flex-direction: column; align-items: center;">
-                        <b style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Doddy</b>
-                        <div onclick="addMemoryImage('${item.key}', 'imgDoddy')" style="width: 90px; height: 110px; border: 2px dashed rgba(139, 92, 246, 0.4); border-radius: 10px; cursor: pointer; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
-                            ${imgDoddy}
-                        </div>
-                    </div>
-                    <div style="display:flex; flex-direction: column; align-items: center;">
-                        <b style="font-size: 0.85rem; color: #ec4899; margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Somy</b>
-                        <div onclick="addMemoryImage('${item.key}', 'imgSomy')" style="width: 90px; height: 110px; border: 2px dashed rgba(236, 72, 153, 0.4); border-radius: 10px; cursor: pointer; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
-                            ${imgSomy}
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display:flex; justify-content:center; margin-top: 15px;">
-                    <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; box-shadow:none;"><i class="fa-solid fa-star"></i> إعادة التقييم</button>
-                </div>
-            </div>`;
-        });
-        
-        container.innerHTML = html || "<span style='text-align:center; color:gray; margin-top:20px;'>لم تكملوا أي عمل بعد لبناء الشجرة 🌱</span>";
-    }
-
-    // إرسال تقييم السلايدر وإعلان النتيجة في الشات
-    function submitSliderRating() {
-        if(!currentUser || !currentActiveRatingId) return;
-        const val = parseFloat(document.getElementById('ratingSlider').value).toFixed(1);
-        const title = document.getElementById('ratingTitle').innerText;
-        
-        db.ref(`schedule/${currentActiveRatingId}/ratings/${currentUser.name}`).set(val);
-        document.getElementById('ratingModal').style.display = 'none';
-        
-        db.ref('chat').push({ 
-            name: "نظام الشجرة 🌱", 
-            text: `لقد قيّم ${currentUser.name} عمل "${title}" بـ ${val} نجوم! ⭐🔥`, 
-            isSystem: true, 
-            time: Date.now() 
-        });
-    }
-
-    // رفع صورة الذكريات للإطار المخصص
-    function addMemoryImage(key, personField) {
-        const imgUrl = prompt("أدخل رابط صورتك للذكرى 📸:\n(انسخ رابط أي صورة من الشات والصقه هنا)");
-        if(imgUrl && imgUrl.trim()) {
-            db.ref(`schedule/${key}`).update({ [personField]: imgUrl.trim() });
-        }
     }
 
     // ==========================================
