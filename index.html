@@ -199,8 +199,8 @@
         body.theater-mode .content-area { padding: 8px !important; }
     }
     
-    /* 💻 وضع العرض (أفقي/لابتوب) - ينطبق فقط عند تفعيل وضع السينما */
-    @media (orientation: landscape) {
+    /* 💻 وضع العرض العريض (ينطبق فقط على الشاشات الكبيرة وعند تفعيل السينما حصراً) */
+    @media (min-width: 900px) and (orientation: landscape) {
         body.theater-mode { flex-direction: row !important; }
         body.theater-mode .video-container { width: 70vw !important; height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
         body.theater-mode .content-area { width: 30vw !important; height: 100vh !important; padding: 10px !important; z-index: 100; }
@@ -209,9 +209,10 @@
         body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
     }
 
-    /* 📱 حجم متناسق وثابت للفيديو على الآيباد والتابلت */
-    @media (min-width: 650px) and (orientation: portrait) {
-        .video-container { height: 280px !important; min-height: 280px !important; }
+    /* 📱 تثبيت أبعاد الفيديو للآيباد والتابلت بوزن ممتاز وتغطية كاملة للمشغل */
+    @media (min-width: 600px) {
+        .video-container { height: 360px !important; min-height: 360px !important; max-height: 360px !important; flex-shrink: 0 !important; }
+        .video-js { width: 100% !important; height: 100% !important; object-fit: contain !important; }
     }
 
     /* ستايل شريط التقييم الانسيابي (Slider) */
