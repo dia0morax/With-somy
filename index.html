@@ -273,6 +273,17 @@
     .memory-sticker { position: absolute; max-width: 50px; bottom: -10px; left: -10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); transform: rotate(-15deg); cursor: pointer; transition: 0.3s; }
     .memory-sticker:hover { transform: scale(1.5) rotate(0deg); z-index: 10; }
 
+    /* 🌟 ستايلات الاقتراحات الذكية للملصقات وأقسام اللوحة */
+    .sticker-suggestions { position: absolute; bottom: 65px; right: 16px; left: 16px; display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); padding: 12px; border-radius: 16px; border: 1px solid var(--accent); opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 20; transform: translateY(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .sticker-suggestions.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .sticker-suggestions img { width: 70px; height: 70px; border-radius: 12px; cursor: pointer; object-fit: cover; transition: 0.2s; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    .sticker-suggestions img:hover { transform: scale(1.15) translateY(-5px); border: 2px solid var(--accent); }
+    
+    .sticker-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .tab-btn { padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: #fff; white-space: nowrap; cursor: pointer; transition: 0.2s; font-weight: bold; }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+    .tab-btn:hover { background: rgba(255,255,255,0.1); }
+
  </style>
 
 </head>
@@ -318,20 +329,23 @@
     <span style="color: #fff; margin-top: 12px; font-size: 0.85rem; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px;">انقر خارج الصورة للإغلاق | انقر على الصورة للزوم 🔍</span>
   </div>
 
-  <!-- لوحة الملصقات المحفوظة الدائمة (بدون إيموجيز) -->
-  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 45vh; background: var(--bg-panel); border: 1px solid var(--accent); border-radius: 12px; padding: 10px; z-index: 500; flex-direction: column; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-hover); padding-bottom: 5px;">
+  <!-- لوحة الملصقات المحفوظة والأقسام -->
+  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--accent); border-radius: 16px; padding: 12px; z-index: 500; flex-direction: column; gap: 8px; box-shadow: 0 -10px 40px rgba(0,0,0,0.6);">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
       <b style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-icons" style="margin-left: 5px;"></i> الملصقات</b>
       <div style="display: flex; gap: 5px;">
-        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-pen-to-square"></i></button>
-        <button onclick="deleteAllStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #991b1b;" title="حذف كل الملصقات"><i class="fa-solid fa-trash-can"></i></button>
+        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b; border-radius:8px;"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
+        <button onclick="addStickerCategory()" style="padding: 4px 10px; font-size: 0.75rem; background: #3b82f6; border-radius:8px;" title="إضافة قسم جديد"><i class="fa-solid fa-folder-plus"></i> قسم</button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
-        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 8px; font-size: 0.75rem;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
-        <button onclick="toggleStickers()" style="padding: 4px 8px; font-size: 0.75rem; background: #ef4444;"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 10px; font-size: 0.75rem; background: #10b981; border-radius:8px;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
+        <button onclick="toggleStickers()" style="padding: 4px 10px; font-size: 0.75rem; background: #ef4444; border-radius:8px;"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; overflow-y: auto; padding-bottom: 5px; align-items: start; align-content: start;">
-       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">جاري تحميل الملصقات...</span>
+    <!-- شريط الأقسام (Tabs) -->
+    <div id="stickerTabs" class="sticker-tabs"></div>
+    <!-- حاوية الملصقات -->
+    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 8px; overflow-y: auto; padding-bottom: 10px; align-items: start; align-content: start; flex: 1;">
+       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center;">جاري تحميل الملصقات...</span>
     </div>
   </div>
 
@@ -483,7 +497,12 @@
     <div class="chat-container">
       <div id="messages"></div>
       <div id="typingArea" class="typing-indicator"></div>
+         <!-- 🤖 شريط الاقتراحات الذكية للملصقات (يظهر تلقائياً) -->
+      <div id="stickerSuggestions" class="sticker-suggestions"></div>
+      
       <div class="input-group" style="margin-top: 8px; z-index: 5; position: relative;">
+        <!-- تم استبدال الإيموجيز بأيقونات ذات إطار شفاف فقط -->
+   <div class="input-group" style="margin-top: 8px; z-index: 5; position: relative;">
         <!-- تم استبدال الإيموجيز بأيقونات ذات إطار شفاف فقط -->
         <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
         <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="إرسال صورة"><i class="fa-regular fa-image"></i></button>
@@ -832,6 +851,10 @@
         input.value = "";
         input.focus();
         db.ref(`typing/${userId}`).remove();
+        
+        // إخفاء شريط الاقتراحات بعد إرسال الرسالة
+        const suggestBox = document.getElementById('stickerSuggestions');
+        if (suggestBox) suggestBox.classList.remove('active');
       }
     }
 
@@ -995,19 +1018,95 @@
     });
 
     // ==========================================
-    // 7. مؤشر الكتابة (Typing Indicator) - آمن ضد الرموز
+    // 7. مؤشر الكتابة ونظام الاقتراحات الدلالي (TikTok Style)
     // ==========================================
+    
+    // 🧠 قاموس المشاعر والمترادفات (يمكنك إضافة المزيد من الكلمات إليه لاحقاً)
+    const stickerSynonyms = [
+        ['حزين', 'حزن', 'يبكي', 'بجي', 'دموع', 'قهر', 'زعلان', 'زعل', 'مقهور', 'كئيب'],
+        ['يضحك', 'ضحك', 'هههه', 'فرحان', 'سعيد', 'ابتسامة', 'متونس', 'خرب'],
+        ['غضب', 'غاضب', 'معصب', 'عصبي', 'نار', 'منزعج', 'ضايج'],
+        ['حب', 'احبك', 'عشق', 'يعشق', 'قلب', 'رومانسي', 'اموت', 'حياتي'],
+        ['صدمة', 'مصدوم', 'واو', 'عجيب', 'مستغرب', 'تخيل', 'عزه', 'مستحيل'],
+        ['نوم', 'نايم', 'نعسان', 'تعبان', 'ارهاق', 'هلكان'],
+        ['اوك', 'تمام', 'صح', 'اتفق', 'يلا', 'اي', 'نعم', 'حلو'],
+        ['لا', 'غلط', 'كلا', 'نو', 'توقف']
+    ];
+
+    // دالة تجرد الكلمة من حروف العلة والتشكيل لتطابق خارق
+    function normalizeArabic(word) {
+        if(!word) return "";
+        return word.replace(/[اأإآةيوه]/g, '').toLowerCase();
+    }
+
+    // 🔍 دالة لتوسيع نطاق البحث ليشمل كل مرادفات الكلمة المكتوبة
+    function getExpandedTags(word) {
+        const normWord = normalizeArabic(word);
+        let expanded = [normWord]; // نضيف الكلمة نفسها دائماً
+
+        // نبحث: هل الكلمة المكتوبة تنتمي لأي عائلة مشاعر؟
+        for (let group of stickerSynonyms) {
+            const normGroup = group.map(g => normalizeArabic(g));
+            // إذا كانت الكلمة تنتمي للمجموعة، نأخذ كل كلمات المجموعة كخيارات بحث!
+            if (normGroup.some(g => g.includes(normWord) || normWord.includes(g))) {
+                expanded = expanded.concat(normGroup);
+                break; 
+            }
+        }
+        return expanded;
+    }
+
     let typingTimeout;
     function handleTyping() {
       if (!currentUser) return;
+      
+      // 1. إرسال إشارة مؤشر الكتابة للمتواجدين
       const typeRef = db.ref(`typing/${userId}`);
       typeRef.set(currentUser.name);
-      typeRef.onDisconnect().remove(); // حماية إضافية من التعليق
-      
+      typeRef.onDisconnect().remove();
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { 
-        typeRef.remove(); 
-      }, 1500);
+      typingTimeout = setTimeout(() => { typeRef.remove(); }, 1500);
+
+      // 2. تشغيل الاقتراحات الذكية للملصقات (النظام الدلالي)
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      const lastWord = text.split(' ').pop(); // أخذ الكلمة الحالية
+      const suggestBox = document.getElementById('stickerSuggestions');
+      if (!suggestBox) return;
+
+      if (lastWord.length >= 2) { 
+          // جلب كل الكلمات المرادفة للكلمة التي يكتبها الآن
+          const searchTags = getExpandedTags(lastWord);
+          
+          const matched = globalStickers.filter(s => {
+              if(!s.tag) return false;
+              const normTag = normalizeArabic(s.tag);
+              // التحقق: هل تاج الملصق يطابق أي كلمة من كلمات عائلة المشاعر؟
+              return searchTags.some(searchTag => searchTag && (normTag.includes(searchTag) || searchTag.includes(normTag)));
+          });
+
+          if (matched.length > 0) {
+              let html = '';
+              // عرض أول 5 ملصقات من عائلة المشاعر
+              matched.slice(0, 5).forEach(s => {
+                  html += `<img src="${s.img}" onclick="sendSuggestedSticker('${s.img}')">`;
+              });
+              suggestBox.innerHTML = html;
+              suggestBox.classList.add('active');
+          } else {
+              suggestBox.classList.remove('active');
+          }
+      } else {
+          suggestBox.classList.remove('active');
+      }
+    }
+
+    function sendSuggestedSticker(imgUrl) {
+        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgUrl, isSticker: true, time: Date.now(), isSystem: false });
+        const input = document.getElementById('messageInput');
+        input.value = "";
+        input.focus();
+        document.getElementById('stickerSuggestions').classList.remove('active');
     }
 
     db.ref('typing').on('value', (snap) => {
@@ -1128,8 +1227,13 @@
       }
     }
 
-    // نظام الملصقات الدائمة (الشبكة العمودية + التعديل)
+    // ==========================================
+    // 🎨 نظام الملصقات الذكي (أقسام + تاجات + اقتراحات)
+    // ==========================================
     let isEditingStickers = false;
+    let currentCategoryId = 'all';
+    let globalStickers = [];
+    let globalCategories = [];
 
     function toggleStickers() {
       const panel = document.getElementById('stickersPanel');
@@ -1147,22 +1251,56 @@
       renderStickers();
     }
 
-    // 🚀 رفع الملصق مباشرة مع الحفاظ التام على حركة الـ GIF والجودة
+    // --- إدارة الأقسام ---
+    db.ref('stickerCategories').on('value', snap => {
+        globalCategories = [];
+        snap.forEach(c => { globalCategories.push({ key: c.key, ...c.val() }); });
+        renderCategories();
+    });
+
+    function addStickerCategory() {
+        const name = prompt("أدخل اسم القسم الجديد (مثال: رياكشنات، غضب، ميمز):");
+        if(name && name.trim()) db.ref('stickerCategories').push({ name: name.trim() });
+    }
+
+    function deleteCategory(key) {
+        if(confirm("هل تريد حذف هذا القسم؟ (لن تُحذف الملصقات بداخله، ستنتقل لـ 'الكل')")) {
+            db.ref(`stickerCategories/${key}`).remove();
+            if(currentCategoryId === key) selectCategory('all');
+        }
+    }
+
+    function renderCategories() {
+        const tabsDiv = document.getElementById('stickerTabs');
+        if(!tabsDiv) return;
+        let html = `<button class="tab-btn ${currentCategoryId === 'all' ? 'active' : ''}" onclick="selectCategory('all')">الكل 🌟</button>`;
+        globalCategories.forEach(c => {
+            html += `<button class="tab-btn ${currentCategoryId === c.key ? 'active' : ''}" onclick="selectCategory('${c.key}')" oncontextmenu="event.preventDefault(); deleteCategory('${c.key}')">${c.name}</button>`;
+        });
+        tabsDiv.innerHTML = html;
+    }
+
+    function selectCategory(id) {
+        currentCategoryId = id;
+        renderCategories();
+        renderStickers();
+    }
+
+    // --- الرفع والتاجات ---
     function uploadSticker(input) {
         const file = input.files[0];
         if (!file) return;
-
-        if (file.size > 3500000) {
-            alert("حجم الملف كبير جداً! اختر ملفاً أصغر من 3.5 ميجا للحفاظ على خفة الغرفة.");
-            input.value = "";
-            return;
-        }
+        if (file.size > 3500000) { alert("حجم الملف كبير جداً!"); input.value = ""; return; }
 
         const reader = new FileReader();
         reader.onload = function (e) {
-            // حفظ الملصق فوراً في قاعدة البيانات
+            // نطلب من المستخدم إضافة تاج للملصق لتفعيل الاقتراحات الذكية
+            const tag = prompt("🤖 أدخل كلمة مفتاحية (Tag) لهذا الملصق لتسهيل البحث (مثال: غاضب، يضحك).\nأو اتركه فارغاً:") || "";
+            
             db.ref('savedStickers').push({ 
                 img: e.target.result, 
+                tag: tag.trim(),
+                categoryId: currentCategoryId, // يُحفظ في القسم المفتوح حالياً
                 order: Date.now() 
             });
         };
@@ -1170,22 +1308,28 @@
         input.value = "";
     }
 
-    function sendSavedSticker(imgSrc, cropStyle) {
+    function editStickerTag(key, oldTag) {
+        const newTag = prompt("تعديل الكلمة المفتاحية (Tag):", oldTag || "");
+        if(newTag !== null) db.ref(`savedStickers/${key}`).update({ tag: newTag.trim() });
+    }
+
+    function moveStickerCategory(key) {
+        let catText = "اختر رقم القسم لنقل الملصق:\n0. الكل\n";
+        globalCategories.forEach((c, i) => catText += `${i+1}. ${c.name}\n`);
+        const choice = prompt(catText);
+        if(choice !== null) {
+            const idx = parseInt(choice);
+            if(idx === 0) db.ref(`savedStickers/${key}`).update({ categoryId: 'all' });
+            else if(globalCategories[idx-1]) db.ref(`savedStickers/${key}`).update({ categoryId: globalCategories[idx-1].key });
+        }
+    }
+
+    function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
-      toggleStickers();
-      
+      document.getElementById('stickersPanel').style.display = 'none'; // إغلاق سريع
       requestAnimationFrame(() => {
           setTimeout(() => {
-              db.ref('chat').push({ 
-                  name: currentUser.name, 
-                  avatar: currentUser.avatar, 
-                  gender: currentUser.gender || 'male', 
-                  img: imgSrc, 
-                  cropStyle: cropStyle || null,
-                  isSticker: true, 
-                  time: Date.now(), 
-                  isSystem: false 
-              });
+              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
           }, 10);
       });
     }
@@ -1194,15 +1338,9 @@
       if(confirm("حذف هذا الملصق نهائياً؟")) db.ref('savedStickers/' + sKey).remove();
     }
 
-    function moveSticker(sKey, currentOrder, direction) {
-        db.ref('savedStickers/' + sKey).update({ order: currentOrder + (direction === 'up' ? -15000 : 15000) });
-    }
-
-    let globalStickers = [];
     db.ref('savedStickers').on('value', snap => {
       globalStickers = [];
       snap.forEach(c => { globalStickers.push({ key: c.key, ...c.val() }); });
-      // ترتيب الملصقات برمجياً حسب الأقدمية/التعديل
       globalStickers.sort((a, b) => (a.order || 0) - (b.order || 0));
       renderStickers();
     });
@@ -1210,29 +1348,37 @@
     function renderStickers() {
       const container = document.getElementById('stickersContainer');
       if(!container) return;
-      if(globalStickers.length === 0) {
-          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: span 8; text-align: center;">لا توجد ملصقات، أضف ملصقاتك الآن!</span>`;
+      
+      // فلترة حسب القسم الحالي
+      const filteredStickers = currentCategoryId === 'all' 
+          ? globalStickers 
+          : globalStickers.filter(s => s.categoryId === currentCategoryId);
+
+      if(filteredStickers.length === 0) {
+          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top:20px;">القسم فارغ! أضف ملصقاتك الآن 🚀</span>`;
           return;
       }
       
-      let stickersHtml = "";
-      
-      globalStickers.forEach((s) => {
-         const orderNum = s.order || Date.now();
-         // إجبار العرض المربع الذكي عبر CSS لتنسيق المظهر مع الحفاظ الكامل على الحركة
-         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
+      let html = "";
+      filteredStickers.forEach((s) => {
+         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" onclick="sendSavedSticker('${s.img}')">`;
 
          if(isEditingStickers) {
-             stickersHtml += `
-             <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;">
+             html += `
+             <div style="display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 14px; border:1px solid rgba(255,255,255,0.05);">
                 ${imgElement}
-                <button onclick="deleteSticker('${s.key}')" style="background: #ef4444; padding: 2px 5px; font-size: 0.7rem; margin-top: 5px; width: 100%; border-radius: 4px;">🗑️</button>
+                <span style="font-size:0.6rem; color:#10b981; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'بلا تاج'}</span>
+                <div style="display:flex; width: 100%; gap: 4px; margin-top: 4px;">
+                  <button onclick="editStickerTag('${s.key}', '${s.tag || ''}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#3b82f6; border-radius:6px;" title="تعديل التاج"><i class="fa-solid fa-tag"></i></button>
+                  <button onclick="moveStickerCategory('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#8b5cf6; border-radius:6px;" title="نقل لقسم آخر"><i class="fa-solid fa-folder-tree"></i></button>
+                  <button onclick="deleteSticker('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#ef4444; border-radius:6px;" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                </div>
              </div>`;
          } else {
-             stickersHtml += imgElement;
+             html += imgElement;
          }
       });
-      container.innerHTML = stickersHtml;
+      container.innerHTML = html;
     }
 
     // ==========================================
