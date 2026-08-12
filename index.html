@@ -209,10 +209,9 @@
         body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
     }
 
-    /* 📱 إصلاح حجم الفيديو للآيباد والتابلت في الوضع الطولي */
+    /* 📱 تثبيت حجم الفيديو للآيباد والتابلت لمنع تحركه عند فتح الكيبورد */
     @media (min-width: 650px) and (orientation: portrait) {
-        /* تم تصغير الحجم ليكون مناسباً ومريحاً للعين */
-        .video-container { height: 35vh !important; min-height: 320px !important; }
+        .video-container { height: 320px !important; min-height: 320px !important; max-height: 320px !important; flex-shrink: 0 !important; }
     }
 
     /* ستايل شريط التقييم الانسيابي (Slider) */
