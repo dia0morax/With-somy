@@ -399,6 +399,17 @@
     </div>
   </div>
 
+  <!-- 🗂️ نافذة اختيار ملصق من "الكل" لإضافته للقسم الحالي -->
+  <div id="categoryPickerModal" class="modal-overlay" style="display: none; z-index: 5000;" onclick="if(event.target===this) closeCategoryPicker()">
+    <div class="modal-card" style="max-width: 90vw; max-height: 80vh; gap: 15px;" onclick="event.stopPropagation()">
+      <h3 style="color: var(--accent); text-align: center;"><i class="fa-solid fa-plus"></i> إضافة للقسم</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">اختر ملصقاً من قائمة "الكل" لنقله إلى هذا القسم:</p>
+      <div id="pickerStickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; overflow-y: auto; max-height: 50vh; padding: 5px;">
+      </div>
+      <button onclick="closeCategoryPicker()" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+    </div>
+  </div>
+
   <!-- 🌟 1. نافذة جدولنا المحدثة -->
   <div id="featuresModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; max-height: 80vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
@@ -1313,14 +1324,38 @@
         if(newTag !== null) db.ref(`savedStickers/${key}`).update({ tag: newTag.trim() });
     }
 
-    function moveStickerCategory(key) {
-        let catText = "اختر رقم القسم لنقل الملصق:\n0. الكل\n";
-        globalCategories.forEach((c, i) => catText += `${i+1}. ${c.name}\n`);
-        const choice = prompt(catText);
-        if(choice !== null) {
-            const idx = parseInt(choice);
-            if(idx === 0) db.ref(`savedStickers/${key}`).update({ categoryId: 'all' });
-            else if(globalCategories[idx-1]) db.ref(`savedStickers/${key}`).update({ categoryId: globalCategories[idx-1].key });
+    // --- دوال نافذة اختيار الملصقات (لإضافتها للأقسام) ---
+    function openCategoryPicker() {
+        const pickerContainer = document.getElementById('pickerStickersContainer');
+        // إحضار الملصقات التي تنتمي لقائمة "الكل" فقط
+        const availableStickers = globalStickers.filter(s => s.categoryId === 'all' || !s.categoryId);
+        
+        if (availableStickers.length === 0) {
+            pickerContainer.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top:20px;">لا توجد ملصقات في "الكل" لإضافتها!</span>`;
+        } else {
+            let html = '';
+            availableStickers.forEach(s => {
+                html += `
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='transparent'" onclick="assignStickerToCategory('${s.key}')">
+                    <img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;">
+                    <span style="font-size:0.6rem; color:#10b981; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'إضافة'}</span>
+                </div>`;
+            });
+            pickerContainer.innerHTML = html;
+        }
+        document.getElementById('categoryPickerModal').style.display = 'flex';
+    }
+
+    function closeCategoryPicker() {
+        document.getElementById('categoryPickerModal').style.display = 'none';
+    }
+
+    // نقل الملصق من "الكل" إلى القسم الحالي
+    function assignStickerToCategory(sKey) {
+        if (currentCategoryId !== 'all') {
+            db.ref(`savedStickers/${sKey}`).update({ categoryId: currentCategoryId });
+            // تحديث نافذة الاختيار مباشرة لاختفاء الملصق الذي تم إضافته
+            setTimeout(openCategoryPicker, 100); 
         }
     }
 
@@ -1334,8 +1369,22 @@
       });
     }
 
+    // --- الحذف الذكي (إزالة من القسم أو حذف نهائي) ---
     function deleteSticker(sKey) {
-      if(confirm("حذف هذا الملصق نهائياً؟")) db.ref('savedStickers/' + sKey).remove();
+        const sticker = globalStickers.find(s => s.key === sKey);
+        if (!sticker) return;
+
+        if (currentCategoryId === 'all' || sticker.categoryId === 'all' || !sticker.categoryId) {
+            // حذف نهائي من قائمة "الكل"
+            if (confirm("هل أنت متأكد من حذف هذا الملصق نهائياً؟ ⚠️")) {
+                db.ref('savedStickers/' + sKey).remove();
+            }
+        } else {
+            // إزالة من القسم الحالي ورجوعه لقائمة "الكل"
+            if (confirm("هل تريد إزالة الملصق من هذا القسم؟ (سيعود للظهور في قائمة 'الكل' 🌟)")) {
+                db.ref(`savedStickers/${sKey}`).update({ categoryId: 'all' });
+            }
+        }
     }
 
     db.ref('savedStickers').on('value', snap => {
@@ -1349,17 +1398,29 @@
       const container = document.getElementById('stickersContainer');
       if(!container) return;
       
-      // فلترة حسب القسم الحالي
       const filteredStickers = currentCategoryId === 'all' 
           ? globalStickers 
           : globalStickers.filter(s => s.categoryId === currentCategoryId);
 
-      if(filteredStickers.length === 0) {
+      let html = "";
+      
+      // 🌟 بطاقة "إضافة للقسم" (تظهر فقط داخل الأقسام المخصصة أثناء التعديل)
+      if (currentCategoryId !== 'all' && isEditingStickers) {
+          html += `
+          <div onclick="openCategoryPicker()" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); padding: 6px; border-radius: 14px; border:2px dashed #3b82f6; cursor:pointer; min-height: 80px; transition: 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.25)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.15)'">
+             <i class="fa-solid fa-plus" style="font-size: 1.5rem; color: #3b82f6; margin-bottom: 5px;"></i>
+             <span style="font-size:0.65rem; color:#3b82f6; font-weight:bold; text-align:center;">إضافة ملصق<br>للقسم</span>
+          </div>`;
+      }
+
+      if(filteredStickers.length === 0 && !isEditingStickers) {
+          container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top:20px;">القسم فارغ! ${currentCategoryId !== 'all' ? 'اضغط "تعديل" ✏️ لإضافة ملصقات' : 'أضف ملصقاتك الآن 🚀'}</span>`;
+          return;
+      } else if (filteredStickers.length === 0 && isEditingStickers && currentCategoryId === 'all') {
           container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top:20px;">القسم فارغ! أضف ملصقاتك الآن 🚀</span>`;
           return;
       }
       
-      let html = "";
       filteredStickers.forEach((s) => {
          const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" onclick="sendSavedSticker('${s.img}')">`;
 
@@ -1370,8 +1431,7 @@
                 <span style="font-size:0.6rem; color:#10b981; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'بلا تاج'}</span>
                 <div style="display:flex; width: 100%; gap: 4px; margin-top: 4px;">
                   <button onclick="editStickerTag('${s.key}', '${s.tag || ''}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#3b82f6; border-radius:6px;" title="تعديل التاج"><i class="fa-solid fa-tag"></i></button>
-                  <button onclick="moveStickerCategory('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#8b5cf6; border-radius:6px;" title="نقل لقسم آخر"><i class="fa-solid fa-folder-tree"></i></button>
-                  <button onclick="deleteSticker('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#ef4444; border-radius:6px;" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                  <button onclick="deleteSticker('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#ef4444; border-radius:6px;" title="${currentCategoryId === 'all' ? 'حذف نهائي' : 'إزالة من القسم'}"><i class="fa-solid ${currentCategoryId === 'all' ? 'fa-trash' : 'fa-folder-minus'}"></i></button>
                 </div>
              </div>`;
          } else {
