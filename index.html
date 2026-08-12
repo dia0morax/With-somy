@@ -209,10 +209,38 @@
         body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
     }
 
-    /* 📱 تثبيت أبعاد الفيديو للآيباد والتابلت بوزن ممتاز وتغطية كاملة للمشغل */
-    @media (min-width: 600px) {
-        .video-container { height: 360px !important; min-height: 360px !important; max-height: 360px !important; flex-shrink: 0 !important; }
-        .video-js { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+    /* ↕️ التحكم الحر والمرن بأبعاد الفيديو عبر شريط السحب */
+    .video-container { 
+        width: 100% !important; 
+        height: 240px; 
+        min-height: 120px; 
+        max-height: 75vh; 
+        background: #000; 
+        z-index: 100; 
+        flex-shrink: 0 !important; 
+        position: relative; 
+        overflow: hidden;
+    }
+    
+    /* ضبط محرك المشغل لاحتواء مقاس الشاشة دون تمطيط أو انضغاط */
+    .video-js, .video-js video, .video-js iframe { 
+        width: 100% !important; 
+        height: 100% !important; 
+        object-fit: contain !important; 
+    }
+    
+    /* تأثيرات بصرية فائقة الانسيابية لشريط السحب */
+    #resizerSlider {
+        transition: background 0.2s ease;
+    }
+    #resizerSlider:active, #resizerSlider:hover { 
+        background: rgba(139, 92, 246, 0.25) !important; 
+    }
+    #resizerSlider:active div, #resizerSlider:hover div { 
+        background: var(--accent-hover) !important; 
+        width: 70px !important; 
+        box-shadow: 0 0 10px var(--accent-hover);
+        transition: all 0.2s ease; 
     }
 
     /* ستايل شريط التقييم الانسيابي (Slider) */
@@ -403,6 +431,10 @@
   <div class="video-container" id="videoBox">
     <div class="click-overlay" onclick="triggerSmartPlay()"></div>
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
+  </div>
+  <!-- ↔️ شريط التحكم الذكي بحجم الفيديو -->
+  <div id="resizerSlider" style="height: 10px; background: rgba(255,255,255,0.08); border-bottom: 1px solid var(--accent); cursor: ns-resize; display: flex; align-items: center; justify-content: center; z-index: 105; touch-action: none;" title="اسحب لتكبير/تصغير المشغل">
+    <div style="width: 40px; height: 3px; background: var(--accent); border-radius: 2px;"></div>
   </div>
 
   <div class="content-area">
@@ -1692,6 +1724,59 @@
             }
         }
     }
+
+    // ==========================================
+    // ↔️ محرك شريط سحب حجم الفيديو باللمس والماوس
+    // ==========================================
+    (function initVideoResizer() {
+        const resizer = document.getElementById('resizerSlider');
+        const videoBox = document.getElementById('videoBox');
+        if (!resizer || !videoBox) return;
+
+        // استعادة الحجم المفضل المخزن سابقاً على جهازك
+        const savedHeight = localStorage.getItem('app_video_height');
+        if (savedHeight) videoBox.style.height = savedHeight + 'px';
+
+        let isResizing = false;
+        let startY = 0;
+        let startHeight = 0;
+
+        function startResize(e) {
+            isResizing = true;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            startHeight = videoBox.offsetHeight;
+            document.body.style.userSelect = 'none';
+        }
+
+        function doResize(e) {
+            if (!isResizing) return;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            const newHeight = startHeight + (currentY - startY);
+            
+            // حدود الأبعاد (من 120px حتى 80% من الشاشة)
+            if (newHeight >= 120 && newHeight <= window.innerHeight * 0.8) {
+                videoBox.style.height = newHeight + 'px';
+            }
+        }
+
+        function stopResize() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.userSelect = '';
+                // حفظ الارتفاع في الذاكرة لتذكره عند إعادة الفتح
+                localStorage.setItem('app_video_height', videoBox.offsetHeight);
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        resizer.addEventListener('touchstart', startResize, { passive: true });
+
+        window.addEventListener('mousemove', doResize);
+        window.addEventListener('touchmove', doResize, { passive: true });
+
+        window.addEventListener('mouseup', stopResize);
+        window.addEventListener('touchend', stopResize);
+    })();
 
   </script>
 </body>
