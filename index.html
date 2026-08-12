@@ -21,6 +21,10 @@
   <!-- مكتبة الأيقونات الاحترافية -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   
+    <!-- مكتبة قص الصور والـ GIF الاحترافية -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
   <style>
     :root {
       --bg-color-1: #020617; --bg-color-2: #0f172a; --bg-color-3: #1e1b4b;
@@ -425,6 +429,21 @@
       <input type="range" id="ratingSlider" min="0" max="5" step="0.1" value="5.0" oninput="document.getElementById('ratingValueDisplay').innerText = parseFloat(this.value).toFixed(1)" class="custom-slider">
       <button onclick="submitSliderRating()" style="margin-top: 15px; width: 100%; padding: 12px; font-size: 1rem; background: #f59e0b; color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-paper-plane"></i> إرسال التقييم</button>
       <button onclick="document.getElementById('ratingModal').style.display='none'" style="background: transparent; color: var(--text-muted); box-shadow: none; margin-top: -5px;">إلغاء</button>
+    </div>
+  </div>
+
+  <!-- ✂️ نافذة قص الـ GIF والصور بمربع ثابت وزوم -->
+  <div id="cropModal" class="modal-overlay" style="display: none; z-index: 5000;">
+    <div class="modal-card" style="max-width: 90vw; max-height: 90vh; text-align: center; gap: 15px;">
+      <h3 style="color: var(--accent);"><i class="fa-solid fa-crop"></i> قص المربع الذهبي</h3>
+      <div style="max-height: 55vh; overflow: hidden; background: #000; border-radius: 12px;">
+        <img id="cropTargetImg" src="" style="max-width: 100%; display: block;">
+      </div>
+      <p style="font-size: 0.75rem; color: var(--text-muted);">اسحب أو كبّر الصورة لضبط ما يظهر داخل المربع</p>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="confirmCropAndSave()" style="flex: 2; padding: 10px; background: #10b981;"><i class="fa-solid fa-check"></i> حفظ الملصق المربع</button>
+        <button onclick="closeCropModal()" style="flex: 1; padding: 10px; background: #ef4444;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+      </div>
     </div>
   </div>
 
@@ -1142,45 +1161,71 @@
       renderStickers();
     }
 
-    // رفع الملصقات بجودة عالية ودعم الـ GIF المتحرك
+    // ✂️ محرك قص الـ GIF والصور بمربع ثابت $1:1$ وزوم احترافي
+    let cropperInstance = null;
+
     function uploadSticker(input) {
-      const file = input.files[0];
-      if(!file) return;
-      
-      // حماية: منع رفع GIF ضخم جداً لكي لا ينهار الشات (الحد: 2.5 ميجابايت)
-      if (file.type === 'image/gif' && file.size > 2500000) {
-        alert("حجم الـ GIF كبير جداً! اختر ملفاً أصغر من 2.5 ميجا للحفاظ على سرعة الغرفة.");
-        input.value = "";
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        // إذا كان الملف GIF، نرفعه مباشرة كما هو للحفاظ على الأنيميشن
-        if (file.type === 'image/gif') {
-           db.ref('savedStickers').push({ img: e.target.result, order: Date.now() });
-           return;
+        const file = input.files[0];
+        if (!file) return;
+
+        if (file.size > 3500000) {
+            alert("حجم الملف كبير جداً! اختر ملفاً أصغر من 3.5 ميجا للحفاظ على خفة الغرفة.");
+            input.value = "";
+            return;
         }
-        
-        // إذا كانت صورة عادية، نطبق ضغطاً خفيفاً جداً 10% (جودة 90%)
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 250; // عرض ممتاز يحافظ على التفاصيل
-          const scaleSize = MAX_WIDTH / img.width;
-          canvas.width = MAX_WIDTH;
-          canvas.height = img.height * scaleSize;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
-          // 0.9 تعني 90% جودة (أي تم تقليل 10% فقط)
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.9); 
-          db.ref('savedStickers').push({ img: compressedDataUrl, order: Date.now() });
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const cropImg = document.getElementById('cropTargetImg');
+            cropImg.src = e.target.result;
+            document.getElementById('cropModal').style.display = 'flex';
+
+            if (cropperInstance) cropperInstance.destroy();
+
+            // تهيئة مربع القص الثابت بنسبة 1:1 مع التعتيم والزوم
+            cropperInstance = new Cropper(cropImg, {
+                aspectRatio: 1, // مربع ثابت 1:1
+                viewMode: 1, // تعتيم الخافية الخارجية
+                dragMode: 'move', // السماح بسحب الصورة داخل المربع
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: false, // تثبيت المربع
+                cropBoxResizable: false, // تثبيت مقاس المربع
+                toggleDragModeOnDblclick: false
+            });
         };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      input.value = "";
+        reader.readAsDataURL(file);
+        input.value = "";
+    }
+
+    function confirmCropAndSave() {
+        if (!cropperInstance) return;
+
+        // استخراج المربع المقصوص بأبعاد متناسقة 250x250
+        const canvas = cropperInstance.getCroppedCanvas({
+            width: 250,
+            height: 250,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+        });
+
+        const croppedDataUrl = canvas.toDataURL('image/webp', 0.85);
+
+        // حفظ الصورة المقصوصة كملصق مربع متناسق في قاعدة البيانات
+        db.ref('savedStickers').push({ img: croppedDataUrl, order: Date.now() });
+
+        closeCropModal();
+    }
+
+    function closeCropModal() {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        document.getElementById('cropModal').style.display = 'none';
     }
 
     // دالة حذف كل الملصقات
