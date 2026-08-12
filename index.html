@@ -118,8 +118,9 @@
     
     .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     .chat-img:hover { transform: scale(1.03); }
-    .chat-sticker { max-width: 110px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .chat-sticker:hover { transform: scale(1.15) rotate(5deg); }
+    /* 🌟 تكبير ملصق الشات وإجباره على الشكل المربع المتناسق */
+    .chat-sticker { width: 135px !important; height: 135px !important; object-fit: cover !important; border-radius: 16px; margin-top: 4px; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .chat-sticker:hover { transform: scale(1.1) rotate(4deg); }
         /* نظام التفاعلات السريعة (Reactions) */
     .reaction-menu { position: fixed; display: flex; gap: 8px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 10px 16px; border-radius: 30px; border: 1px solid var(--accent); box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 9999; transform: scale(0); opacity: 0; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; transform-origin: bottom center; }
     .reaction-menu.show { transform: scale(1); opacity: 1; pointer-events: auto; }
@@ -429,21 +430,6 @@
       <input type="range" id="ratingSlider" min="0" max="5" step="0.1" value="5.0" oninput="document.getElementById('ratingValueDisplay').innerText = parseFloat(this.value).toFixed(1)" class="custom-slider">
       <button onclick="submitSliderRating()" style="margin-top: 15px; width: 100%; padding: 12px; font-size: 1rem; background: #f59e0b; color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-paper-plane"></i> إرسال التقييم</button>
       <button onclick="document.getElementById('ratingModal').style.display='none'" style="background: transparent; color: var(--text-muted); box-shadow: none; margin-top: -5px;">إلغاء</button>
-    </div>
-  </div>
-
-  <!-- ✂️ نافذة قص الـ GIF والصور بمربع ثابت وزوم -->
-  <div id="cropModal" class="modal-overlay" style="display: none; z-index: 5000;">
-    <div class="modal-card" style="max-width: 90vw; max-height: 90vh; text-align: center; gap: 15px;">
-      <h3 style="color: var(--accent);"><i class="fa-solid fa-crop"></i> قص المربع الذهبي</h3>
-      <div style="max-height: 55vh; overflow: hidden; background: #000; border-radius: 12px;">
-        <img id="cropTargetImg" src="" style="max-width: 100%; display: block;">
-      </div>
-      <p style="font-size: 0.75rem; color: var(--text-muted);">اسحب أو كبّر الصورة لضبط ما يظهر داخل المربع</p>
-      <div style="display: flex; gap: 10px;">
-        <button onclick="confirmCropAndSave()" style="flex: 2; padding: 10px; background: #10b981;"><i class="fa-solid fa-check"></i> حفظ الملصق المربع</button>
-        <button onclick="closeCropModal()" style="flex: 1; padding: 10px; background: #ef4444;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
-      </div>
     </div>
   </div>
 
@@ -1161,10 +1147,7 @@
       renderStickers();
     }
 
-    // ✂️ محرك تحديد جزء الـ GIF المتحرك والصور العادية
-    let cropperInstance = null;
-    let currentUploadFile = null;
-
+    // 🚀 رفع الملصق مباشرة مع الحفاظ التام على حركة الـ GIF والجودة
     function uploadSticker(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1175,71 +1158,16 @@
             return;
         }
 
-        currentUploadFile = file;
-
         const reader = new FileReader();
         reader.onload = function (e) {
-            const cropImg = document.getElementById('cropTargetImg');
-            cropImg.src = e.target.result;
-            document.getElementById('cropModal').style.display = 'flex';
-
-            if (cropperInstance) cropperInstance.destroy();
-
-            // نافذة قص بمربع ثابت 1:1 تتيح الزوم والسحب
-            cropperInstance = new Cropper(cropImg, {
-                aspectRatio: 1,
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 1,
-                restore: false,
-                guides: true,
-                center: true,
-                highlight: false,
-                cropBoxMovable: false,
-                cropBoxResizable: false,
-                toggleDragModeOnDblclick: false
+            // حفظ الملصق فوراً في قاعدة البيانات
+            db.ref('savedStickers').push({ 
+                img: e.target.result, 
+                order: Date.now() 
             });
         };
         reader.readAsDataURL(file);
         input.value = "";
-    }
-
-    function confirmCropAndSave() {
-        if (!cropperInstance || !currentUploadFile) return;
-
-        if (currentUploadFile.type === 'image/gif') {
-            // 🌟 حفظ ملف الـ GIF المتحرك الأصلي كاملاً بدون توجيهه عبر Canvas لمنع جمود الحركة
-            const readerGif = new FileReader();
-            readerGif.onload = function(e) {
-                db.ref('savedStickers').push({ 
-                    img: e.target.result, 
-                    isGif: true,
-                    order: Date.now() 
-                });
-            };
-            readerGif.readAsDataURL(currentUploadFile);
-        } else {
-            // 📸 للصور العادية: تطبيق قص Canvas بمربع متناسق 250x250
-            const canvas = cropperInstance.getCroppedCanvas({
-                width: 250,
-                height: 250,
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high'
-            });
-            const croppedDataUrl = canvas.toDataURL('image/webp', 0.85);
-            db.ref('savedStickers').push({ img: croppedDataUrl, order: Date.now() });
-        }
-
-        closeCropModal();
-    }
-
-    function closeCropModal() {
-        if (cropperInstance) {
-            cropperInstance.destroy();
-            cropperInstance = null;
-        }
-        currentUploadFile = null;
-        document.getElementById('cropModal').style.display = 'none';
     }
 
     function sendSavedSticker(imgSrc, cropStyle) {
@@ -1291,7 +1219,8 @@
       
       globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
-         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
+         // إجبار العرض المربع الذكي عبر CSS لتنسيق المظهر مع الحفاظ الكامل على الحركة
+         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
 
          if(isEditingStickers) {
              stickersHtml += `
