@@ -200,7 +200,7 @@
     }
     
     /* 💻 وضع العرض (أفقي/لابتوب) - ينطبق فقط عند تفعيل وضع السينما */
-    body.theater-mode@media (orientation: landscape) {
+    @media (orientation: landscape) {
         body.theater-mode { flex-direction: row !important; }
         body.theater-mode .video-container { width: 70vw !important; height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
         body.theater-mode .content-area { width: 30vw !important; height: 100vh !important; padding: 10px !important; z-index: 100; }
