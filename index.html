@@ -1207,28 +1207,19 @@
     function confirmCropAndSave() {
         if (!cropperInstance || !currentUploadFile) return;
 
-        const cropData = cropperInstance.getData(true); // الإحداثيات والزوم
-        const canvasData = cropperInstance.getCanvasData(); // أبعاد الصورة في العرض
-
-        // حساب نسبة التكبير والإزاحة المئوية
-        const zoomX = (cropData.x / canvasData.naturalWidth) * 100;
-        const zoomY = (cropData.y / canvasData.naturalHeight) * 100;
-        const scaleWidth = (canvasData.naturalWidth / cropData.width) * 100;
-
         if (currentUploadFile.type === 'image/gif') {
-            // 🌟 للـ GIF: نحفظ الملف المتحرك الأصلي + أبعاد الجزء المختار (CSS Position)
+            // 🌟 حفظ ملف الـ GIF المتحرك الأصلي كاملاً بدون توجيهه عبر Canvas لمنع جمود الحركة
             const readerGif = new FileReader();
             readerGif.onload = function(e) {
                 db.ref('savedStickers').push({ 
                     img: e.target.result, 
                     isGif: true,
-                    cropStyle: `background-image: url('${e.target.result}'); background-size: ${scaleWidth}%; background-position: ${zoomX}% ${zoomY}%;`,
                     order: Date.now() 
                 });
             };
             readerGif.readAsDataURL(currentUploadFile);
         } else {
-            // 📸 للصورة العادية: نقوم بقصها كالمعتاد
+            // 📸 للصور العادية: تطبيق قص Canvas بمربع متناسق 250x250
             const canvas = cropperInstance.getCroppedCanvas({
                 width: 250,
                 height: 250,
@@ -1300,11 +1291,7 @@
       
       globalStickers.forEach((s) => {
          const orderNum = s.order || Date.now();
-         
-         // إذا كان GIF مقصوص نستخدم أسلوب الـ background-position لمنح الحركة بالجزء المحدد
-         const imgElement = s.isGif && s.cropStyle
-            ? `<div onclick="sendSavedSticker('${s.img}', '${s.cropStyle.replace(/'/g, "\\'")}')" style="width: 100%; aspect-ratio: 1; border-radius: 8px; cursor: pointer; ${s.cropStyle}"></div>`
-            : `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
+         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
 
          if(isEditingStickers) {
              stickersHtml += `
