@@ -108,7 +108,7 @@
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
-    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 60px; box-sizing: border-box !important; }
+    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 60px; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
@@ -220,7 +220,7 @@
         #resizerSlider { width: 10px !important; height: 100vh !important; cursor: ew-resize !important; border-bottom: none !important; border-left: 1px solid var(--accent); flex-shrink: 0 !important; display: flex !important; }
         #resizerSlider div { width: 3px !important; height: 40px !important; }
         .content-area { flex: 1 1 0% !important; width: auto !important; height: 100vh !important; padding: 6px !important; gap: 6px !important; z-index: 100; min-width: 0 !important; display: flex !important; }
-        .chat-container { padding: 8px !important; min-height: 0 !important; flex: 1 !important; display: flex !important; }
+        .chat-container { padding: 8px !important; min-height: 0 !important; flex: 1 !important; display: flex !important; position: relative !important; }
         .msg-content { padding: 6px 10px !important; font-size: 0.75rem !important; }
         .msg-avatar { width: 26px !important; height: 26px !important; }
         .chat-sticker { width: 85px !important; height: 85px !important; }
@@ -228,6 +228,36 @@
         .input-group input[type="text"] { padding: 6px 10px !important; font-size: 0.75rem !important; }
         .input-group button { padding: 6px 10px !important; }
         .status-bar { padding: 4px 8px !important; font-size: 0.7rem !important; }
+
+        /* ضبط لوحة الملصقات لتكون داخل نافذة الشات الجانبية */
+        #stickersPanel {
+            position: absolute !important;
+            inset: 8px 8px 55px 8px !important;
+            top: 8px !important;
+            bottom: 55px !important;
+            left: 8px !important;
+            right: 8px !important;
+            max-height: none !important;
+            z-index: 600 !important;
+            padding: 8px !important;
+        }
+        #stickersContainer {
+            grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)) !important;
+            gap: 6px !important;
+            overflow-y: auto !important;
+            max-height: calc(100vh - 130px) !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .sticker-suggestions {
+            bottom: 50px !important;
+            right: 8px !important;
+            left: 8px !important;
+            padding: 6px !important;
+        }
+        .sticker-suggestions img {
+            width: 50px !important;
+            height: 50px !important;
+        }
     }
 
     /* 📱 تخصيص وضع الجوال الشامل (Mobile UI Mode) */
