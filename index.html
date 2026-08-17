@@ -184,35 +184,48 @@
     .delete-btn-msg:hover { opacity: 1; transform: scale(1.3); color: #ef4444; }
     
     /* ======================================= */
-    /* 🎬 ستايلات وضع السينما (Theater Mode) 🎬 */
+    /* 🎬 ستايلات وضع السينما وضبط الأجهزة 📱💻 */
     /* ======================================= */
-    
-    /* تعتيم الخلفية وإخفاء المشتتات */
     body.theater-mode { background: #000 !important; }
     body.theater-mode::before, body.theater-mode::after { opacity: 0.05 !important; }
-    
-    /* إخفاء الشريط العلوي (المتصلين وأدوات القفز) للتركيز التام */
     body.theater-mode .content-area > .status-bar:first-child { display: none !important; }
-    
-    /* تعتيم الشات قليلاً لكي لا يسرق النظر من الفيديو */
+    body.theater-mode #resizerSlider { display: none !important; }
     body.theater-mode .status-bar, body.theater-mode .chat-container { background: rgba(10, 10, 10, 0.8) !important; border-color: rgba(255,255,255,0.03) !important; }
-    
-    /* 📱 وضع الهاتف (طولي) - تكبير الفيديو للأسفل */
+
+    /* 📱 وضع الهاتف (طولي) في السينما */
     @media (orientation: portrait) {
-        /* حجم 380px ثابت لمنع تحجيم الفيديو عند الدردشة في وضع السينما */
-        body.theater-mode .video-container { height: 380px !important; min-height: 380px !important; border-bottom: 2px solid var(--accent); }
-        body.theater-mode .content-area { padding: 8px !important; }
+        body.theater-mode .video-container { height: 42vh !important; min-height: 200px !important; border-bottom: 2px solid var(--accent); }
+        body.theater-mode .content-area { padding: 6px !important; }
     }
-    
-    /* 💻 وضع العرض العريض (ينطبق فقط على الشاشات الكبيرة وعند تفعيل السينما حصراً) */
-    @media (min-width: 900px) and (orientation: landscape) {
+
+    /* 🔄 وضع الشاشة الكاملة بالعرض (Landscape) لجميع الشاشات حتى أصغر جوال */
+    @media (orientation: landscape) {
         body.theater-mode { flex-direction: row !important; }
-        body.theater-mode .video-container { width: 70vw !important; height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
-        body.theater-mode .content-area { width: 30vw !important; height: 100vh !important; padding: 10px !important; z-index: 100; }
-        body.theater-mode .msg-content { padding: 8px 12px; font-size: 0.8rem; }
-        body.theater-mode .chat-img, body.theater-mode .chat-sticker { max-width: 100px; }
-        body.theater-mode .input-group input[type="text"] { padding: 10px; font-size: 0.8rem; }
+        body.theater-mode .video-container { width: 72vw !important; height: 100vh !important; max-height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
+        body.theater-mode .content-area { width: 28vw !important; height: 100vh !important; padding: 6px !important; gap: 6px !important; z-index: 100; }
+        body.theater-mode .chat-container { padding: 8px !important; min-height: 0 !important; }
+        body.theater-mode .msg-content { padding: 6px 10px !important; font-size: 0.75rem !important; }
+        body.theater-mode .msg-avatar { width: 26px !important; height: 26px !important; }
+        body.theater-mode .chat-sticker { width: 85px !important; height: 85px !important; }
+        body.theater-mode .chat-img { max-width: 90px !important; }
+        body.theater-mode .input-group input[type="text"] { padding: 6px 10px !important; font-size: 0.75rem !important; }
+        body.theater-mode .input-group button { padding: 6px 10px !important; }
+        body.theater-mode .status-bar { padding: 4px 8px !important; font-size: 0.7rem !important; }
     }
+
+    /* 📱 تخصيص وضع الجوال الشامل (Mobile UI Mode) */
+    body.device-mobile .content-area { padding: 8px !important; gap: 8px !important; }
+    body.device-mobile .status-bar { padding: 6px 10px !important; font-size: 0.75rem !important; border-radius: 12px !important; }
+    body.device-mobile .video-container { height: 190px !important; min-height: 140px !important; }
+    body.device-mobile .chat-container { padding: 10px !important; border-radius: 14px !important; }
+    body.device-mobile .msg-content { padding: 8px 12px !important; font-size: 0.85rem !important; border-radius: 14px !important; }
+    body.device-mobile .chat-sticker { width: 105px !important; height: 105px !important; }
+    body.device-mobile .chat-img { max-width: 140px !important; }
+    body.device-mobile input[type="text"], body.device-mobile select { padding: 8px 12px !important; font-size: 0.85rem !important; border-radius: 10px !important; }
+    body.device-mobile .icon-btn { padding: 8px !important; font-size: 1rem !important; }
+    body.device-mobile button { padding: 8px 14px !important; font-size: 0.8rem !important; }
+    body.device-mobile .user-avatar { width: 22px !important; height: 22px !important; }
+    body.device-mobile .user-badge { padding: 4px 8px !important; font-size: 0.75rem !important; }
 
     /* ↕️ التحكم الحر والمرن بأبعاد الفيديو عبر شريط السحب */
     .video-container { 
@@ -283,6 +296,46 @@
     .tab-btn { padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: #fff; white-space: nowrap; cursor: pointer; transition: 0.2s; font-weight: bold; }
     .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
     .tab-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* 📱 إصلاح جذري لعناصر الإدخال والأزرار على الجوال */
+    body.device-mobile .input-group {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 5px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    body.device-mobile .input-group input[type="text"] {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+        box-sizing: border-box !important;
+    }
+
+    body.device-mobile .input-group button,
+    body.device-mobile .input-group .icon-btn {
+        flex-shrink: 0 !important;
+        padding: 8px 10px !important;
+        font-size: 0.85rem !important;
+        box-sizing: border-box !important;
+        white-space: nowrap !important;
+    }
+
+    /* ضبط أشرطة الحالة العلوية على الجوال */
+    body.device-mobile .status-bar {
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        scrollbar-width: none !important;
+    }
+    body.device-mobile .status-bar::-webkit-scrollbar {
+        display: none !important;
+    }
 
  </style>
 
@@ -481,7 +534,11 @@
         <button onclick="skipTime(85)" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #ec4899; box-shadow: none; border-radius: 6px;" title="تخطي الشارة (85 ثانية)"><i class="fa-solid fa-forward-fast"></i></button>
       </div>
 
-      <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
+      <div style="display: flex; gap: 4px;">
+        <!-- 📱 زر التبديل بين وضع الجوال والآيباد -->
+        <button id="deviceModeBtn" onclick="toggleDeviceMode()" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa;" title="تبديل وضع العرض (جوال / آيباد)"><i class="fa-solid fa-mobile-screen"></i> <span id="deviceModeText">جوال</span></button>
+        <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
+      </div>
     </div>
     
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
@@ -550,13 +607,45 @@
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
         let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('app_user_id', userId);
-    // تفعيل الثيمات
+    // ==========================================
+    // إدارة الثيمات وأوضاع الأجهزة (جوال / آيباد)
+    // ==========================================
+    let currentDeviceMode = localStorage.getItem('app_device_mode') || (window.innerWidth < 768 ? 'mobile' : 'ipad');
+
+    function applyDeviceMode() {
+      const btnText = document.getElementById('deviceModeText');
+      const btn = document.getElementById('deviceModeBtn');
+      if (currentDeviceMode === 'mobile') {
+        document.body.classList.add('device-mobile');
+        if (btnText) btnText.innerText = 'جوال';
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> <span>جوال</span>';
+      } else {
+        document.body.classList.remove('device-mobile');
+        if (btnText) btnText.innerText = 'آيباد';
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-tablet-screen-button"></i> <span>آيباد</span>';
+      }
+      localStorage.setItem('app_device_mode', currentDeviceMode);
+    }
+
+    function toggleDeviceMode() {
+      currentDeviceMode = currentDeviceMode === 'mobile' ? 'ipad' : 'mobile';
+      applyDeviceMode();
+      // تحديث تلقائي لسكرول الشات
+      const msgDiv = document.getElementById('messages');
+      if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
+    }
+
     const savedTheme = localStorage.getItem('app_theme') || 'default';
-    setTheme(savedTheme);
     function setTheme(themeName) {
-      document.body.className = themeName === 'default' ? '' : 'theme-' + themeName;
+      const isMobile = document.body.classList.contains('device-mobile');
+      const isTheater = document.body.classList.contains('theater-mode');
+      document.body.className = (themeName === 'default' ? '' : 'theme-' + themeName);
+      if (isMobile) document.body.classList.add('device-mobile');
+      if (isTheater) document.body.classList.add('theater-mode');
       localStorage.setItem('app_theme', themeName);
     }
+    setTheme(savedTheme);
+    applyDeviceMode();
 
     let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
     function selectAvatar(el) {
