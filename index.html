@@ -107,8 +107,8 @@
     .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
-    .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: keep-all; overflow-wrap: break-word; width: fit-content; min-width: 80px; }
+    .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
+    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 60px; box-sizing: border-box !important; }
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
@@ -189,34 +189,50 @@
     body.theater-mode { background: #000 !important; }
     body.theater-mode::before, body.theater-mode::after { opacity: 0.05 !important; }
     body.theater-mode .content-area > .status-bar:first-child { display: none !important; }
-    body.theater-mode #resizerSlider { display: none !important; }
     body.theater-mode .status-bar, body.theater-mode .chat-container { background: rgba(10, 10, 10, 0.8) !important; border-color: rgba(255,255,255,0.03) !important; }
 
-    /* 📱 وضع الهاتف (طولي) في السينما */
-    @media (orientation: portrait) {
-        body.theater-mode .video-container { height: 42vh !important; min-height: 200px !important; border-bottom: 2px solid var(--accent); }
-        body.theater-mode .content-area { padding: 6px !important; }
+    /* ↕️ الحاوية الأساسية للفيديو وسلايدر التحكم */
+    .video-container { 
+        width: 100%; 
+        height: var(--custom-video-height, 240px); 
+        min-height: 120px; 
+        max-height: 75vh; 
+        background: #000; 
+        z-index: 100; 
+        flex-shrink: 0; 
+        position: relative; 
+        overflow: hidden;
     }
 
-    /* 🔄 وضع الشاشة الكاملة بالعرض (Landscape) لجميع الشاشات حتى أصغر جوال */
+    /* 📱 وضع الطولي في السينما والعادي */
+    @media (orientation: portrait) {
+        body { flex-direction: column !important; }
+        body.theater-mode .video-container { height: var(--custom-video-height, 42vh); min-height: 140px; max-height: 75vh; }
+        body.theater-mode .content-area { padding: 6px !important; }
+        #resizerSlider { width: 100% !important; height: 10px !important; cursor: ns-resize !important; border-bottom: 1px solid var(--accent); }
+        #resizerSlider div { width: 40px !important; height: 3px !important; }
+    }
+
+    /* 🔄 وضع العرض والسينما الأفقية والشاشة الكاملة لجميع الشاشات والأجهزة */
     @media (orientation: landscape) {
-        body.theater-mode { flex-direction: row !important; }
-        body.theater-mode .video-container { width: 72vw !important; height: 100vh !important; max-height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; }
-        body.theater-mode .content-area { width: 28vw !important; height: 100vh !important; padding: 6px !important; gap: 6px !important; z-index: 100; }
-        body.theater-mode .chat-container { padding: 8px !important; min-height: 0 !important; }
-        body.theater-mode .msg-content { padding: 6px 10px !important; font-size: 0.75rem !important; }
-        body.theater-mode .msg-avatar { width: 26px !important; height: 26px !important; }
-        body.theater-mode .chat-sticker { width: 85px !important; height: 85px !important; }
-        body.theater-mode .chat-img { max-width: 90px !important; }
-        body.theater-mode .input-group input[type="text"] { padding: 6px 10px !important; font-size: 0.75rem !important; }
-        body.theater-mode .input-group button { padding: 6px 10px !important; }
-        body.theater-mode .status-bar { padding: 4px 8px !important; font-size: 0.7rem !important; }
+        html, body { flex-direction: row !important; display: flex !important; width: 100vw !important; height: 100vh !important; }
+        .video-container { width: var(--custom-video-width, 70vw) !important; height: 100vh !important; min-height: 100vh !important; max-height: 100vh !important; border-bottom: none !important; border-left: 1px solid rgba(255,255,255,0.1); box-shadow: none !important; z-index: 200; flex-shrink: 0 !important; }
+        #resizerSlider { width: 10px !important; height: 100vh !important; cursor: ew-resize !important; border-bottom: none !important; border-left: 1px solid var(--accent); flex-shrink: 0 !important; display: flex !important; }
+        #resizerSlider div { width: 3px !important; height: 40px !important; }
+        .content-area { flex: 1 1 0% !important; width: auto !important; height: 100vh !important; padding: 6px !important; gap: 6px !important; z-index: 100; min-width: 0 !important; display: flex !important; }
+        .chat-container { padding: 8px !important; min-height: 0 !important; flex: 1 !important; display: flex !important; }
+        .msg-content { padding: 6px 10px !important; font-size: 0.75rem !important; }
+        .msg-avatar { width: 26px !important; height: 26px !important; }
+        .chat-sticker { width: 85px !important; height: 85px !important; }
+        .chat-img { max-width: 90px !important; }
+        .input-group input[type="text"] { padding: 6px 10px !important; font-size: 0.75rem !important; }
+        .input-group button { padding: 6px 10px !important; }
+        .status-bar { padding: 4px 8px !important; font-size: 0.7rem !important; }
     }
 
     /* 📱 تخصيص وضع الجوال الشامل (Mobile UI Mode) */
     body.device-mobile .content-area { padding: 8px !important; gap: 8px !important; }
     body.device-mobile .status-bar { padding: 6px 10px !important; font-size: 0.75rem !important; border-radius: 12px !important; }
-    body.device-mobile .video-container { height: 190px !important; min-height: 140px !important; }
     body.device-mobile .chat-container { padding: 10px !important; border-radius: 14px !important; }
     body.device-mobile .msg-content { padding: 8px 12px !important; font-size: 0.85rem !important; border-radius: 14px !important; }
     body.device-mobile .chat-sticker { width: 105px !important; height: 105px !important; }
@@ -226,19 +242,6 @@
     body.device-mobile button { padding: 8px 14px !important; font-size: 0.8rem !important; }
     body.device-mobile .user-avatar { width: 22px !important; height: 22px !important; }
     body.device-mobile .user-badge { padding: 4px 8px !important; font-size: 0.75rem !important; }
-
-    /* ↕️ التحكم الحر والمرن بأبعاد الفيديو عبر شريط السحب */
-    .video-container { 
-        width: 100% !important; 
-        height: 240px; 
-        min-height: 120px; 
-        max-height: 75vh; 
-        background: #000; 
-        z-index: 100; 
-        flex-shrink: 0 !important; 
-        position: relative; 
-        overflow: hidden;
-    }
     
     /* ضبط محرك المشغل لاحتواء مقاس الشاشة دون تمطيط أو انضغاط */
     .video-js, .video-js video, .video-js iframe { 
@@ -2022,36 +2025,59 @@
     }
 
     // ==========================================
-    // ↔️ محرك شريط سحب حجم الفيديو باللمس والماوس
+    // ↔️ محرك شريط سحب حجم الفيديو الشامل (طولي وعرضي لجميع الأجهزة)
     // ==========================================
     (function initVideoResizer() {
         const resizer = document.getElementById('resizerSlider');
         const videoBox = document.getElementById('videoBox');
         if (!resizer || !videoBox) return;
 
-        // استعادة الحجم المفضل المخزن سابقاً على جهازك
         const savedHeight = localStorage.getItem('app_video_height');
-        if (savedHeight) videoBox.style.height = savedHeight + 'px';
+        const savedWidth = localStorage.getItem('app_video_width');
+        if (savedHeight) {
+            document.documentElement.style.setProperty('--custom-video-height', savedHeight + 'px');
+            videoBox.style.height = savedHeight + 'px';
+        }
+        if (savedWidth) {
+            document.documentElement.style.setProperty('--custom-video-width', savedWidth + 'px');
+            videoBox.style.width = savedWidth + 'px';
+        }
 
         let isResizing = false;
-        let startY = 0;
-        let startHeight = 0;
+        let startPos = 0;
+        let startDim = 0;
+
+        function isLandscape() {
+            return window.matchMedia("(orientation: landscape)").matches;
+        }
 
         function startResize(e) {
             isResizing = true;
-            startY = e.touches ? e.touches[0].clientY : e.clientY;
-            startHeight = videoBox.offsetHeight;
+            const isLand = isLandscape();
+            startPos = e.touches ? (isLand ? e.touches[0].clientX : e.touches[0].clientY) : (isLand ? e.clientX : e.clientY);
+            startDim = isLand ? videoBox.offsetWidth : videoBox.offsetHeight;
             document.body.style.userSelect = 'none';
         }
 
         function doResize(e) {
             if (!isResizing) return;
-            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-            const newHeight = startHeight + (currentY - startY);
+            const isLand = isLandscape();
+            const currentPos = e.touches ? (isLand ? e.touches[0].clientX : e.touches[0].clientY) : (isLand ? e.clientX : e.clientY);
             
-            // حدود الأبعاد (من 120px حتى 80% من الشاشة)
-            if (newHeight >= 120 && newHeight <= window.innerHeight * 0.8) {
-                videoBox.style.height = newHeight + 'px';
+            // في الوضع الأفقي (RTL العربي)، السحب لليسار يكبر العرض
+            const delta = isLand ? (startPos - currentPos) : (currentPos - startPos);
+            const newDim = startDim + delta;
+
+            if (isLand) {
+                if (newDim >= window.innerWidth * 0.4 && newDim <= window.innerWidth * 0.85) {
+                    videoBox.style.width = newDim + 'px';
+                    document.documentElement.style.setProperty('--custom-video-width', newDim + 'px');
+                }
+            } else {
+                if (newDim >= 120 && newDim <= window.innerHeight * 0.75) {
+                    videoBox.style.height = newDim + 'px';
+                    document.documentElement.style.setProperty('--custom-video-height', newDim + 'px');
+                }
             }
         }
 
@@ -2059,8 +2085,11 @@
             if (isResizing) {
                 isResizing = false;
                 document.body.style.userSelect = '';
-                // حفظ الارتفاع في الذاكرة لتذكره عند إعادة الفتح
-                localStorage.setItem('app_video_height', videoBox.offsetHeight);
+                if (isLandscape()) {
+                    localStorage.setItem('app_video_width', videoBox.offsetWidth);
+                } else {
+                    localStorage.setItem('app_video_height', videoBox.offsetHeight);
+                }
             }
         }
 
