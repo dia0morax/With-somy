@@ -330,6 +330,16 @@
     .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
     .tab-btn:hover { background: rgba(255,255,255,0.1); }
 
+    /* أيقونة زر رفع الترجمة المدمج داخل شريط مشغل الفيديو */
+    .vjs-custom-sub-btn .vjs-icon-placeholder:before {
+        content: "\f0a0";
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 1.1em;
+        line-height: 1.9;
+    }
+
+
     /* 📱 إصلاح جذري لعناصر الإدخال والأزرار على الجوال */
     body.device-mobile .input-group {
         display: flex !important;
@@ -557,7 +567,7 @@
     <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
       <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
       
-      <!-- ميزات القفز والتقديم والتأخير السريع وزر الترجمة الخارجية -->
+      <!-- ميزات القفز والتقديم والتأخير السريع -->
       <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
         <button onclick="skipTime(-5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تأخير 5 ثواني"><i class="fa-solid fa-backward-step"></i></button>
         <input type="text" id="jumpTimeInput" placeholder="06:35" style="width: 65px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff;">
@@ -565,10 +575,8 @@
         <button onclick="skipTime(5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تقديم 5 ثواني"><i class="fa-solid fa-forward-step"></i></button>
         <!-- زر تخطي الشارة 85 ثانية -->
         <button onclick="skipTime(85)" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #ec4899; box-shadow: none; border-radius: 6px;" title="تخطي الشارة (85 ثانية)"><i class="fa-solid fa-forward-fast"></i></button>
-        <!-- زر رفع ملف ترجمة خارجي (SRT أو VTT) -->
-        <input type="file" id="subFileInput" accept=".vtt,.srt" style="display:none;" onchange="loadExternalSubtitle(this)">
-        <button onclick="document.getElementById('subFileInput').click()" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; box-shadow: none; border-radius: 6px;" title="إضافة ترجمة من الجهاز"><i class="fa-solid fa-closed-captioning"></i></button>
       </div>
+
 
       <div style="display: flex; gap: 4px;">
         <!-- 📱 زر التبديل بين وضع الجوال والآيباد -->
@@ -634,11 +642,68 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Video.js (البديل الأقوى مع دعم اليوتيوب)
+    // 2. تهيئة مشغل Video.js المحدث لدعم الترجمات المدمجة وتشغيل يوتيوب
     const player = videojs('videoPlayer', {
-      techOrder: ['html5', 'youtube'], // السماح بالتبديل بين MP4 ويوتيوب
-      userActions: { hotkeys: true }
+      techOrder: ['html5', 'youtube'],
+      youtube: { ytControls: 0, enablePrivacyEnhancedMode: true },
+      userActions: { hotkeys: true },
+      controlBar: {
+        subsCapsButton: true
+      }
     });
+
+    // إضافة زر رفع ترجمة مخصص داخل شريط تحكم المشغل الأصلي
+    const Button = videojs.getComponent('Button');
+    const AddSubButton = videojs.extend(Button, {
+      constructor: function() {
+        Button.apply(this, arguments);
+        this.addClass('vjs-custom-sub-btn');
+        this.controlText('إضافة ملف ترجمة');
+      },
+      handleClick: function() {
+        let input = document.getElementById('nativeSubInput');
+        if (!input) {
+          input = document.createElement('input');
+          input.id = 'nativeSubInput';
+          input.type = 'file';
+          input.accept = '.vtt,.srt';
+          input.style.display = 'none';
+          document.body.appendChild(input);
+          input.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+              const file = this.files[0];
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                let content = e.target.result;
+                if (file.name.endsWith('.srt')) {
+                  content = "WEBVTT\n\n" + content.replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2');
+                }
+                const blob = new Blob([content], { type: 'text/vtt' });
+                const trackUrl = URL.createObjectURL(blob);
+                const track = player.addRemoteTextTrack({
+                  kind: 'captions',
+                  label: file.name.replace(/\.[^/.]+$/, ""),
+                  src: trackUrl,
+                  default: true
+                }, false);
+                track.track.mode = 'showing';
+              };
+              reader.readAsText(file);
+              this.value = '';
+            }
+          });
+        }
+        input.click();
+      }
+    });
+    videojs.registerComponent('AddSubButton', AddSubButton);
+    player.ready(function() {
+      const cb = player.controlBar;
+      if (cb) {
+        cb.addChild('AddSubButton', {}, cb.children().length - 2);
+      }
+    });
+
 
     // 3. إدارة المستخدم (البروفايل)
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
@@ -806,51 +871,27 @@
     });
 
     // ==========================================
-    // 5. قلب النظام: المزامنة، استخراج يوتيوب 720p والترجمات
+    // 5. قلب النظام: المزامنة، الروابط المباشرة والترجمات المدمجة
     // ==========================================
     let isSystemAction = false;
     const SYNC_THRESHOLD = 1.0;
 
-    // استخراج معرّف فيديو اليوتيوب
     function extractYouTubeID(url) {
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
       const match = url.match(regExp);
       return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    // استخراج البث المباشر 720p والترجمات عبر واجهة Piped / Invidious العامة
-    async function resolveMediaStream(inputUrl) {
+    function parseSmartUrl(inputUrl) {
       const ytId = extractYouTubeID(inputUrl);
-      if (!ytId) {
-        return { src: inputUrl, type: 'video/mp4', subtitles: [] };
-      }
-
-      try {
-        const res = await fetch(`https://pipedapi.kavin.rocks/streams/${ytId}`);
-        if (!res.ok) throw new Error("تعذر جلب بيانات البث");
-        const data = await res.json();
-
-        // البحث عن أفضل فيديو 720p يحتوي على صوت وصورة مدمجين
-        let stream = data.videoStreams.find(s => s.quality === "720p" && !s.videoOnly) 
-                  || data.videoStreams.find(s => !s.videoOnly);
-
-        const finalSrc = stream ? stream.url : inputUrl;
-        const subtitles = (data.subtitles || []).map(s => ({
-          label: s.name || s.lang,
-          src: s.url,
-          srclang: s.code || 'ar',
-          default: (s.code === 'ar' || (s.name && s.name.includes('Arabic')))
-        }));
-
-        return { src: finalSrc, type: 'video/mp4', subtitles: subtitles };
-      } catch (err) {
-        console.warn("فشل الاستخراج المباشر، جاري استخدام خادم بديل...", err);
+      if (ytId) {
         return { 
-          src: `https://invidious.snopyta.org/latest_version?id=${ytId}&itag=22`, 
-          type: 'video/mp4', 
-          subtitles: [] 
+          src: `https://www.youtube.com/watch?v=${ytId}`, 
+          type: 'video/youtube',
+          ytId: ytId
         };
       }
+      return { src: inputUrl, type: 'video/mp4', ytId: null };
     }
 
     async function changeVideoManual() {
@@ -858,13 +899,12 @@
       const url = urlInput.value.trim();
       if (!url) return;
 
-      urlInput.value = "جاري تحضير البث والترجمة ⏳...";
-      const media = await resolveMediaStream(url);
+      const media = parseSmartUrl(url);
 
       const videoData = { 
         src: media.src, 
         type: media.type, 
-        subtitles: media.subtitles || [],
+        ytId: media.ytId,
         action: 'load', 
         time: 0, 
         timestamp: Date.now(), 
@@ -876,58 +916,15 @@
       urlInput.value = "";
     }
 
-    // دالة إضافة الترجمة للمشغل
-    function applySubtitlesToPlayer(subList) {
-      // إزالة أي مسارات ترجمة قديمة أولاً
+    // تنظيف وتطبيق الترجمات تلقائياً داخل قائمة الترجمة الافتراضية بالمشغل
+    function clearOldSubtitles() {
       const oldTracks = player.remoteTextTracks();
       let i = oldTracks ? oldTracks.length : 0;
       while (i--) {
         player.removeRemoteTextTrack(oldTracks[i]);
       }
-
-      if (!subList || subList.length === 0) return;
-
-      subList.forEach(sub => {
-        player.addRemoteTextTrack({
-          kind: 'captions',
-          label: sub.label,
-          srclang: sub.srclang,
-          src: sub.src,
-          default: sub.default || false
-        }, false);
-      });
     }
 
-    // معالجة ملف الترجمة المرفوع محلياً من الجهاز (تحويل SRT إلى WebVTT إذا لزم الأمر)
-    function loadExternalSubtitle(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        let content = e.target.result;
-        
-        // إذا كان الملف srt نقوم بتحويله إلى تنسيق WebVTT متوافق
-        if (file.name.endsWith('.srt')) {
-          content = "WEBVTT\n\n" + content
-            .replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2');
-        }
-
-        const blob = new Blob([content], { type: 'text/vtt' });
-        const trackUrl = URL.createObjectURL(blob);
-
-        player.addRemoteTextTrack({
-          kind: 'captions',
-          label: file.name.replace(/\.[^/.]+$/, ""),
-          src: trackUrl,
-          default: true
-        }, false);
-
-        alert("تمت إضافة الترجمة وتفعيلها داخل المشغل بنجاح! 🎬");
-      };
-      reader.readAsText(file);
-      input.value = "";
-    }
 
 
     // دالة القفز الزمني السريع (الجديدة)
@@ -1012,7 +1009,7 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد وتطبيق الترجمات تلقائياً داخل المشغل الطبيعي
+      // 1. تحميل المقطع داخل المشغل مع تنظيف مسارات الترجمة القديمة
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
@@ -1020,15 +1017,14 @@
         const videoBox = document.getElementById('videoBox');
         if (videoBox) videoBox.classList.add('require-interaction');
 
+        clearOldSubtitles();
         player.pause();
         player.src({ src: st.src, type: st.type || 'video/mp4' });
-        
-        // تطبيق الترجمات القادمة مع الفيديو (إن وجدت)
-        applySubtitlesToPlayer(st.subtitles || []);
 
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
+
 
 
       // 2. حساب التأخير الزمني للإنترنت
