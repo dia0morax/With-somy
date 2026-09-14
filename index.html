@@ -63,14 +63,74 @@
     /* طبقة تفاعل ذكية لإجبار المتصفح على تشغيل أي فيديو (يوتيوب أو درايف) */
     .click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
     .require-interaction .click-overlay { display: block; }
-    .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--btn-gradient); z-index: 101; }
-    .video-js { width: 100%; height: 100%; } 
-    .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } 
-    .video-js .vjs-play-progress { background: var(--btn-gradient); }    
+    .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--btn-gradient); z-index: 101; }
+    /* إصلاح اتجاه المشغل بالكامل ليكون متوافقاً مع Video.js */
+    .video-js { width: 100%; height: 100%; font-family: 'Cairo', sans-serif !important; direction: ltr !important; }
     
-    /* إجبار المشغل على إظهار الدقيقة الحالية والوقت الكلي بدلاً من الوقت المتبقي */
-    .video-js .vjs-current-time, .video-js .vjs-time-divider, .video-js .vjs-duration { display: flex !important; align-items: center; justify-content: center; padding: 0 4px; }
+    /* شريط تحكم احترافي جداً (MX Player / Netflix Style) */
+    .video-js .vjs-control-bar {
+        background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 0.95) 100%) !important;
+        height: 50px !important;
+        padding: 0 10px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        direction: ltr !important;
+    }
+
+    /* فاصل ذكي لدفع الأزرار لليمين واليسار بشكل مثالي ومنع التداخل */
+    .video-js .vjs-custom-control-spacer { display: flex !important; flex: 1 1 auto !important; }
+
+    /* أزرار المشغل والأيقونات */
+    .video-js .vjs-button { width: 40px !important; height: 40px !important; margin: 0; transition: 0.2s; color: #fff !important; display: flex !important; justify-content: center !important; align-items: center !important; }
+    .video-js .vjs-button:hover { color: var(--accent) !important; transform: scale(1.1); }
+    .video-js .vjs-icon-placeholder:before { font-size: 1.5em !important; line-height: 40px !important; }
+
+    /* شريط السحب الزمني العصري مع توهج (مكانه فوق شريط التحكم تماماً) */
+    .video-js .vjs-progress-control { position: absolute !important; top: -12px !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 12px !important; display: flex !important; align-items: center !important; cursor: pointer; }
+    .video-js .vjs-progress-holder { margin: 0 !important; height: 4px !important; width: 100% !important; background: rgba(255, 255, 255, 0.3) !important; transition: 0.2s ease !important; border-radius: 0 !important; }
+    .video-js .vjs-progress-control:hover .vjs-progress-holder { height: 8px !important; }
+    .video-js .vjs-play-progress { background: var(--btn-gradient) !important; box-shadow: 0 0 12px var(--accent); }
+    .video-js .vjs-play-progress:before { font-size: 14px !important; color: #fff !important; top: -5px !important; text-shadow: 0 0 5px #000; }
+    
+    /* عرض الأوقات بخط أنيق */
+    .video-js .vjs-time-control { display: flex !important; align-items: center !important; padding: 0 2px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: #e2e8f0 !important; }
+    .video-js .vjs-time-divider { min-width: auto !important; padding: 0 4px !important; display: flex !important; align-items: center !important; }
     .video-js .vjs-remaining-time { display: none !important; }
+
+    /* زر الترجمة المدمج (SUB) بارز وواضح */
+    .video-js .vjs-custom-sub-btn { width: 50px !important; }
+    .video-js .vjs-custom-sub-btn .vjs-icon-placeholder:before {
+        content: "SUB" !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-weight: 900 !important;
+        font-size: 0.75rem !important;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        line-height: normal !important;
+        letter-spacing: 0.5px;
+    }
+    .video-js .vjs-custom-sub-btn.active .vjs-icon-placeholder:before { background: var(--accent) !important; border-color: #fff !important; box-shadow: 0 0 10px var(--accent); color: #fff !important; }
+    
+    /* ستايل خط الترجمة على الشاشة (مقروء وكبير للأنمي) */
+    .video-js .vjs-text-track-display { bottom: 65px !important; pointer-events: none; }
+    .video-js .vjs-text-track-cue {
+        font-family: 'Cairo', sans-serif !important;
+        font-weight: 800 !important;
+        font-size: 1.4rem !important;
+        line-height: 1.5 !important;
+        color: #ffffff !important;
+        text-shadow: 0px 2px 4px #000, 0px 0px 8px #000 !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        border-radius: 8px !important;
+        padding: 4px 16px !important;
+    }
+
+
+
+
 
     .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
@@ -642,67 +702,101 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Video.js المحدث لدعم الترجمات المدمجة وتشغيل يوتيوب
+    // 2. تهيئة مشغل Video.js بتنسيق متوازن ومضبوط LTR (ستايل MX Player)
     const player = videojs('videoPlayer', {
-      techOrder: ['html5', 'youtube'],
-      youtube: { ytControls: 0, enablePrivacyEnhancedMode: true },
+      controls: true,
+      autoplay: false,
+      preload: 'auto',
+      fluid: false,
+      playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
       userActions: { hotkeys: true },
       controlBar: {
-        subsCapsButton: true
+        children: [
+          'playToggle',
+          'volumePanel',
+          'currentTimeDisplay',
+          'timeDivider',
+          'durationDisplay',
+          'customControlSpacer', // 🌟 هذا الفاصل السحري يدفع الأزرار المتبقية لأقصى اليمين ويمنع التداخل
+          'progressControl',     // نضعه هنا برمجياً لكنه سيصعد للأعلى بفضل الـ CSS
+          'playbackRateMenuButton',
+          'fullscreenToggle'
+        ]
       }
     });
 
-    // إضافة زر رفع ترجمة مخصص داخل شريط تحكم المشغل الأصلي
-    const Button = videojs.getComponent('Button');
-    const AddSubButton = videojs.extend(Button, {
-      constructor: function() {
-        Button.apply(this, arguments);
-        this.addClass('vjs-custom-sub-btn');
-        this.controlText('إضافة ملف ترجمة');
-      },
-      handleClick: function() {
-        let input = document.getElementById('nativeSubInput');
-        if (!input) {
-          input = document.createElement('input');
-          input.id = 'nativeSubInput';
-          input.type = 'file';
-          input.accept = '.vtt,.srt';
-          input.style.display = 'none';
-          document.body.appendChild(input);
-          input.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-              const file = this.files[0];
+    // إضافة زر SUB مخصص ومباشر لرفع واختيار ملفات الترجمة (.srt أو .vtt)
+    player.ready(function() {
+      const Button = videojs.getComponent('Button');
+      const CustomSubBtn = videojs.extend(Button, {
+        constructor: function() {
+          Button.apply(this, arguments);
+          this.addClass('vjs-custom-sub-btn');
+          this.controlText('إضافة ملف ترجمة (SRT / VTT)');
+        },
+        handleClick: function() {
+          let input = document.getElementById('mxSubFileInput');
+          if (!input) {
+            input = document.createElement('input');
+            input.id = 'mxSubFileInput';
+            input.type = 'file';
+            input.accept = '.vtt,.srt';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+
+            input.onchange = (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+
               const reader = new FileReader();
-              reader.onload = function(e) {
-                let content = e.target.result;
+              reader.onload = (ev) => {
+                let content = ev.target.result;
+                // تحويل تلقائي لملفات SRT إلى WebVTT
                 if (file.name.endsWith('.srt')) {
                   content = "WEBVTT\n\n" + content.replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2');
                 }
                 const blob = new Blob([content], { type: 'text/vtt' });
-                const trackUrl = URL.createObjectURL(blob);
+                const blobUrl = URL.createObjectURL(blob);
+
+                // إزالة أي ترجمة قديمة
+                const oldTracks = player.remoteTextTracks();
+                let i = oldTracks ? oldTracks.length : 0;
+                while (i--) {
+                  player.removeRemoteTextTrack(oldTracks[i]);
+                }
+
+                // إضافة الترجمة الجديدة وتشغيلها فوراً
                 const track = player.addRemoteTextTrack({
-                  kind: 'captions',
+                  kind: 'subtitles',
                   label: file.name.replace(/\.[^/.]+$/, ""),
-                  src: trackUrl,
+                  srclang: 'ar',
+                  src: blobUrl,
                   default: true
                 }, false);
+
                 track.track.mode = 'showing';
+                this.addClass('active');
+                alert("تم تفعيل ملف الترجمة بنجاح! 🎬");
               };
               reader.readAsText(file);
-              this.value = '';
-            }
-          });
+              input.value = '';
+            };
+          }
+          input.click();
         }
-        input.click();
+      });
+
+      videojs.registerComponent('CustomSubBtn', CustomSubBtn);
+      
+      // وضع زر الترجمة قبل زر ملء الشاشة مباشرة (في النهاية)
+      if (player.controlBar) {
+        player.controlBar.addChild('CustomSubBtn', {}, player.controlBar.children().length - 1);
       }
     });
-    videojs.registerComponent('AddSubButton', AddSubButton);
-    player.ready(function() {
-      const cb = player.controlBar;
-      if (cb) {
-        cb.addChild('AddSubButton', {}, cb.children().length - 2);
-      }
-    });
+
+
+
+
 
 
     // 3. إدارة المستخدم (البروفايل)
@@ -877,6 +971,7 @@
     const SYNC_THRESHOLD = 1.0;
 
     function extractYouTubeID(url) {
+      if (!url) return null;
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
       const match = url.match(regExp);
       return (match && match[2].length === 11) ? match[2] : null;
@@ -887,14 +982,13 @@
       if (ytId) {
         return { 
           src: `https://www.youtube.com/watch?v=${ytId}`, 
-          type: 'video/youtube',
-          ytId: ytId
+          type: 'video/youtube'
         };
       }
-      return { src: inputUrl, type: 'video/mp4', ytId: null };
+      return { src: inputUrl, type: 'video/mp4' };
     }
 
-    async function changeVideoManual() {
+    function changeVideoManual() {
       const urlInput = document.getElementById('videoUrlInput');
       const url = urlInput.value.trim();
       if (!url) return;
@@ -904,7 +998,6 @@
       const videoData = { 
         src: media.src, 
         type: media.type, 
-        ytId: media.ytId,
         action: 'load', 
         time: 0, 
         timestamp: Date.now(), 
@@ -916,14 +1009,16 @@
       urlInput.value = "";
     }
 
-    // تنظيف وتطبيق الترجمات تلقائياً داخل قائمة الترجمة الافتراضية بالمشغل
     function clearOldSubtitles() {
-      const oldTracks = player.remoteTextTracks();
-      let i = oldTracks ? oldTracks.length : 0;
-      while (i--) {
-        player.removeRemoteTextTrack(oldTracks[i]);
-      }
+      try {
+        const oldTracks = player.remoteTextTracks();
+        let i = oldTracks ? oldTracks.length : 0;
+        while (i--) {
+          player.removeRemoteTextTrack(oldTracks[i]);
+        }
+      } catch(e) {}
     }
+
 
 
 
@@ -1009,7 +1104,7 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل المقطع داخل المشغل مع تنظيف مسارات الترجمة القديمة
+      // 1. تحميل المقطع داخل المشغل بشكل متوافق تماماً مع MP4 واليوتيوب
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
@@ -1019,11 +1114,14 @@
 
         clearOldSubtitles();
         player.pause();
-        player.src({ src: st.src, type: st.type || 'video/mp4' });
+        
+        // استخدام الصيغة الرسمية المتوافقة التي تقبل كلاً من يوتيوب وملفات mp4
+        player.src({ type: st.type || (st.src.includes('youtube.com') ? 'video/youtube' : 'video/mp4'), src: st.src });
 
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
+
 
 
 
