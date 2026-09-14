@@ -63,74 +63,14 @@
     /* طبقة تفاعل ذكية لإجبار المتصفح على تشغيل أي فيديو (يوتيوب أو درايف) */
     .click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
     .require-interaction .click-overlay { display: block; }
-    .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--btn-gradient); z-index: 101; }
-    /* إصلاح اتجاه المشغل بالكامل ليكون متوافقاً مع Video.js */
-    .video-js { width: 100%; height: 100%; font-family: 'Cairo', sans-serif !important; direction: ltr !important; }
+    .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--btn-gradient); z-index: 101; }
+    .video-js { width: 100%; height: 100%; } 
+    .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } 
+    .video-js .vjs-play-progress { background: var(--btn-gradient); }    
     
-    /* شريط تحكم احترافي جداً (MX Player / Netflix Style) */
-    .video-js .vjs-control-bar {
-        background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 0.95) 100%) !important;
-        height: 50px !important;
-        padding: 0 10px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        direction: ltr !important;
-    }
-
-    /* فاصل ذكي لدفع الأزرار لليمين واليسار بشكل مثالي ومنع التداخل */
-    .video-js .vjs-custom-control-spacer { display: flex !important; flex: 1 1 auto !important; }
-
-    /* أزرار المشغل والأيقونات */
-    .video-js .vjs-button { width: 40px !important; height: 40px !important; margin: 0; transition: 0.2s; color: #fff !important; display: flex !important; justify-content: center !important; align-items: center !important; }
-    .video-js .vjs-button:hover { color: var(--accent) !important; transform: scale(1.1); }
-    .video-js .vjs-icon-placeholder:before { font-size: 1.5em !important; line-height: 40px !important; }
-
-    /* شريط السحب الزمني العصري مع توهج (مكانه فوق شريط التحكم تماماً) */
-    .video-js .vjs-progress-control { position: absolute !important; top: -12px !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 12px !important; display: flex !important; align-items: center !important; cursor: pointer; }
-    .video-js .vjs-progress-holder { margin: 0 !important; height: 4px !important; width: 100% !important; background: rgba(255, 255, 255, 0.3) !important; transition: 0.2s ease !important; border-radius: 0 !important; }
-    .video-js .vjs-progress-control:hover .vjs-progress-holder { height: 8px !important; }
-    .video-js .vjs-play-progress { background: var(--btn-gradient) !important; box-shadow: 0 0 12px var(--accent); }
-    .video-js .vjs-play-progress:before { font-size: 14px !important; color: #fff !important; top: -5px !important; text-shadow: 0 0 5px #000; }
-    
-    /* عرض الأوقات بخط أنيق */
-    .video-js .vjs-time-control { display: flex !important; align-items: center !important; padding: 0 2px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: #e2e8f0 !important; }
-    .video-js .vjs-time-divider { min-width: auto !important; padding: 0 4px !important; display: flex !important; align-items: center !important; }
+    /* إجبار المشغل على إظهار الدقيقة الحالية والوقت الكلي بدلاً من الوقت المتبقي */
+    .video-js .vjs-current-time, .video-js .vjs-time-divider, .video-js .vjs-duration { display: flex !important; align-items: center; justify-content: center; padding: 0 4px; }
     .video-js .vjs-remaining-time { display: none !important; }
-
-    /* زر الترجمة المدمج (SUB) بارز وواضح */
-    .video-js .vjs-custom-sub-btn { width: 50px !important; }
-    .video-js .vjs-custom-sub-btn .vjs-icon-placeholder:before {
-        content: "SUB" !important;
-        font-family: 'Cairo', sans-serif !important;
-        font-weight: 900 !important;
-        font-size: 0.75rem !important;
-        background: rgba(255, 255, 255, 0.15);
-        padding: 2px 6px;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        line-height: normal !important;
-        letter-spacing: 0.5px;
-    }
-    .video-js .vjs-custom-sub-btn.active .vjs-icon-placeholder:before { background: var(--accent) !important; border-color: #fff !important; box-shadow: 0 0 10px var(--accent); color: #fff !important; }
-    
-    /* ستايل خط الترجمة على الشاشة (مقروء وكبير للأنمي) */
-    .video-js .vjs-text-track-display { bottom: 65px !important; pointer-events: none; }
-    .video-js .vjs-text-track-cue {
-        font-family: 'Cairo', sans-serif !important;
-        font-weight: 800 !important;
-        font-size: 1.4rem !important;
-        line-height: 1.5 !important;
-        color: #ffffff !important;
-        text-shadow: 0px 2px 4px #000, 0px 0px 8px #000 !important;
-        background: rgba(0, 0, 0, 0.6) !important;
-        border-radius: 8px !important;
-        padding: 4px 16px !important;
-    }
-
-
-
-
 
     .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
@@ -390,16 +330,6 @@
     .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
     .tab-btn:hover { background: rgba(255,255,255,0.1); }
 
-    /* أيقونة زر رفع الترجمة المدمج داخل شريط مشغل الفيديو */
-    .vjs-custom-sub-btn .vjs-icon-placeholder:before {
-        content: "\f0a0";
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 1.1em;
-        line-height: 1.9;
-    }
-
-
     /* 📱 إصلاح جذري لعناصر الإدخال والأزرار على الجوال */
     body.device-mobile .input-group {
         display: flex !important;
@@ -440,7 +370,141 @@
         display: none !important;
     }
 
+    /* ======================================= */
+    /* 🎬 MX Player Pro Max UI Styles */
+    /* ======================================= */
+    :root {
+      --vjs-sub-font: 1.5rem;
+      --vjs-sub-color: #ffffff;
+      --vjs-sub-bg: rgba(0, 0, 0, 0.75);
+    }
+    
+    /* 1. LTR Isolation (عزل الاتجاه لشريط التحكم فقط والحفاظ على الترجمة بالاتجاه العربي) */
+    .video-js .vjs-control-bar, .video-js .vjs-control-bar * { direction: ltr !important; }
+
+    
+    /* 2. شريط التحكم الزجاجي الاحترافي (بدون قص لشريط التقدم وقائمة الصوت) */
+    .video-js .vjs-control-bar { 
+        display: flex !important; 
+        justify-content: flex-start !important; 
+        align-items: center; 
+        background: rgba(2, 6, 23, 0.7) !important; 
+        backdrop-filter: blur(8px) !important; 
+        -webkit-backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(255,255,255,0.08); 
+        height: 55px !important; 
+        padding: 0 10px;
+        transition: opacity 0.3s ease-out;
+        will-change: opacity;
+        overflow: visible !important; /* هام جداً: إظهار شريط التقدم وقوائم الصوت */
+    }
+    
+    /* جعل أزرارنا الإضافية فقط قابلة للسحب على الجوال دون تخريب المشغل */
+    .mx-custom-buttons-container {
+        display: flex;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: visible;
+        scrollbar-width: none;
+        max-width: 55vw; /* تحديد العرض لتمكين السحب */
+    }
+    .mx-custom-buttons-container::-webkit-scrollbar { display: none; }
+
+    
+    /* الفاصل المرن (Flex Spacer) */
+    .vjs-custom-control-spacer { flex: 1 1 auto !important; min-width: 10px; }
+    
+    /* 3. شريط التقدم النيوني (ديناميكي وسريع الأداء) */
+    .video-js .vjs-progress-control { 
+        position: absolute !important; 
+        top: -15px !important; 
+        left: 0; right: 0; 
+        width: 100% !important; 
+        height: 15px !important; 
+        transition: transform 0.2s ease-out; 
+        will-change: transform;
+    }
+    .video-js .vjs-progress-control:hover, .video-js .vjs-progress-control.vjs-sliding { 
+        transform: translateY(-5px); /* استخدام transform للحركة لتجنب ثقل الموقع */
+        height: 20px !important; 
+    }
+    .video-js .vjs-slider { border-radius: 0 !important; background: rgba(255,255,255,0.2) !important; margin: 0 !important; }
+    .video-js .vjs-play-progress { 
+        background: var(--accent) !important; 
+        box-shadow: 0 0 12px var(--accent) !important; /* تخفيف التوهج للسرعة */
+        border-radius: 0 4px 4px 0; 
+        will-change: width;
+    }
+    
+    /* إجبار إظهار وقت السحب (الدقيقة) ومتابعة الاصبع بسلاسة طوال السحب */
+    .video-js .vjs-progress-control.vjs-sliding .vjs-time-tooltip,
+    .video-js .vjs-progress-control:hover .vjs-time-tooltip,
+    .video-js .vjs-progress-control:active .vjs-time-tooltip {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        top: -30px !important; /* رفع التوقيت قليلا ليظهر فوق الإصبع */
+    }
+
+    
+    /* 4. تنسيق أزرار المشغل المخصصة */
+    .vjs-custom-btn { 
+        cursor: pointer; 
+        color: #f8fafc; 
+        font-size: 1.15rem; 
+        width: 40px; height: 40px; 
+        display: flex; align-items: center; justify-content: center; 
+        transition: 0.3s; opacity: 0.85; margin: 0 2px;
+    }
+    .vjs-custom-btn:hover { opacity: 1; color: var(--accent); text-shadow: 0 0 15px var(--accent); transform: scale(1.15); }
+    .vjs-custom-btn.active-boost { color: #ef4444; text-shadow: 0 0 15px #ef4444; animation: pulseBoost 1.5s infinite; }
+    @keyframes pulseBoost { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    /* 5. شاشة القفل وتجميد اللمس (Screen Lock) */
+    .mx-lock-overlay { position: absolute; inset: 0; background: transparent; z-index: 1010; display: none; pointer-events: auto; }
+    .mx-lock-overlay.active { display: block; }
+    .mx-lock-btn-floating { 
+        position: absolute; top: 20px; left: 20px; 
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: #fff; 
+        padding: 14px; border-radius: 50%; font-size: 1.5rem; 
+        border: 1px solid rgba(255,255,255,0.2); cursor: pointer; 
+        opacity: 0.4; transition: 0.3s; z-index: 1011; display: none; align-items: center; justify-content: center;
+    }
+    .mx-lock-btn-floating:hover { opacity: 1; box-shadow: 0 0 20px var(--accent); transform: scale(1.1); }
+    .mx-lock-overlay.active ~ .mx-lock-btn-floating { display: flex; }
+
+    /* 6. قائمة الإعدادات الاحترافية الجانبية (Glass Panel Settings) */
+    .mx-settings-panel { 
+        position: absolute; top: 0; right: -320px; width: 300px; height: 100%; 
+        background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(24px) saturate(180%); 
+        border-left: 1px solid var(--glass-border); z-index: 1005; 
+        transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        display: flex; flex-direction: column; padding: 20px 15px; color: #fff; 
+        overflow-y: auto; direction: rtl; box-shadow: -10px 0 40px rgba(0,0,0,0.8); 
+    }
+    .mx-settings-panel.open { right: 0; }
+    .mx-settings-panel h3 { color: var(--accent); margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; font-size: 1.2rem; }
+    .mx-settings-group { margin-bottom: 18px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); }
+    .mx-settings-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 700; }
+    .mx-settings-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; }
+    .mx-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.05); color: #fff; padding: 8px 10px; border-radius: 10px; font-size: 0.8rem; font-weight:bold; cursor: pointer; transition: 0.2s; flex: 1; text-align: center; }
+    .mx-btn:hover, .mx-btn.active { background: var(--accent); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); border-color: var(--accent-hover); }
+
+    /* 7. ستايل نصوص الترجمة الاحترافي */
+    .video-js .vjs-text-track-display { pointer-events: none; direction: rtl !important; }
+    .video-js .vjs-text-track-cue > div { 
+      font-size: var(--vjs-sub-font) !important;
+      color: var(--vjs-sub-color) !important;
+      background-color: var(--vjs-sub-bg) !important;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.9) !important;
+      font-family: 'Cairo', sans-serif !important;
+      font-weight: 800 !important;
+      padding: 6px 16px !important;
+      border-radius: 12px !important;
+      line-height: 1.6 !important;
+    }
  </style>
+
 
 </head>
 <body>
@@ -616,9 +680,82 @@
 
   <div class="video-container" id="videoBox">
     <div class="click-overlay" onclick="triggerSmartPlay()"></div>
+    
+    <!-- شاشة القفل وتجميد اللمس -->
+    <div class="mx-lock-overlay" id="mxLockOverlay" onclick="event.stopPropagation()"></div>
+    <div class="mx-lock-btn-floating" id="mxUnlockBtn" onclick="toggleScreenLock()" title="انقر لفك القفل"><i class="fa-solid fa-lock"></i></div>
+    
+    <!-- نافذة إعدادات MX Player -->
+    <div class="mx-settings-panel" id="mxSettingsPanel">
+        <h3 style="display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fa-solid fa-sliders"></i> MX Settings</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer; color: #ef4444;" onclick="toggleMxSettings()"></i>
+        </h3>
+
+        <div class="mx-settings-group">
+            <label><i class="fa-solid fa-volume-high"></i> إعدادات الصوت (Audio)</label>
+            <div class="mx-settings-row">
+                <button class="mx-btn" id="muteToggleBtn" onclick="toggleMuteSettings()"><i class="fa-solid fa-volume-xmark"></i> كتم الصوت</button>
+            </div>
+            
+            <label style="margin-top:15px; display:block; color:#f59e0b;"><i class="fa-solid fa-bolt"></i> مضخم الصوت (Volume Boost)</label>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <input type="range" id="audioBoostSlider" min="0" max="2" step="0.1" value="1" oninput="changeAudioBoost(this.value)" class="custom-slider" style="margin-top:0; flex:1;">
+                <span id="audioBoostDisplay" style="font-size:0.9rem; font-weight:800; color:#f59e0b; min-width: 45px; text-align:left;">100%</span>
+            </div>
+        </div>
+
+        
+        <div class="mx-settings-group">
+            <label><i class="fa-solid fa-forward-step"></i> مقدار القفز الزمني (Skip Time)</label>
+            <div class="mx-settings-row">
+                <button class="mx-btn" onclick="setCustomSkipTime(5)">5 ثواني</button>
+                <button class="mx-btn active" id="skip10btn" onclick="setCustomSkipTime(10)">10 ثواني</button>
+                <button class="mx-btn" onclick="setCustomSkipTime(15)">15 ثانية</button>
+            </div>
+        </div>
+
+
+        <div class="mx-settings-group">
+
+            <label><i class="fa-solid fa-closed-captioning"></i> الترجمة السحابية (Subtitles)</label>
+            <input type="file" id="localSubInput" accept=".srt,.vtt" style="display:none;" onchange="uploadSharedSubtitle(this)">
+            <button class="mx-btn" style="width:100%; margin-bottom:8px; background:var(--btn-gradient); border:none;" onclick="document.getElementById('localSubInput').click()"><i class="fa-solid fa-cloud-arrow-up"></i> رفع ومزامنة ترجمة محليّة</button>
+            <div class="mx-settings-row">
+                <button class="mx-btn" onclick="toggleSubtitles()">تشغيل / إخفاء للجميع</button>
+            </div>
+            <label style="margin-top:12px;">تأخير ومزامنة الترجمة (Sync Offset)</label>
+            <div class="mx-settings-row">
+                <button class="mx-btn" onclick="adjustSubDelay(-0.5)"><i class="fa-solid fa-minus"></i> 0.5s</button>
+                <span id="subDelayDisplay" style="font-size:0.9rem; font-weight:800; color:#10b981;">0.0s</span>
+                <button class="mx-btn" onclick="adjustSubDelay(0.5)"><i class="fa-solid fa-plus"></i> 0.5s</button>
+            </div>
+            <label style="margin-top:12px;">تخصيص الخط للجميع</label>
+            <div class="mx-settings-row">
+                <button class="mx-btn" onclick="setSubStyle('1rem', '#ffffff', 'rgba(0,0,0,0.6)')">صغير</button>
+                <button class="mx-btn" onclick="setSubStyle('1.5rem', '#ffffff', 'rgba(0,0,0,0.75)')">وسط</button>
+                <button class="mx-btn" onclick="setSubStyle('2rem', '#ffd700', 'rgba(0,0,0,0.9)')">كبير وأصفر</button>
+            </div>
+        </div>
+
+        <div class="mx-settings-group">
+            <label><i class="fa-solid fa-gauge-high"></i> سرعة التشغيل (Playback Speed)</label>
+            <div class="mx-settings-row">
+                <button class="mx-btn" onclick="setSyncPlaybackSpeed(0.5)">0.5x</button>
+                <button class="mx-btn" onclick="setSyncPlaybackSpeed(1)">1.0x</button>
+                <button class="mx-btn" onclick="setSyncPlaybackSpeed(1.5)">1.5x</button>
+                <button class="mx-btn" onclick="setSyncPlaybackSpeed(2)">2.0x</button>
+            </div>
+        </div>
+
+    </div>
+
     <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
+
   </div>
   <!-- ↔️ شريط التحكم الذكي بحجم الفيديو -->
+
+
   <div id="resizerSlider" style="height: 10px; background: rgba(255,255,255,0.08); border-bottom: 1px solid var(--accent); cursor: ns-resize; display: flex; align-items: center; justify-content: center; z-index: 105; touch-action: none;" title="اسحب لتكبير/تصغير المشغل">
     <div style="width: 40px; height: 3px; background: var(--accent); border-radius: 2px;"></div>
   </div>
@@ -637,13 +774,11 @@
         <button onclick="skipTime(85)" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #ec4899; box-shadow: none; border-radius: 6px;" title="تخطي الشارة (85 ثانية)"><i class="fa-solid fa-forward-fast"></i></button>
       </div>
 
-
       <div style="display: flex; gap: 4px;">
         <!-- 📱 زر التبديل بين وضع الجوال والآيباد -->
         <button id="deviceModeBtn" onclick="toggleDeviceMode()" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa;" title="تبديل وضع العرض (جوال / آيباد)"><i class="fa-solid fa-mobile-screen"></i> <span id="deviceModeText">جوال</span></button>
         <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
       </div>
-
     </div>
     
     <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
@@ -702,104 +837,173 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Video.js بتنسيق متوازن ومضبوط LTR (ستايل MX Player)
+    // 2. تهيئة مشغل Video.js وبناء واجهة MX Player (بأداء فائق السلاسة)
     const player = videojs('videoPlayer', {
-      controls: true,
-      autoplay: false,
-      preload: 'auto',
-      fluid: false,
-      playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
+      techOrder: ['html5', 'youtube'],
       userActions: { hotkeys: true },
-      controlBar: {
-        children: [
-          'playToggle',
-          'volumePanel',
-          'currentTimeDisplay',
-          'timeDivider',
-          'durationDisplay',
-          'customControlSpacer', // 🌟 هذا الفاصل السحري يدفع الأزرار المتبقية لأقصى اليمين ويمنع التداخل
-          'progressControl',     // نضعه هنا برمجياً لكنه سيصعد للأعلى بفضل الـ CSS
-          'playbackRateMenuButton',
-          'fullscreenToggle'
-        ]
-      }
+      controlBar: { 
+          pictureInPictureToggle: false,
+          muteToggle: false,     // إخفاء زر الكتم الافتراضي نهائياً
+          volumePanel: false     // إخفاء شريط الصوت الافتراضي نهائياً
+      } 
     });
 
-    // إضافة زر SUB مخصص ومباشر لرفع واختيار ملفات الترجمة (.srt أو .vtt)
+    // متغير مقدار التقديم والتأخير السريع
+    let globalSkipAmount = 10;
+
+    // حقن الأزرار الاحترافية داخل شريط تحكم Video.js عند جاهزيته
     player.ready(function() {
-      const Button = videojs.getComponent('Button');
-      const CustomSubBtn = videojs.extend(Button, {
-        constructor: function() {
-          Button.apply(this, arguments);
-          this.addClass('vjs-custom-sub-btn');
-          this.controlText('إضافة ملف ترجمة (SRT / VTT)');
-        },
-        handleClick: function() {
-          let input = document.getElementById('mxSubFileInput');
-          if (!input) {
-            input = document.createElement('input');
-            input.id = 'mxSubFileInput';
-            input.type = 'file';
-            input.accept = '.vtt,.srt';
-            input.style.display = 'none';
-            document.body.appendChild(input);
-
-            input.onchange = (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                let content = ev.target.result;
-                // تحويل تلقائي لملفات SRT إلى WebVTT
-                if (file.name.endsWith('.srt')) {
-                  content = "WEBVTT\n\n" + content.replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2');
-                }
-                const blob = new Blob([content], { type: 'text/vtt' });
-                const blobUrl = URL.createObjectURL(blob);
-
-                // إزالة أي ترجمة قديمة
-                const oldTracks = player.remoteTextTracks();
-                let i = oldTracks ? oldTracks.length : 0;
-                while (i--) {
-                  player.removeRemoteTextTrack(oldTracks[i]);
-                }
-
-                // إضافة الترجمة الجديدة وتشغيلها فوراً
-                const track = player.addRemoteTextTrack({
-                  kind: 'subtitles',
-                  label: file.name.replace(/\.[^/.]+$/, ""),
-                  srclang: 'ar',
-                  src: blobUrl,
-                  default: true
-                }, false);
-
-                track.track.mode = 'showing';
-                this.addClass('active');
-                alert("تم تفعيل ملف الترجمة بنجاح! 🎬");
-              };
-              reader.readAsText(file);
-              input.value = '';
-            };
-          }
-          input.click();
-        }
-      });
-
-      videojs.registerComponent('CustomSubBtn', CustomSubBtn);
+      const cb = player.controlBar.el();
       
-      // وضع زر الترجمة قبل زر ملء الشاشة مباشرة (في النهاية)
-      if (player.controlBar) {
-        player.controlBar.addChild('CustomSubBtn', {}, player.controlBar.children().length - 1);
+      // إجبار الشريط الزمني على التحديث السلس جداً أثناء السحب (أداء محسن باستخدام requestAnimationFrame)
+      let isScrubbing = false;
+      player.on('timeupdate', () => { 
+          if(player.scrubbing() && !isScrubbing) {
+              isScrubbing = true;
+              requestAnimationFrame(() => {
+                  player.trigger('mousemove');
+                  isScrubbing = false;
+              });
+          }
+      });
+      
+      // الفاصل المرن لترتيب العناصر الذكي
+      const spacer = document.createElement('div');
+      spacer.className = 'vjs-custom-control-spacer';
+      
+      // حاوية الأزرار الاحترافية الجديدة (قابلة للسحب على الجوال ومفرغة من أزرار الصوت)
+      const customContainer = document.createElement('div');
+      customContainer.className = 'mx-custom-buttons-container';
+      customContainer.innerHTML = `
+        <div class="vjs-custom-btn" onclick="skipVideoTime(-globalSkipAmount)" title="تأخير سريع"><i class="fa-solid fa-rotate-left"></i></div>
+        <div class="vjs-custom-btn" onclick="skipVideoTime(globalSkipAmount)" title="تقديم سريع"><i class="fa-solid fa-rotate-right"></i></div>
+        <div class="vjs-custom-btn" onclick="toggleAspectRatio()" title="تغيير أبعاد العرض (Fit/Crop/Original)"><i class="fa-solid fa-expand"></i></div>
+        <div class="vjs-custom-btn" onclick="toggleScreenLock()" title="قفل الشاشة وتجميد اللمس"><i class="fa-solid fa-lock"></i></div>
+        <div class="vjs-custom-btn" onclick="toggleMxSettings()" title="الإعدادات الاحترافية"><i class="fa-solid fa-gear"></i></div>
+      `;
+
+
+
+      // إدراج العناصر: الفاصل المرن يوضع قبل زر الشاشة الكاملة مباشرة
+
+      const fullscreenBtn = cb.querySelector('.vjs-fullscreen-control');
+      if (fullscreenBtn) {
+          cb.insertBefore(spacer, fullscreenBtn);
+          cb.insertBefore(customContainer, fullscreenBtn);
+      } else {
+          cb.appendChild(spacer);
+          cb.appendChild(customContainer);
       }
     });
 
+    // ==========================================
+    // ⚙️ دوال واجهة MX Player الاحترافية
+    // ==========================================
+    
+    function toggleMxSettings() { document.getElementById('mxSettingsPanel').classList.toggle('open'); }
+    
+    function toggleScreenLock() {
+        const overlay = document.getElementById('mxLockOverlay');
+        const vjsControls = document.querySelector('.vjs-control-bar');
+        if(overlay.classList.contains('active')) {
+            overlay.classList.remove('active');
+            if(vjsControls) { vjsControls.style.opacity = '1'; vjsControls.style.pointerEvents = 'auto'; }
+        } else {
+            overlay.classList.add('active');
+            document.getElementById('mxSettingsPanel').classList.remove('open'); // إغلاق الإعدادات
+            if(vjsControls) { vjsControls.style.opacity = '0'; vjsControls.style.pointerEvents = 'none'; }
+        }
+    }
+
+    // دالة تغيير كمية القفز الزمني
+    function setCustomSkipTime(seconds) {
+        globalSkipAmount = seconds;
+        // تحديث إضاءة الزر النشط (إصلاح تداخل الـ 5 مع الـ 15)
+        const buttons = document.querySelectorAll('#mxSettingsPanel .mx-settings-row .mx-btn');
+        buttons.forEach(btn => {
+            const text = btn.innerText.trim();
+            // مسح التفعيل عن أزرار الوقت فقط
+            if (text.includes('ثواني') || text.includes('ثانية')) {
+                btn.classList.remove('active');
+            }
+            // تفعيل الزر المطابق حرفياً
+            if (text === `${seconds} ثواني` || text === `${seconds} ثانية`) {
+                btn.classList.add('active');
+            }
+        });
+    }
 
 
 
+    function skipVideoTime(sec) {
+        if(!currentUser) return;
+        const newT = player.currentTime() + sec;
+        isSystemAction = true;
+        player.currentTime(newT);
+        db.ref('videoState').update({ time: newT, timestamp: Date.now(), sender: currentUser.name });
+        setTimeout(() => { isSystemAction = false; }, 500);
+    }
 
+    // مبدل الأبعاد
+    let currentAspectIdx = 0;
+    const aspectModes = ['contain', 'cover', 'fill'];
+    function toggleAspectRatio() {
+        currentAspectIdx = (currentAspectIdx + 1) % 3;
+        const vid = document.querySelector('#videoBox video');
+        const ytb = document.querySelector('#videoBox iframe'); // دعم اليوتيوب
+        if(vid) vid.style.objectFit = aspectModes[currentAspectIdx];
+        if(ytb) ytb.style.objectFit = aspectModes[currentAspectIdx];
+    }
+
+    // دالة كتم وإلغاء كتم الصوت من داخل الإعدادات
+    function toggleMuteSettings() {
+        const isMuted = player.muted();
+        player.muted(!isMuted);
+        
+        const btn = document.getElementById('muteToggleBtn');
+        if (!isMuted) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> إلغاء الكتم';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> كتم الصوت';
+        }
+    }
+
+    // التحكم السلس بالصوت والمضخم دون التسبب في كتم الفيديو أو أخطاء CORS
+    function changeAudioBoost(value) {
+        const display = document.getElementById('audioBoostDisplay');
+        const numValue = parseFloat(value);
+        if (display) display.innerText = Math.round(numValue * 100) + '%';
+        
+        // ضبط مستوى صوت المشغل بسلاسة وأمان تام
+        if (player) {
+            player.volume(Math.min(1, numValue));
+            if (player.muted() && numValue > 0) {
+                player.muted(false);
+                const btn = document.getElementById('muteToggleBtn');
+                if (btn) {
+                    btn.classList.remove('active');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> كتم الصوت';
+                }
+            }
+        }
+    }
+
+
+
+    // دوال إعدادات السرعة والترجمة المتزامنة (يتم رفعها لـ Firebase)
+    function setSyncPlaybackSpeed(val) { db.ref('sharedSubSettings').update({ speed: val }); }
+    function setSubStyle(size, color, bg) { db.ref('sharedSubSettings').update({ fontSize: size, color: color, bg: bg }); }
+    function adjustSubDelay(val) {
+        db.ref('sharedSubSettings').once('value').then(snap => {
+            let current = snap.val()?.delay || 0.0;
+            db.ref('sharedSubSettings').update({ delay: current + val });
+        });
+    }
 
     // 3. إدارة المستخدم (البروفايل)
+
     let currentUser = JSON.parse(localStorage.getItem('app_user_profile')) || null;
         let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('app_user_id', userId);
@@ -965,62 +1169,34 @@
     });
 
     // ==========================================
-    // 5. قلب النظام: المزامنة، الروابط المباشرة والترجمات المدمجة
+    // 5. قلب النظام: المزامنة الاحترافية للفيديو
     // ==========================================
-    let isSystemAction = false;
-    const SYNC_THRESHOLD = 1.0;
+    let isSystemAction = false; // هذا المتغير السحري يمنع التكرار اللانهائي
+    const SYNC_THRESHOLD = 1.0; // فارق الثواني المسموح به قبل الإجبار على المزامنة
 
-    function extractYouTubeID(url) {
-      if (!url) return null;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    }
-
+    // محلل الروابط الذكي (للتعرف على اليوتيوب)
     function parseSmartUrl(inputUrl) {
-      const ytId = extractYouTubeID(inputUrl);
-      if (ytId) {
-        return { 
-          src: `https://www.youtube.com/watch?v=${ytId}`, 
-          type: 'video/youtube'
-        };
+      let src = inputUrl;
+      let type = 'video/mp4'; 
+      if (inputUrl.includes('youtube.com') || inputUrl.includes('youtu.be')) {
+        type = 'video/youtube';
+        src = inputUrl;
       }
-      return { src: inputUrl, type: 'video/mp4' };
+      return { src, type };
     }
 
     function changeVideoManual() {
-      const urlInput = document.getElementById('videoUrlInput');
-      const url = urlInput.value.trim();
+      const url = document.getElementById('videoUrlInput').value.trim();
       if (!url) return;
-
-      const media = parseSmartUrl(url);
-
-      const videoData = { 
-        src: media.src, 
-        type: media.type, 
-        action: 'load', 
-        time: 0, 
-        timestamp: Date.now(), 
-        sender: currentUser.name 
-      };
       
+      const media = parseSmartUrl(url);
+      
+      const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
       db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
-      urlInput.value = "";
+      sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
+      document.getElementById('videoUrlInput').value = "";
     }
-
-    function clearOldSubtitles() {
-      try {
-        const oldTracks = player.remoteTextTracks();
-        let i = oldTracks ? oldTracks.length : 0;
-        while (i--) {
-          player.removeRemoteTextTrack(oldTracks[i]);
-        }
-      } catch(e) {}
-    }
-
-
-
 
     // دالة القفز الزمني السريع (الجديدة)
     function jumpToTime() {
@@ -1100,57 +1276,45 @@
     });
 
     // --- استقبال الأوامر من Firebase ---
+    
+    let currentGlobalSpeed = 1.0; // متغير لتخزين السرعة الحالية المتفق عليها
+
     db.ref('videoState').on('value', (snap) => {
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل المقطع داخل المشغل بشكل متوافق تماماً مع MP4 واليوتيوب
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
-        
         const videoBox = document.getElementById('videoBox');
         if (videoBox) videoBox.classList.add('require-interaction');
-
-        clearOldSubtitles();
         player.pause();
-        
-        // استخدام الصيغة الرسمية المتوافقة التي تقبل كلاً من يوتيوب وملفات mp4
-        player.src({ type: st.type || (st.src.includes('youtube.com') ? 'video/youtube' : 'video/mp4'), src: st.src });
-
+        player.src({ src: st.src, type: st.type || 'video/mp4' });
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
 
-
-
-
-      // 2. حساب التأخير الزمني للإنترنت
       const now = Date.now();
       const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
       let expectedTime = st.time;
-      if (st.action === 'play') { expectedTime += delayInSeconds; }
+      if (st.action === 'play') { expectedTime += (delayInSeconds * currentGlobalSpeed); }
 
-      // 3. المزامنة المتسامحة (منع التقطيع والـ Buffering المستمر)
       const timeDifference = player.currentTime() - expectedTime;
 
-      // لن نتدخل أبداً إذا كان الفارق أقل من ثانية (1.0) لترك المتصفح يحمل بسلاسة
+      // ضبط المزامنة مع احترام سرعة التشغيل المخصصة (Global Speed)
       if (Math.abs(timeDifference) > 3.0) {
           isSystemAction = true;
           player.currentTime(expectedTime);
-          player.playbackRate(1.0);
+          player.playbackRate(currentGlobalSpeed);
           setTimeout(() => { isSystemAction = false; }, 500);
       } else if (timeDifference > 1.0) {
-          // التبطيء الناعم جداً فقط عند فارق يزيد عن ثانية
-          player.playbackRate(0.95);
+          player.playbackRate(currentGlobalSpeed * 0.95);
       } else if (timeDifference < -1.0) {
-          // التسريع الناعم جداً فقط عند فارق يزيد عن ثانية
-          player.playbackRate(1.05);
+          player.playbackRate(currentGlobalSpeed * 1.05);
       } else {
-          player.playbackRate(1.0);
+          player.playbackRate(currentGlobalSpeed);
       }
 
-      // 4. مزامنة حالة التشغيل والإيقاف
       if (st.action === 'play' && player.paused()) {
         isSystemAction = true;
         player.play().catch(() => { isSystemAction = false; });
@@ -1160,6 +1324,109 @@
         setTimeout(() => { isSystemAction = false; }, 300);
       }
     });
+
+    // ==========================================
+    // 📝 نظام مزامنة الترجمة السحابية الكاملة
+    // ==========================================
+    
+    // 1. رفع الترجمة وتحويلها
+    function uploadSharedSubtitle(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            let text = e.target.result;
+            // تحويل ذكي لملفات SRT إلى WebVTT إذا تطلب الأمر
+            if(file.name.endsWith('.srt')) {
+                text = "WEBVTT\n\n" + text.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+            }
+            db.ref('sharedSubtitleFile').set({ text: text, sender: currentUser.name, timestamp: Date.now() });
+            sendSystemMessage(`${currentUser.name} قام برفع ملف ترجمة 📝`);
+        };
+        reader.readAsText(file);
+        input.value = "";
+    }
+
+    let activeSubTrack = null;
+    let globalSubDelayOffset = 0.0;
+
+    // 2. استقبال الترجمة، إنشاؤها وعرضها للجميع في نفس اللحظة
+    db.ref('sharedSubtitleFile').on('value', snap => {
+        const data = snap.val();
+        if(!data) return;
+        
+        const blob = new Blob([data.text], { type: 'text/vtt' });
+        const url = URL.createObjectURL(blob);
+        
+        // إزالة أي ترجمات قديمة
+        const vid = document.querySelector('video');
+        if(!vid) return;
+        const oldTracks = vid.querySelectorAll('track');
+        oldTracks.forEach(t => t.remove());
+        
+        // إضافة الترجمة الجديدة
+        const trackEl = document.createElement('track');
+        trackEl.src = url;
+        trackEl.kind = 'subtitles';
+        trackEl.srclang = 'ar';
+        trackEl.label = 'مزامنة MX';
+        trackEl.default = true;
+        vid.appendChild(trackEl);
+        
+        // إجبار التفعيل
+        setTimeout(() => {
+            for (let i = 0; i < vid.textTracks.length; i++) {
+                vid.textTracks[i].mode = 'showing';
+                activeSubTrack = vid.textTracks[i];
+            }
+            db.ref('sharedSubSettings').update({ visible: true, delay: 0 }); // تصفير التأخير عند رفع ملف جديد
+        }, 300);
+    });
+
+    // 3. التحكم المتزامن في إعدادات الترجمة والسرعة
+    db.ref('sharedSubSettings').on('value', snap => {
+        const data = snap.val();
+        if(!data) return;
+
+        // مزامنة تشغيل وإخفاء الترجمة
+        if (data.visible !== undefined && activeSubTrack) {
+            activeSubTrack.mode = data.visible ? 'showing' : 'disabled';
+        }
+
+        // مزامنة سرعة التشغيل
+        if (data.speed !== undefined) {
+            currentGlobalSpeed = data.speed;
+            player.playbackRate(currentGlobalSpeed);
+        }
+
+        // مزامنة الستايل
+        if (data.fontSize) {
+            document.documentElement.style.setProperty('--vjs-sub-font', data.fontSize);
+            document.documentElement.style.setProperty('--vjs-sub-color', data.color);
+            document.documentElement.style.setProperty('--vjs-sub-bg', data.bg);
+        }
+
+        // مزامنة توقيت الترجمة (Delay) وضبط الأسطر
+        if (data.delay !== undefined) {
+            document.getElementById('subDelayDisplay').innerText = data.delay.toFixed(1) + 's';
+            if (activeSubTrack && activeSubTrack.cues) {
+                const shiftAmount = data.delay - globalSubDelayOffset;
+                for (let i = 0; i < activeSubTrack.cues.length; i++) {
+                    activeSubTrack.cues[i].startTime += shiftAmount;
+                    activeSubTrack.cues[i].endTime += shiftAmount;
+                }
+                globalSubDelayOffset = data.delay; // حفظ القيمة الجديدة
+            }
+        }
+    });
+
+    function toggleSubtitles() {
+        if(activeSubTrack) {
+            const isVis = activeSubTrack.mode === 'showing';
+            db.ref('sharedSubSettings').update({ visible: !isVis });
+        }
+    }
+
 
     // ==========================================
     // 6. نظام الشات والإشعارات
