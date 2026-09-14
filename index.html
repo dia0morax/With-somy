@@ -383,9 +383,8 @@
     .video-js .vjs-control-bar, .video-js .vjs-control-bar * { direction: ltr !important; }
 
     
-    /* 2. شريط التحكم الزجاجي الاحترافي (بدون قص لشريط التقدم وقائمة الصوت) */
+    /* 2. شريط التحكم الزجاجي الاحترافي (بدون فرض الظهور الدائم ليختفي تلقائياً) */
     .video-js .vjs-control-bar { 
-        display: flex !important; 
         justify-content: flex-start !important; 
         align-items: center; 
         background: rgba(2, 6, 23, 0.7) !important; 
@@ -396,7 +395,7 @@
         padding: 0 10px;
         transition: opacity 0.3s ease-out;
         will-change: opacity;
-        overflow: visible !important; /* هام جداً: إظهار شريط التقدم وقوائم الصوت */
+        overflow: visible !important;
     }
     
     /* جعل أزرارنا الإضافية فقط قابلة للسحب على الجوال دون تخريب المشغل */
@@ -406,11 +405,10 @@
         overflow-x: auto;
         overflow-y: visible;
         scrollbar-width: none;
-        max-width: 55vw; /* تحديد العرض لتمكين السحب */
+        max-width: 55vw;
     }
     .mx-custom-buttons-container::-webkit-scrollbar { display: none; }
 
-    
     /* الفاصل المرن (Flex Spacer) */
     .vjs-custom-control-spacer { flex: 1 1 auto !important; min-width: 10px; }
     
@@ -425,13 +423,13 @@
         will-change: transform;
     }
     .video-js .vjs-progress-control:hover, .video-js .vjs-progress-control.vjs-sliding { 
-        transform: translateY(-5px); /* استخدام transform للحركة لتجنب ثقل الموقع */
+        transform: translateY(-5px); 
         height: 20px !important; 
     }
     .video-js .vjs-slider { border-radius: 0 !important; background: rgba(255,255,255,0.2) !important; margin: 0 !important; }
     .video-js .vjs-play-progress { 
         background: var(--accent) !important; 
-        box-shadow: 0 0 12px var(--accent) !important; /* تخفيف التوهج للسرعة */
+        box-shadow: 0 0 12px var(--accent) !important; 
         border-radius: 0 4px 4px 0; 
         will-change: width;
     }
@@ -443,10 +441,9 @@
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
-        top: -30px !important; /* رفع التوقيت قليلا ليظهر فوق الإصبع */
+        top: -30px !important;
     }
 
-    
     /* 4. تنسيق أزرار المشغل المخصصة */
     .vjs-custom-btn { 
         cursor: pointer; 
@@ -468,12 +465,15 @@
         background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: #fff; 
         padding: 14px; border-radius: 50%; font-size: 1.5rem; 
         border: 1px solid rgba(255,255,255,0.2); cursor: pointer; 
-        opacity: 0.4; transition: 0.3s; z-index: 1011; display: none; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 1011; display: flex; align-items: center; justify-content: center;
     }
+    .mx-lock-btn-floating.visible { opacity: 0.9; pointer-events: auto; }
     .mx-lock-btn-floating:hover { opacity: 1; box-shadow: 0 0 20px var(--accent); transform: scale(1.1); }
-    .mx-lock-overlay.active ~ .mx-lock-btn-floating { display: flex; }
+    /* إخفاء شريط المشغل تماماً عند تفعيل القفل */
+    .video-container.is-locked .vjs-control-bar { display: none !important; }
 
     /* 6. قائمة الإعدادات الاحترافية الجانبية (Glass Panel Settings) */
+
     .mx-settings-panel { 
         position: absolute; top: 0; right: -320px; width: 300px; height: 100%; 
         background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(24px) saturate(180%); 
@@ -877,15 +877,11 @@
       customContainer.innerHTML = `
         <div class="vjs-custom-btn" onclick="skipVideoTime(-globalSkipAmount)" title="تأخير سريع"><i class="fa-solid fa-rotate-left"></i></div>
         <div class="vjs-custom-btn" onclick="skipVideoTime(globalSkipAmount)" title="تقديم سريع"><i class="fa-solid fa-rotate-right"></i></div>
-        <div class="vjs-custom-btn" onclick="toggleAspectRatio()" title="تغيير أبعاد العرض (Fit/Crop/Original)"><i class="fa-solid fa-expand"></i></div>
         <div class="vjs-custom-btn" onclick="toggleScreenLock()" title="قفل الشاشة وتجميد اللمس"><i class="fa-solid fa-lock"></i></div>
         <div class="vjs-custom-btn" onclick="toggleMxSettings()" title="الإعدادات الاحترافية"><i class="fa-solid fa-gear"></i></div>
       `;
 
-
-
       // إدراج العناصر: الفاصل المرن يوضع قبل زر الشاشة الكاملة مباشرة
-
       const fullscreenBtn = cb.querySelector('.vjs-fullscreen-control');
       if (fullscreenBtn) {
           cb.insertBefore(spacer, fullscreenBtn);
@@ -902,20 +898,54 @@
     
     function toggleMxSettings() { document.getElementById('mxSettingsPanel').classList.toggle('open'); }
     
+    let lockHideTimer = null;
+
+    function showLockIconTemporarily() {
+        const unlockBtn = document.getElementById('mxUnlockBtn');
+        if (!unlockBtn) return;
+        unlockBtn.classList.add('visible');
+        clearTimeout(lockHideTimer);
+        lockHideTimer = setTimeout(() => {
+            unlockBtn.classList.remove('visible');
+        }, 2000);
+    }
+
+    // إظهار زر القفل لمدة ثانيتين عند لمس أو النقر على شاشة الفيديو وهي مقفلة
+    const lockOverlayEl = document.getElementById('mxLockOverlay');
+    if (lockOverlayEl) {
+        lockOverlayEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showLockIconTemporarily();
+        });
+        lockOverlayEl.addEventListener('touchstart', () => {
+            showLockIconTemporarily();
+        }, { passive: true });
+    }
+
     function toggleScreenLock() {
         const overlay = document.getElementById('mxLockOverlay');
-        const vjsControls = document.querySelector('.vjs-control-bar');
-        if(overlay.classList.contains('active')) {
+        const unlockBtn = document.getElementById('mxUnlockBtn');
+        const videoBox = document.getElementById('videoBox');
+        
+        if (overlay.classList.contains('active')) {
+            // إلغاء القفل: إخفاء الزر العلوي فوراً وإرجاع التحكم الطبيعي لشريط المشغل ليختفي تلقائياً
             overlay.classList.remove('active');
-            if(vjsControls) { vjsControls.style.opacity = '1'; vjsControls.style.pointerEvents = 'auto'; }
+            if (videoBox) videoBox.classList.remove('is-locked');
+            clearTimeout(lockHideTimer);
+            if (unlockBtn) unlockBtn.classList.remove('visible');
+            if (player) player.userActive(true); // تنشيط مؤقت المشغل التلقائي ليختفي الشريط بعد ثوانٍ كالمعتاد
         } else {
+            // تفعيل القفل: إخفاء الشريط وإظهار زر فك القفل لمدة ثانيتين ثم إخفاؤه
             overlay.classList.add('active');
-            document.getElementById('mxSettingsPanel').classList.remove('open'); // إغلاق الإعدادات
-            if(vjsControls) { vjsControls.style.opacity = '0'; vjsControls.style.pointerEvents = 'none'; }
+            if (videoBox) videoBox.classList.add('is-locked');
+            document.getElementById('mxSettingsPanel').classList.remove('open');
+            showLockIconTemporarily();
         }
     }
 
+
     // دالة تغيير كمية القفز الزمني
+
     function setCustomSkipTime(seconds) {
         globalSkipAmount = seconds;
         // تحديث إضاءة الزر النشط (إصلاح تداخل الـ 5 مع الـ 15)
