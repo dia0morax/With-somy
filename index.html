@@ -718,13 +718,20 @@
 
         <div class="mx-settings-group">
 
-            <label><i class="fa-solid fa-closed-captioning"></i> الترجمة السحابية (Subtitles)</label>
+            <label><i class="fa-solid fa-closed-captioning"></i> قائمة الترجمات المضافة (Subtitles)</label>
             <input type="file" id="localSubInput" accept=".srt,.vtt" style="display:none;" onchange="uploadSharedSubtitle(this)">
-            <button class="mx-btn" style="width:100%; margin-bottom:8px; background:var(--btn-gradient); border:none;" onclick="document.getElementById('localSubInput').click()"><i class="fa-solid fa-cloud-arrow-up"></i> رفع ومزامنة ترجمة محليّة</button>
+            <button class="mx-btn" style="width:100%; margin-bottom:8px; background:var(--btn-gradient); border:none;" onclick="document.getElementById('localSubInput').click()"><i class="fa-solid fa-cloud-arrow-up"></i> رفع ترجمة جديدة للقائمة</button>
+            
+            <!-- حاوية قائمة الترجمات -->
+            <div id="subtitlesListContainer" style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 5px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem;">لا توجد ترجمات مضافة</div>
+            </div>
+
             <div class="mx-settings-row">
-                <button class="mx-btn" onclick="toggleSubtitles()">تشغيل / إخفاء للجميع</button>
+                <button id="toggleSubBtn" class="mx-btn" onclick="toggleSubtitles()"><i class="fa-solid fa-eye-slash"></i> الترجمة متوقفة</button>
             </div>
             <label style="margin-top:12px;">تأخير ومزامنة الترجمة (Sync Offset)</label>
+
             <div class="mx-settings-row">
                 <button class="mx-btn" onclick="adjustSubDelay(-0.5)"><i class="fa-solid fa-minus"></i> 0.5s</button>
                 <span id="subDelayDisplay" style="font-size:0.9rem; font-weight:800; color:#10b981;">0.0s</span>
@@ -1318,11 +1325,16 @@
         isSystemAction = true;
         const videoBox = document.getElementById('videoBox');
         if (videoBox) videoBox.classList.add('require-interaction');
+        
+        // إيقاف الترجمة تلقائياً وإلغاء تحديدها عند تغيير الفيديو
+        db.ref('sharedSubSettings').update({ activeSubId: null, visible: false });
+
         player.pause();
         player.src({ src: st.src, type: st.type || 'video/mp4' });
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
+
 
       const now = Date.now();
       const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
@@ -1356,22 +1368,20 @@
     });
 
     // ==========================================
-    // 📝 نظام مزامنة الترجمة السحابية الكاملة
+    // 📝 نظام مزامنة الترجمة السحابية الكاملة (المعدل)
     // ==========================================
     
-    // 1. رفع الترجمة وتحويلها
+    // 1. رفع الترجمة وإضافتها لقائمة الترجمات
     function uploadSharedSubtitle(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = e => {
             let text = e.target.result;
-            // تحويل ذكي لملفات SRT إلى WebVTT إذا تطلب الأمر
             if(file.name.endsWith('.srt')) {
                 text = "WEBVTT\n\n" + text.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
             }
-            db.ref('sharedSubtitleFile').set({ text: text, sender: currentUser.name, timestamp: Date.now() });
-            sendSystemMessage(`${currentUser.name} قام برفع ملف ترجمة 📝`);
+            db.ref('sharedSubtitlesList').push({ name: file.name, text: text, sender: currentUser.name, timestamp: Date.now() });
         };
         reader.readAsText(file);
         input.value = "";
@@ -1379,48 +1389,116 @@
 
     let activeSubTrack = null;
     let globalSubDelayOffset = 0.0;
+    let currentActiveSubKey = null;
 
-    // 2. استقبال الترجمة، إنشاؤها وعرضها للجميع في نفس اللحظة
-    db.ref('sharedSubtitleFile').on('value', snap => {
-        const data = snap.val();
-        if(!data) return;
+    // 2. استدعاء قائمة الترجمات وعرضها
+    db.ref('sharedSubtitlesList').on('value', snap => {
+        const container = document.getElementById('subtitlesListContainer');
+        if(!container) return;
         
-        const blob = new Blob([data.text], { type: 'text/vtt' });
-        const url = URL.createObjectURL(blob);
+        let html = '';
+        snap.forEach(child => {
+            const sub = child.val();
+            const subKey = child.key;
+            const isActive = currentActiveSubKey === subKey;
+            
+            html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:6px; border-radius:6px; margin-bottom:4px; border: 1px solid ${isActive ? 'var(--accent)' : 'transparent'};">
+                <span style="font-size:0.75rem; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;" title="${sub.name}">${sub.name}</span>
+                <div style="display:flex; gap:4px;">
+                    <button onclick="applySubtitle('${subKey}')" style="padding: 4px 8px; font-size: 0.7rem; background: ${isActive ? 'var(--accent)' : '#3b82f6'}; box-shadow:none;"><i class="fa-solid fa-check"></i> ${isActive ? 'مفعلة' : 'اختيار'}</button>
+                    <button onclick="deleteSubtitle('${subKey}')" style="padding: 4px 8px; font-size: 0.7rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
         
-        // إزالة أي ترجمات قديمة
-        const vid = document.querySelector('video');
-        if(!vid) return;
-        const oldTracks = vid.querySelectorAll('track');
-        oldTracks.forEach(t => t.remove());
-        
-        // إضافة الترجمة الجديدة
-        const trackEl = document.createElement('track');
-        trackEl.src = url;
-        trackEl.kind = 'subtitles';
-        trackEl.srclang = 'ar';
-        trackEl.label = 'مزامنة MX';
-        trackEl.default = true;
-        vid.appendChild(trackEl);
-        
-        // إجبار التفعيل
-        setTimeout(() => {
-            for (let i = 0; i < vid.textTracks.length; i++) {
-                vid.textTracks[i].mode = 'showing';
-                activeSubTrack = vid.textTracks[i];
-            }
-            db.ref('sharedSubSettings').update({ visible: true, delay: 0 }); // تصفير التأخير عند رفع ملف جديد
-        }, 300);
+        if (html === '') {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.75rem;">لا توجد ترجمات مضافة</div>';
+        } else {
+            container.innerHTML = html;
+        }
     });
 
-    // 3. التحكم المتزامن في إعدادات الترجمة والسرعة
+    // دالة اختيار الترجمة لتطبيقها
+    function applySubtitle(key) {
+        db.ref('sharedSubSettings').update({ activeSubId: key, visible: true, delay: 0 });
+    }
+
+    // دالة حذف الترجمة
+    function deleteSubtitle(key) {
+        if(confirm("هل أنت متأكد من حذف هذه الترجمة؟")) {
+            db.ref(`sharedSubtitlesList/${key}`).remove();
+            if (currentActiveSubKey === key) {
+                db.ref('sharedSubSettings').update({ activeSubId: null, visible: false });
+            }
+        }
+    }
+
+    // 3. مراقبة تغييرات الترجمة النشطة وتطبيقها
     db.ref('sharedSubSettings').on('value', snap => {
         const data = snap.val();
         if(!data) return;
 
-        // مزامنة تشغيل وإخفاء الترجمة
-        if (data.visible !== undefined && activeSubTrack) {
-            activeSubTrack.mode = data.visible ? 'showing' : 'disabled';
+        // مزامنة الملف النشط
+        if (data.activeSubId !== undefined && data.activeSubId !== currentActiveSubKey) {
+            currentActiveSubKey = data.activeSubId;
+            
+            if (currentActiveSubKey) {
+                db.ref(`sharedSubtitlesList/${currentActiveSubKey}`).once('value').then(subSnap => {
+                    const subData = subSnap.val();
+                    if(subData) {
+                        const blob = new Blob([subData.text], { type: 'text/vtt' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        const vid = document.querySelector('video');
+                        if(vid) {
+                            const oldTracks = vid.querySelectorAll('track');
+                            oldTracks.forEach(t => t.remove());
+                            
+                            const trackEl = document.createElement('track');
+                            trackEl.src = url;
+                            trackEl.kind = 'subtitles';
+                            trackEl.srclang = 'ar';
+                            trackEl.label = 'مزامنة MX';
+                            trackEl.default = true;
+                            vid.appendChild(trackEl);
+                            
+                            setTimeout(() => {
+                                for (let i = 0; i < vid.textTracks.length; i++) {
+                                    activeSubTrack = vid.textTracks[i];
+                                    activeSubTrack.mode = data.visible ? 'showing' : 'disabled';
+                                }
+                            }, 300);
+                        }
+                    }
+                });
+            } else {
+                const vid = document.querySelector('video');
+                if(vid) {
+                    const oldTracks = vid.querySelectorAll('track');
+                    oldTracks.forEach(t => t.remove());
+                }
+                activeSubTrack = null;
+            }
+        }
+
+        // مزامنة تشغيل وإخفاء الترجمة وتحديث شكل الزر
+        if (data.visible !== undefined) {
+            const toggleBtn = document.getElementById('toggleSubBtn');
+            if (toggleBtn) {
+                if (data.visible) {
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i> الترجمة مشتغلة';
+                    toggleBtn.style.background = '#10b981';
+                    toggleBtn.style.borderColor = '#059669';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> الترجمة متوقفة';
+                    toggleBtn.style.background = 'rgba(255,255,255,0.08)';
+                    toggleBtn.style.borderColor = 'rgba(255,255,255,0.05)';
+                }
+            }
+            if (activeSubTrack) {
+                activeSubTrack.mode = data.visible ? 'showing' : 'disabled';
+            }
         }
 
         // مزامنة سرعة التشغيل
@@ -1451,11 +1529,17 @@
     });
 
     function toggleSubtitles() {
-        if(activeSubTrack) {
-            const isVis = activeSubTrack.mode === 'showing';
-            db.ref('sharedSubSettings').update({ visible: !isVis });
-        }
+        db.ref('sharedSubSettings').once('value').then(snap => {
+            const data = snap.val() || {};
+            const isCurrentlyVisible = data.visible || false;
+            if (data.activeSubId || !isCurrentlyVisible) {
+                db.ref('sharedSubSettings').update({ visible: !isCurrentlyVisible });
+            } else {
+                alert("يرجى اختيار ترجمة من القائمة أولاً.");
+            }
+        });
     }
+
 
 
     // ==========================================
