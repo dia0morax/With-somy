@@ -48,17 +48,20 @@
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-    /* تثبيت الشاشة بقوة لمنع الرمشة السوداء عند فتح الكيبورد */
-    html, body { background: var(--bg-color-1); color: var(--text-main); height: 100%; width: 100%; position: fixed; inset: 0; overflow: hidden; display: flex; flex-direction: column; z-index: 1; }
+    /* تثبيت الشاشة بقوة لمنع الرمشة السوداء عند فتح الكيبورد - مع منع التحديث التلقائي وإجبار التسريع العتادي */
+    html, body { background: var(--bg-color-1); color: var(--text-main); height: 100%; width: 100%; position: fixed; inset: 0; overflow: hidden; display: flex; flex-direction: column; z-index: 1; overscroll-behavior: none; transform: translateZ(0); }
+
     
-    /* زيادة السطوع وتوسيع نطاق الوهج */
-    body::before, body::after { content: ''; position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; animation: floatOrbs 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; mix-blend-mode: screen; }
+    /* زيادة السطوع وتوسيع نطاق الوهج - تم تفعيل التسريع العتادي (GPU) لمنع التقطيع */
+    body::before, body::after { content: ''; position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; animation: floatOrbs 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; mix-blend-mode: screen; will-change: transform; transform: translateZ(0); backface-visibility: hidden; }
     body::before { width: 75vw; height: 75vw; background: rgba(139, 92, 246, 0.45); top: -10%; left: -10%; }
     body::after { width: 65vw; height: 65vw; background: rgba(14, 165, 233, 0.4); bottom: -5%; right: -10%; animation-delay: -7s; }
-    @keyframes floatOrbs { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(15vw, 15vh) scale(1.4); } }
+    @keyframes floatOrbs { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(15vw, 15vh, 0) scale(1.4); } }
 
-    /* حجم ثابت 240px يمنع الفيديو من التصاغر عند فتح الكيبورد */
-    .video-container { width: 100%; height: 240px; min-height: 240px; background: #000; z-index: 100; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
+
+    /* حجم ثابت 240px يمنع الفيديو من التصاغر عند فتح الكيبورد - عزل كامل للمشغل لمنع اللاق */
+    .video-container { width: 100%; height: 240px; min-height: 240px; background: #000; z-index: 100; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; contain: layout style; transform: translateZ(0); }
+
     
     /* طبقة تفاعل ذكية لإجبار المتصفح على تشغيل أي فيديو (يوتيوب أو درايف) */
     .click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
@@ -74,7 +77,8 @@
 
     .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
-    .status-bar, .chat-container, details, .modal-card, #stickersPanel { background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 18px; }
+    .status-bar, .chat-container, details, .modal-card, #stickersPanel { background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 18px; transform: translateZ(0); }
+
 
     .status-bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 0.85rem; overflow-x: auto; white-space: nowrap; }
     
@@ -97,15 +101,16 @@
 
     .chat-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; position: relative; min-height: 250px; }
     
-    /* وهج إضافي داخل صندوق الشات نفسه */
-    .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%); filter: blur(30px); z-index: 0; animation: innerGlow 6s infinite alternate; pointer-events: none; }
-    @keyframes innerGlow { 0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); } 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); } }
+    /* وهج إضافي داخل صندوق الشات نفسه - تسريع بالـ 3D */
+    .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate3d(-50%, -50%, 0); width: 90%; height: 90%; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%); filter: blur(30px); z-index: 0; animation: innerGlow 6s infinite alternate; pointer-events: none; will-change: transform, opacity; }
+    @keyframes innerGlow { 0% { opacity: 0.3; transform: translate3d(-50%, -50%, 0) scale(0.9); } 100% { opacity: 0.8; transform: translate3d(-50%, -50%, 0) scale(1.1); } }
 
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; contain: content; }
     
-    /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
-    @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين - عزل وتخفيف الحمل */
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; content-visibility: auto; contain-intrinsic-size: auto 60px; will-change: transform, opacity; }
+    @keyframes popIn { 0% { opacity: 0; transform: translate3d(0, 30px, 0) scale(0.85); } 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+
   
     .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
     .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 60px; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
@@ -1767,17 +1772,23 @@
     }
 
     let typingTimeout;
+    let lastTypingTime = 0;
     function handleTyping() {
       if (!currentUser) return;
       
-      // 1. إرسال إشارة مؤشر الكتابة للمتواجدين
+      // 1. إرسال إشارة مؤشر الكتابة للمتواجدين (مفلترة لتخفيف الضغط على المعالج والشبكة)
+      const now = Date.now();
       const typeRef = db.ref(`typing/${userId}`);
-      typeRef.set(currentUser.name);
-      typeRef.onDisconnect().remove();
+      if (now - lastTypingTime > 1000) {
+          typeRef.set(currentUser.name);
+          typeRef.onDisconnect().remove();
+          lastTypingTime = now;
+      }
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { typeRef.remove(); }, 1500);
+      typingTimeout = setTimeout(() => { typeRef.remove(); lastTypingTime = 0; }, 1500);
 
       // 2. تشغيل الاقتراحات الذكية للملصقات (للكلمة المفردة فقط وبدون مسافات)
+
       const input = document.getElementById('messageInput');
       if (!input) return;
       
