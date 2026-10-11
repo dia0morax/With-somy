@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Anime Watch Together - Pro Max</title>
   
+  <!-- إعدادات تطبيق الويب (PWA) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Anime Together">
+  <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/bottts/png?seed=Alien&size=192">
+
+  
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1027,57 +1036,54 @@
       }
     }
 
-    // استماع للشات مع عرض الحد الآمن فقط (14 رسالة) بدون تكرار
-    db.ref('chat').limitToLast(14).on('value', (snap) => {
+    // دالة بناء وتوليد عناصر الرسائل
+    function renderMessagesFromList(messagesList) {
       const msgDiv = document.getElementById('messages');
-      const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 10;
-      
-      let htmlBuilder = ""; // 1. متغير لتجميع النص بالكامل في الذاكرة أولاً
-      
-      snap.forEach(c => {
-        const m = c.val();
-        
-        if(m.isSystem) {
-          htmlBuilder += `<div class="msg-system">${m.text}</div>`; // 2. استبدال msgDiv.innerHTML بـ htmlBuilder
+      if (!msgDiv) return;
+      const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
+
+      let htmlBuilder = "";
+      messagesList.forEach(item => {
+        const m = item.val;
+        const msgKey = item.key;
+
+        if (m.isSystem) {
+          htmlBuilder += `<div class="msg-system">${m.text}</div>`;
         } else {
           const isMine = currentUser && m.name === currentUser.name;
-          
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
-          if(m.img && m.isSticker) {
-              contentHtml += `<img src="${m.img}" loading="lazy" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
-          } else if(m.img) {
-              contentHtml += `<img src="${m.img}" loading="lazy" class="chat-img" onclick="openImageModal('${m.img}')">`;
+          if (m.img && m.isSticker) {
+            contentHtml += `<img src="${m.img}" loading="lazy" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+          } else if (m.img) {
+            contentHtml += `<img src="${m.img}" loading="lazy" class="chat-img" onclick="openImageModal('${m.img}')">`;
           }
-          
+
           const isStickerMsg = m.img && m.isSticker;
           const isFemale = m.gender ? m.gender === 'female' : isMine;
           const flexDir = isFemale ? 'row-reverse' : 'row';
           const floatDir = isFemale ? 'left' : 'right';
           const textAlign = isFemale ? 'right' : 'left';
-          
-          const msgKey = c.key;
+
           const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
-          // حساب وبناء شارات التفاعل (Reactions Badges)
           let reactionsHtml = '';
           if (m.reactions) {
-              const counts = {};
-              let iReactedWith = null;
-              Object.keys(m.reactions).forEach(uid => {
-                  const emo = m.reactions[uid];
-                  counts[emo] = (counts[emo] || 0) + 1;
-                  if (uid === userId) iReactedWith = emo;
-              });
-              
-              reactionsHtml = `<div class="reactions-badge-container" style="justify-content: ${isFemale ? 'flex-end' : 'flex-start'};">`;
-              Object.keys(counts).forEach(emo => {
-                  const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(139, 92, 246, 0.4);' : '';
-                  reactionsHtml += `<div class="reaction-badge" style="${isMineClass}" onclick="addReaction('${msgKey}', '${emo}')">${emo} <span style="font-weight:bold; font-size:0.75rem; color:#fff;">${counts[emo]}</span></div>`;
-              });
-              reactionsHtml += `</div>`;
+            const counts = {};
+            let iReactedWith = null;
+            Object.keys(m.reactions).forEach(uid => {
+              const emo = m.reactions[uid];
+              counts[emo] = (counts[emo] || 0) + 1;
+              if (uid === userId) iReactedWith = emo;
+            });
+
+            reactionsHtml = `<div class="reactions-badge-container" style="justify-content: ${isFemale ? 'flex-end' : 'flex-start'};">`;
+            Object.keys(counts).forEach(emo => {
+              const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(139, 92, 246, 0.4);' : '';
+              reactionsHtml += `<div class="reaction-badge" style="${isMineClass}" onclick="addReaction('${msgKey}', '${emo}')">${emo} <span style="font-weight:bold; font-size:0.75rem; color:#fff;">${counts[emo]}</span></div>`;
+            });
+            reactionsHtml += `</div>`;
           }
 
-          // تم إضافة أحداث الضغط المطول والمزدوج لصندوق الرسالة
           htmlBuilder += `
             <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
               <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
@@ -1099,15 +1105,36 @@
             </div>
           `;
         }
-      }); 
+      });
 
-      msgDiv.innerHTML = htmlBuilder; // 4. نضخ النتيجة النهائية دفعة واحدة بعد نهاية التكرار!
-
-      // السطر السحري: إذا كان المستخدم في الأسفل، أو إذا كان "قفل الشات" مفعلاً، أجبر الرسائل على النزول لآخر خط
+      msgDiv.innerHTML = htmlBuilder;
       if (isScrolledToBottom || window.isChatLocked) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
       }
+    }
+
+    // عرض الكاش المحفوظ فوراً من ذاكرة الهاتف عند فتح الصفحة
+    try {
+      const cachedMessages = JSON.parse(localStorage.getItem('cached_chat_msgs') || '[]');
+      if (cachedMessages.length > 0) {
+        renderMessagesFromList(cachedMessages);
+      }
+    } catch (e) {}
+
+    // استماع للشات مع التخزين المحلي الفوري
+    db.ref('chat').limitToLast(14).on('value', (snap) => {
+      const messagesList = [];
+      snap.forEach(c => {
+        messagesList.push({ key: c.key, val: c.val() });
+      });
+
+      renderMessagesFromList(messagesList);
+
+      try {
+        localStorage.setItem('cached_chat_msgs', JSON.stringify(messagesList));
+      } catch (e) {}
     });
+
 
     // ==========================================
     // ميزة قفل الشات (منع التمرير للأعلى)
@@ -2131,61 +2158,54 @@ window.addEventListener('mouseup', stopResize);
     })();
 
     // ==========================================
-    // 🔄 نظام التحديث الذكي (Smart Auto-Refresh)
+    // ⚡ نظام التحديث الفوري فائق السرعة
     // ==========================================
-    // هذا النظام يكتشف متى يخرج المستخدم من المتصفح أو يغلق الشاشة،
-    // وبمجرد عودته، يقوم بإيقاظ قاعدة البيانات لجلب أحدث رسائل الشات ومزامنة الفيديو فوراً بدون رفرش للصفحة.
     (function initSmartSync() {
         let hiddenTime = 0;
 
         function handleVisibilityChange() {
             if (document.hidden) {
-                // المستخدم خرج من التطبيق أو وضع المتصفح في الخلفية
                 hiddenTime = Date.now();
             } else {
-                // المستخدم عاد للغرفة!
                 const awayTime = Date.now() - hiddenTime;
                 
-                // إذا غاب لأكثر من ثانيتين، ننعش الاتصال بذكاء
-                if (awayTime > 2000) {
-                    // 1. إعادة تنشيط اتصال Firebase فوراً (هذا السطر يجلب أحدث شات وفيديو تلقائياً)
-                    firebase.database().goOffline();
-                    
-                    setTimeout(() => { 
-                        firebase.database().goOnline(); 
-                        
-                        // 2. إجبار الشات على النزول للأسفل لرؤية الرسائل الجديدة التي وصلت أثناء الغياب
-                        setTimeout(() => {
-                            const msgDiv = document.getElementById('messages');
-                            if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
-                        }, 500);
-                        
-                        // 3. التحقق القوي من حالة الفيديو (إذا قام الطرف الآخر بتغيير الحلقة أثناء غيابك)
-                        db.ref('videoState').once('value').then(snap => {
-                            const st = snap.val();
-                            if(st && st.src && window.currentLoadedUrl !== st.src) {
-                                window.currentLoadedUrl = st.src;
-                                player.pause();
-                                player.src({ src: st.src, type: st.type || 'video/mp4' });
-                                
-                                // إجبار المشغل على العمل إذا كان الطرف الآخر مشغلاً له
-                                if(st.action === 'play') {
-                                    setTimeout(() => player.play(), 500);
-                                }
+                // جلب فوري لرسائل الشات وحالة الفيديو بدون فصل السيرفر نهائياً
+                if (awayTime > 1000) {
+                    const msgDiv = document.getElementById('messages');
+                    if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
+
+                    db.ref('videoState').once('value').then(snap => {
+                        const st = snap.val();
+                        if (st && st.src && window.currentLoadedUrl !== st.src) {
+                            window.currentLoadedUrl = st.src;
+                            player.pause();
+                            player.src({ src: st.src, type: st.type || 'video/mp4' });
+                            if (st.action === 'play') {
+                                player.play().catch(() => {});
                             }
-                        });
-                    }, 150);
+                        }
+                    });
                 }
             }
         }
 
-        // دعم حساسات الشاشة لجميع أنواع الأجهزة (آيفون، أندرويد، كمبيوتر)
         document.addEventListener("visibilitychange", handleVisibilityChange);
         window.addEventListener("focus", () => { 
-            if(!document.hidden) handleVisibilityChange(); 
+            if (!document.hidden) handleVisibilityChange(); 
         });
     })();
 
+
+    // تفعيل Service Worker لتحويل الموقع إلى تطبيق
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('Service Worker Registered'))
+          .catch((err) => console.log('Service Worker Failed:', err));
+      });
+    }
+
   </script>
 </body>
+
 </html>
