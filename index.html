@@ -2126,8 +2126,64 @@
         window.addEventListener('mousemove', doResize);
         window.addEventListener('touchmove', doResize, { passive: true });
 
-        window.addEventListener('mouseup', stopResize);
+window.addEventListener('mouseup', stopResize);
         window.addEventListener('touchend', stopResize);
+    })();
+
+    // ==========================================
+    // 🔄 نظام التحديث الذكي (Smart Auto-Refresh)
+    // ==========================================
+    // هذا النظام يكتشف متى يخرج المستخدم من المتصفح أو يغلق الشاشة،
+    // وبمجرد عودته، يقوم بإيقاظ قاعدة البيانات لجلب أحدث رسائل الشات ومزامنة الفيديو فوراً بدون رفرش للصفحة.
+    (function initSmartSync() {
+        let hiddenTime = 0;
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                // المستخدم خرج من التطبيق أو وضع المتصفح في الخلفية
+                hiddenTime = Date.now();
+            } else {
+                // المستخدم عاد للغرفة!
+                const awayTime = Date.now() - hiddenTime;
+                
+                // إذا غاب لأكثر من ثانيتين، ننعش الاتصال بذكاء
+                if (awayTime > 2000) {
+                    // 1. إعادة تنشيط اتصال Firebase فوراً (هذا السطر يجلب أحدث شات وفيديو تلقائياً)
+                    firebase.database().goOffline();
+                    
+                    setTimeout(() => { 
+                        firebase.database().goOnline(); 
+                        
+                        // 2. إجبار الشات على النزول للأسفل لرؤية الرسائل الجديدة التي وصلت أثناء الغياب
+                        setTimeout(() => {
+                            const msgDiv = document.getElementById('messages');
+                            if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
+                        }, 500);
+                        
+                        // 3. التحقق القوي من حالة الفيديو (إذا قام الطرف الآخر بتغيير الحلقة أثناء غيابك)
+                        db.ref('videoState').once('value').then(snap => {
+                            const st = snap.val();
+                            if(st && st.src && window.currentLoadedUrl !== st.src) {
+                                window.currentLoadedUrl = st.src;
+                                player.pause();
+                                player.src({ src: st.src, type: st.type || 'video/mp4' });
+                                
+                                // إجبار المشغل على العمل إذا كان الطرف الآخر مشغلاً له
+                                if(st.action === 'play') {
+                                    setTimeout(() => player.play(), 500);
+                                }
+                            }
+                        });
+                    }, 150);
+                }
+            }
+        }
+
+        // دعم حساسات الشاشة لجميع أنواع الأجهزة (آيفون، أندرويد، كمبيوتر)
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("focus", () => { 
+            if(!document.hidden) handleVisibilityChange(); 
+        });
     })();
 
   </script>
