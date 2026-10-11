@@ -1,0 +1,21 @@
+{
+  "name": "Anime Watch Together",
+  "short_name": "Anime Together",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/png?seed=Alien&size=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/png?seed=Alien&size=512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
