@@ -519,16 +519,29 @@
          <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
       </div>
 
-      <!-- قسم الإعدادات المتقدمة: الفيديوهات المرفوعة والتحميل المحلي Local -->
-      <details style="background: rgba(0,0,0,0.35); border: 1px solid var(--accent); border-radius: 12px; margin-top: 6px; overflow: hidden;">
-        <summary style="padding: 8px 12px; font-size: 0.8rem; color: var(--accent); font-weight: 800; cursor: pointer;"><i class="fa-solid fa-download" style="margin-left: 6px;"></i> إعدادات متقدمة: الفيديوهات المتاحة (Local)</summary>
-        <div class="details-content" style="padding: 8px; gap: 6px; max-height: 250px; overflow-y: auto;">
-          <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">حمّل الحلقة لتصبح Local ومشاهدة بدون تقطيع وبلا استهلاك نت:</p>
-          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 6px;">
-             <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">جاري تجهيز القائمة...</span>
+      <!-- قسم الإعدادات المتقدمة: الفيديوهات المرفوعة والتحميل المحلي Local بتوزيع متناسق للموبايل -->
+      <details style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 14px; margin-top: 6px; overflow: hidden; width: 100%; box-sizing: border-box;">
+        <summary style="padding: 10px 12px; font-size: 0.8rem; color: var(--accent); font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> إعدادات متقدمة: الحلقات والتشغيل المحلي</span><i class="fa-solid fa-angle-down" style="font-size: 0.75rem;"></i></summary>
+        <div class="details-content" style="padding: 10px; gap: 8px; max-height: 270px; overflow-y: auto; overflow-x: hidden; width: 100%; box-sizing: border-box;">
+          
+          <!-- بطاقة تشغيل فيديو من ملفات الجهاز بتصميم مرتب وموزون -->
+          <div style="background: rgba(139, 92, 246, 0.1); border: 1px dashed rgba(139, 92, 246, 0.4); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box;">
+            <input type="file" id="manualDeviceVideoInput" accept="video/*" style="display: none;" onchange="playFromDeviceFiles(this)">
+            <button onclick="document.getElementById('manualDeviceVideoInput').click()" style="width: 100%; padding: 7px; font-size: 0.75rem; background: var(--btn-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-folder-open"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
+            <span style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">لتشغيل أي حلقة حملتها على الآيباد/الهاتف بدون إنترنت وبالمزامنة</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px;">
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">الحلقات المرفوعة بالسيرفر:</span>
+          </div>
+
+          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
+             <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center; padding: 8px;">جاري تجهيز القائمة...</span>
           </div>
         </div>
       </details>
+
+
 
 
       <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;"><i class="fa-solid fa-trash-can" style="margin-left: 5px;"></i> مسح بيانات الشات والسجل</button>
@@ -1473,20 +1486,24 @@
         const safeTitle = (item.title || 'فيديو بدون عنوان').replace(/'/g, "\\'");
 
         html += `
-          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 7px; display: flex; flex-direction: column; gap: 5px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 4px;">
-              <div style="display: flex; align-items: center; gap: 5px; max-width: 75%; overflow: hidden;">
-                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: transparent; border: none; color: #f59e0b; padding: 2px 4px; font-size: 0.75rem; cursor: pointer; box-shadow: none;" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
-                <span style="font-size: 0.75rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.title}">${item.title}</span>
+          <div style="background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; width: 100%; box-sizing: border-box;">
+            
+            <!-- السطر العلوي: اسم الحلقة + زر التعديل + الحجم -->
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0;">
+                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: transparent; border: none; color: #f59e0b; padding: 0 4px; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; box-shadow: none;" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${item.title}">${item.title}</span>
               </div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0;">${displaySize}</span>
+              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; font-family: monospace; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 6px;">${displaySize}</span>
             </div>
-            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; margin: 3px 0;">
+
+            <!-- شريط تقدم التحميل المتقدم -->
+            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; box-sizing: border-box;">
               <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #a5b4fc; font-weight: bold; margin-bottom: 4px;">
                 <span id="progSize_${safeKey}">0 MB / 0 MB</span>
                 <span id="progPercent_${safeKey}" style="color: #38bdf8;">0%</span>
               </div>
-              <div style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; height: 7px;">
+              <div style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; height: 6px;">
                 <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.15s ease;"></div>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;">
@@ -1494,19 +1511,24 @@
                 <span id="progEta_${safeKey}">الوقت المتبقي: --:--</span>
               </div>
             </div>
-            <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+
+            <!-- أزرار الإجراءات موزونة بنظام Grid مريح للشاشات الصغيرة -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 5px; width: 100%; margin-top: 2px; box-sizing: border-box;">
               ${isDownloaded ? `
-                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" style="padding: 4px 8px; font-size: 0.7rem; background: #10b981; border-radius: 6px;"><i class="fa-solid fa-play"></i> تشغيل</button>
-                <button onclick="copyLocalUrl('${item.url}')" style="padding: 4px 8px; font-size: 0.7rem; background: var(--accent); border-radius: 6px;"><i class="fa-regular fa-copy"></i> نسخ الرابط</button>
-                <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 4px 6px; font-size: 0.7rem; background: #ef4444; border-radius: 6px;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" style="padding: 5px 8px; font-size: 0.7rem; background: #10b981; border-radius: 7px; width: 100%;"><i class="fa-solid fa-play"></i> تشغيل</button>
+                <button onclick="copyLocalUrl('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: var(--accent); border-radius: 7px; width: 100%;"><i class="fa-regular fa-copy"></i> الرابط</button>
+                <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
               ` : `
-                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 4px 10px; font-size: 0.7rem; background: #3b82f6; border-radius: 6px;"><i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك</button>
-                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 4px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 6px;"><i class="fa-solid fa-xmark"></i> إلغاء التحميل</button>
+                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 6px 8px; font-size: 0.7rem; background: #3b82f6; border-radius: 7px; width: 100%;"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
+                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" style="padding: 6px 8px; font-size: 0.7rem; background: #0284c7; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
+                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 6px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+
               `}
             </div>
 
           </div>
         `;
+
       });
       listDiv.innerHTML = html;
     }
@@ -1689,6 +1711,39 @@
       db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
       document.getElementById('settingsModal').style.display = 'none';
     }
+
+    // دالة التوجيه والتحميل المباشر داخل تطبيق 1DM
+    function downloadVia1DM(videoUrl, videoTitle) {
+      const cleanUrl = videoUrl.replace(/^https?:\/\//, '');
+      const encodedTitle = encodeURIComponent(videoTitle || 'video.mp4');
+      const idmIntent = `intent://${cleanUrl}#Intent;scheme=https;type=video/*;package=idm.internet.download.manager;S.title=${encodedTitle};end`;
+
+      try {
+        window.location.href = idmIntent;
+      } catch (e) {
+        window.open(videoUrl, '_blank');
+      }
+    }
+
+    // دالة استخراج وتشغيل الفيديو يدوياً من ملفات الجهاز (كبديل في حال فشل الكاش)
+    function playFromDeviceFiles(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const localBlob = URL.createObjectURL(file);
+
+        player.src({ src: localBlob, type: file.type || 'video/mp4' });
+        player.play().catch(() => {});
+
+        if (currentUser) {
+          db.ref('history').push({ url: file.name + ' (ملفات الجهاز)', time: Date.now(), sender: currentUser.name });
+        }
+        document.getElementById('settingsModal').style.display = 'none';
+        alert('تم تشغيل الفيديو من ملفات الجهاز بنجاح كـ Local وبدون استهلاك للإنترنت!');
+        input.value = ""; // تصفير الحقل ليقبل الاختيار مرة أخرى
+      }
+    }
+
+
 
     function copyLocalUrl(url) {
       const blobUrl = localBlobUrls[url];
