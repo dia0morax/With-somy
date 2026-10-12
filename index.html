@@ -890,6 +890,7 @@
       const url = document.getElementById('videoUrlInput').value.trim();
       if (!url) return;
       
+      window.isLocalPlaybackActive = false; // إعادة ضبط الوضع ليقبل المصدر الجديد
       const media = parseSmartUrl(url);
       
       const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
@@ -898,6 +899,7 @@
       sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
       document.getElementById('videoUrlInput').value = "";
     }
+
 
     // دالة القفز الزمني السريع (الجديدة)
     function jumpToTime() {
@@ -981,23 +983,26 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد (تجاوز ذكي لتقييد المتصفح لكل الروابط)
+      // 1. تحميل مقطع جديد مع حماية التشغيل المحلي من الاستبدال القسري
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        // تفعيل طبقة اللمس السحرية لأي فيديو جديد (يوتيوب أو جوجل درايف)
-        const videoBox = document.getElementById('videoBox');
-        if (videoBox) videoBox.classList.add('require-interaction');
+        // إذا كان المستخدم مشغلاً فيديو محلياً (استوديو أو كاش)، لن نقطعه ونتركه متزامناً فقط في التوقيت
+        if (!window.isLocalPlaybackActive) {
+          const videoBox = document.getElementById('videoBox');
+          if (videoBox) videoBox.classList.add('require-interaction');
 
-        player.pause();
-        player.src({ src: st.src, type: st.type || 'video/mp4' });
+          player.pause();
+          player.src({ src: st.src, type: st.type || 'video/mp4' });
+        }
 
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
 
       // 2. حساب التأخير الزمني للإنترنت
+
       const now = Date.now();
       const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
       let expectedTime = st.time;
@@ -1513,18 +1518,19 @@
             </div>
 
             <!-- أزرار الإجراءات موزونة بنظام Grid مريح للشاشات الصغيرة -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 5px; width: 100%; margin-top: 2px; box-sizing: border-box;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 5px; width: 100%; margin-top: 2px; box-sizing: border-box;">
               ${isDownloaded ? `
                 <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" style="padding: 5px 8px; font-size: 0.7rem; background: #10b981; border-radius: 7px; width: 100%;"><i class="fa-solid fa-play"></i> تشغيل</button>
                 <button onclick="copyLocalUrl('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: var(--accent); border-radius: 7px; width: 100%;"><i class="fa-regular fa-copy"></i> الرابط</button>
                 <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
               ` : `
-                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 6px 8px; font-size: 0.7rem; background: #3b82f6; border-radius: 7px; width: 100%;"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
-                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" style="padding: 6px 8px; font-size: 0.7rem; background: #0284c7; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
-                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 6px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
-
+                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 6px 6px; font-size: 0.7rem; background: #3b82f6; border-radius: 7px; width: 100%;"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
+                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" style="padding: 6px 6px; font-size: 0.7rem; background: #0284c7; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
+                <button onclick="copyDirectVideoUrl('${item.url}')" style="padding: 6px 6px; font-size: 0.7rem; background: #475569; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="نسخ رابط الفيديو المباشر">نسخ😒</button>
+                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 6px 6px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
               `}
             </div>
+
 
           </div>
         `;
@@ -1703,6 +1709,7 @@
         alert('لم يتم العثور على الملف المحلي، يرجى إعادة تحميله');
         return;
       }
+      window.isLocalPlaybackActive = true;
       player.src({ src: blobUrl, type: 'video/mp4' });
       player.play();
       // إرسال حالة التشغيل عبر فايربيس مع الاحتفاظ بالرابط الأصلي ليعرف الطرف الآخر أي حلقة تعمل
@@ -1725,14 +1732,34 @@
       }
     }
 
+    // دالة نسخ الرابط المباشر للآيفون والتطبيقات الخارجية
+    function copyDirectVideoUrl(url) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('تم نسخ الرابط بنجاح! 📋');
+        }).catch(() => {
+          prompt('انسخ الرابط يدوياً:', url);
+        });
+      } else {
+        prompt('انسخ الرابط يدوياً:', url);
+      }
+    }
+
+
     // دالة استخراج وتشغيل الفيديو يدوياً من ملفات الجهاز (كبديل في حال فشل الكاش)
     function playFromDeviceFiles(input) {
       if (input.files && input.files[0]) {
         const file = input.files[0];
         const localBlob = URL.createObjectURL(file);
 
+        window.isLocalPlaybackActive = true;
         player.src({ src: localBlob, type: file.type || 'video/mp4' });
         player.play().catch(() => {});
+
+        // إرسال إشعار بداية تشغيل متزامن بدون فرض رابط خارجي يقطع تشغيل الطرف الآخر
+        isSystemAction = true;
+        db.ref('videoState').update({ action: 'play', time: 0, timestamp: Date.now(), sender: currentUser.name });
+        setTimeout(() => { isSystemAction = false; }, 500);
 
         if (currentUser) {
           db.ref('history').push({ url: file.name + ' (ملفات الجهاز)', time: Date.now(), sender: currentUser.name });
@@ -1742,6 +1769,7 @@
         input.value = ""; // تصفير الحقل ليقبل الاختيار مرة أخرى
       }
     }
+
 
 
 
