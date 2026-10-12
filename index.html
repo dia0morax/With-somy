@@ -1566,9 +1566,9 @@
     }
 
 
-    const activeDownloadControllers = {}; // إدارة إلغاء التحميل لتقنية Fetch
+    const activeDownloadRequests = {}; // إدارة طلبات التحميل لإيقافها فورياً
 
-    async function downloadVideoToLocal(url, title, key) {
+    function downloadVideoToLocal(url, title, key) {
       const btn = document.getElementById(`dlBtn_${key}`);
       const cancelBtn = document.getElementById(`cancelDlBtn_${key}`);
       const progBox = document.getElementById(`progressBox_${key}`);
@@ -1582,90 +1582,85 @@
       if (cancelBtn) cancelBtn.style.display = 'inline-flex';
       if (progBox) progBox.style.display = 'block';
 
-      const controller = new AbortController();
-      activeDownloadControllers[key] = controller;
+      const xhr = new XMLHttpRequest();
+      activeDownloadRequests[key] = xhr;
 
-      try {
-        const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error('خطأ بالخادم: ' + response.status);
+      const startTime = Date.now();
+      let lastTime = startTime;
+      let lastLoaded = 0;
 
-        const contentLength = response.headers.get('content-length');
-        const total = contentLength ? parseInt(contentLength, 10) : 0;
-        const totalMB = total ? (total / (1024 * 1024)).toFixed(1) : '--';
+      xhr.open('GET', url, true);
+      xhr.responseType = 'blob';
 
-        const reader = response.body.getReader();
-        const chunks = [];
-        let loaded = 0;
-        let lastTime = Date.now();
-        let lastLoaded = 0;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          chunks.push(value);
-          loaded += value.length;
-
+      xhr.onprogress = (evt) => {
+        if (evt.lengthComputable) {
           const now = Date.now();
-          const percent = total ? Math.round((loaded / total) * 100) : 0;
-          const loadedMB = (loaded / (1024 * 1024)).toFixed(1);
+          const percent = Math.round((evt.loaded / evt.total) * 100);
+          const loadedMB = (evt.loaded / (1024 * 1024)).toFixed(1);
+          const totalMB = (evt.total / (1024 * 1024)).toFixed(1);
 
-          if (progBar && total) progBar.style.width = percent + '%';
-          if (progPercent && total) progPercent.innerText = percent + '%';
+          if (progBar) progBar.style.width = percent + '%';
+          if (progPercent) progPercent.innerText = percent + '%';
           if (progSize) progSize.innerText = `${loadedMB} MB / ${totalMB} MB`;
 
           const timeDiff = (now - lastTime) / 1000;
           if (timeDiff >= 0.8) {
-            const bytesDiff = loaded - lastLoaded;
+            const bytesDiff = evt.loaded - lastLoaded;
             const speedBytesPerSec = bytesDiff / timeDiff;
             const speedMB = (speedBytesPerSec / (1024 * 1024)).toFixed(2);
             if (progSpeed) progSpeed.innerText = `السرعة: ${speedMB} MB/s`;
 
-            if (total && speedBytesPerSec > 0) {
-              const remainingBytes = total - loaded;
-              const secondsLeft = Math.round(remainingBytes / speedBytesPerSec);
-              const m = Math.floor(secondsLeft / 60);
-              const s = secondsLeft % 60;
-              if (progEta) progEta.innerText = `الوقت المتبقي: ${m}:${s < 10 ? '0' : ''}${s}`;
-            }
+            const remainingBytes = evt.total - evt.loaded;
+            const secondsLeft = speedBytesPerSec > 0 ? Math.round(remainingBytes / speedBytesPerSec) : 0;
+            const m = Math.floor(secondsLeft / 60);
+            const s = secondsLeft % 60;
+            if (progEta) progEta.innerText = `الوقت المتبقي: ${m}:${s < 10 ? '0' : ''}${s}`;
 
             lastTime = now;
-            lastLoaded = loaded;
+            lastLoaded = evt.loaded;
           }
         }
+      };
 
-        delete activeDownloadControllers[key];
+      xhr.onload = async () => {
+        delete activeDownloadRequests[key];
+        if (xhr.status === 200) {
+          const rawBlob = xhr.response;
+          const videoBlob = new Blob([rawBlob], { type: 'video/mp4' });
 
-        // تجميع القطع في ملف فيديو نهائي وتخزينه في مساحة الجهاز
-        const videoBlob = new Blob(chunks, { type: 'video/mp4' });
-        await saveVideoToDB(url, videoBlob, title);
-        localBlobUrls[url] = URL.createObjectURL(videoBlob);
-
-        if (btn) btn.innerHTML = 'اكتمل التحميل!';
-        listenForAvailableVideos();
-
-      } catch (err) {
-        delete activeDownloadControllers[key];
-        if (err.name === 'AbortError') {
-          // تم الإلغاء يدوياً بواسطة المستخدم
+          await saveVideoToDB(url, videoBlob, title);
+          localBlobUrls[url] = URL.createObjectURL(videoBlob);
+          if (btn) btn.innerHTML = 'اكتمل التحميل!';
+          listenForAvailableVideos();
         } else {
-          console.error(err);
-          alert('تعذر تحميل الفيديو: ' + err.message);
+          alert('تعذر تحميل الفيديو: خطأ بالخادم ' + xhr.status);
+          resetDownloadUI(key);
         }
+      };
+
+      xhr.onerror = () => {
+        delete activeDownloadRequests[key];
+        alert('حدث خطأ بالاتصال أثناء تنزيل الفيديو.');
         resetDownloadUI(key);
-      }
+      };
+
+      xhr.onabort = () => {
+        delete activeDownloadRequests[key];
+        resetDownloadUI(key);
+      };
+
+      xhr.send();
     }
 
     // دالة إيقاف وإلغاء التحميل الجاري فوراً
     function abortLocalDownload(key) {
-      if (activeDownloadControllers[key]) {
-        activeDownloadControllers[key].abort();
-        delete activeDownloadControllers[key];
+      if (activeDownloadRequests[key]) {
+        activeDownloadRequests[key].abort();
+        delete activeDownloadRequests[key];
         alert('تم إيقاف وإلغاء عملية التحميل بنجاح.');
       }
       resetDownloadUI(key);
     }
-
 
     function resetDownloadUI(key) {
       const btn = document.getElementById(`dlBtn_${key}`);
