@@ -519,7 +519,19 @@
          <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
       </div>
 
+      <!-- قسم الإعدادات المتقدمة: الفيديوهات المرفوعة والتحميل المحلي Local -->
+      <details style="background: rgba(0,0,0,0.3); border: 1px solid var(--accent); border-radius: 12px; margin-top: 6px;">
+        <summary style="padding: 10px 14px; font-size: 0.85rem; color: var(--accent); font-weight: 800;"><i class="fa-solid fa-download" style="margin-left: 6px;"></i> إعدادات متقدمة: الفيديوهات المتاحة والمشاهدة المحلية (Local)</summary>
+        <div class="details-content" style="padding: 10px; gap: 8px;">
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">فيديوهات مرفوعة من موقع الرفع تلقائياً. حمّلها لتصبح Local ومشاهدة بدون تقطيع:</p>
+          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+             <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">جاري البحث عن فيديوهات مرفوعة...</span>
+          </div>
+        </div>
+      </details>
+
       <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;"><i class="fa-solid fa-trash-can" style="margin-left: 5px;"></i> مسح بيانات الشات والسجل</button>
+
       <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark" style="margin-left: 5px;"></i> إغلاق</button>
     </div>
   </div>
@@ -1369,6 +1381,170 @@
       db.ref('videoState').set({src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name});
       sendSystemMessage(`${currentUser.name} قام بتشغيل مقطع من السجل 🎬`);
     }
+
+    // ==========================================
+    // محرك الفيديوهات المتقدم والمشاهدة المحلية (Local IndexedDB)
+    // ==========================================
+    let idb = null;
+    const localBlobUrls = {}; // لتخزين روابط الـ blob المحلية المؤقتة
+
+    function initIndexedDB() {
+      const request = indexedDB.open('AnimeWatchTogetherDB', 1);
+      request.onupgradeneeded = (e) => {
+        const database = e.target.result;
+        if (!database.objectStoreNames.contains('localVideos')) {
+          database.createObjectStore('localVideos', { keyPath: 'url' });
+        }
+      };
+      request.onsuccess = (e) => {
+        idb = e.target.result;
+        listenForAvailableVideos();
+      };
+      request.onerror = (e) => {
+        console.error('IndexedDB Error:', e);
+      };
+    }
+
+    function checkVideoInDB(videoUrl) {
+      return new Promise((resolve) => {
+        if (!idb) return resolve(null);
+        const tx = idb.transaction('localVideos', 'readonly');
+        const store = tx.objectStore('localVideos');
+        const req = store.get(videoUrl);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    function saveVideoToDB(videoUrl, blobData, title) {
+      return new Promise((resolve, reject) => {
+        if (!idb) return reject('IDB not ready');
+        const tx = idb.transaction('localVideos', 'readwrite');
+        const store = tx.objectStore('localVideos');
+        const req = store.put({ url: videoUrl, blob: blobData, title: title, savedAt: Date.now() });
+        req.onsuccess = () => resolve();
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    function listenForAvailableVideos() {
+      db.ref('availableVideos').on('value', async (snap) => {
+        const listDiv = document.getElementById('localVideosList');
+        if (!listDiv) return;
+
+        if (!snap.exists()) {
+          listDiv.innerHTML = '<span style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">لا توجد فيديوهات مرفوعة حتى الآن</span>';
+          return;
+        }
+
+        let html = '';
+        const items = [];
+        snap.forEach(c => { items.push({ key: c.key, ...c.val() }); });
+        items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        for (let item of items) {
+          const localRecord = await checkVideoInDB(item.url);
+          const isDownloaded = !!localRecord;
+          if (isDownloaded && !localBlobUrls[item.url]) {
+            localBlobUrls[item.url] = URL.createObjectURL(localRecord.blob);
+          }
+          const safeKey = item.key;
+          const displaySize = item.size ? (item.size / (1024 * 1024)).toFixed(1) + ' MB' : '';
+
+          html += `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #fff; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.title}">${item.title}</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">${displaySize}</span>
+              </div>
+              <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; height: 6px;">
+                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.2s;"></div>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-end;">
+                ${isDownloaded ? `
+                  <button onclick="playLocalVideo('${item.url}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 5px 12px; font-size: 0.75rem; background: #10b981;"><i class="fa-solid fa-play"></i> تشغيل Local</button>
+                  <button onclick="copyLocalUrl('${item.url}')" style="padding: 5px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-regular fa-copy"></i> نسخ الرابط Local</button>
+                ` : `
+                  <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${item.title.replace(/'/g, "\\'")}', '${safeKey}')" style="padding: 5px 12px; font-size: 0.75rem; background: #3b82f6;"><i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة</button>
+                `}
+              </div>
+            </div>
+          `;
+        }
+        listDiv.innerHTML = html;
+      });
+    }
+
+    function downloadVideoToLocal(url, title, key) {
+      const btn = document.getElementById(`dlBtn_${key}`);
+      const progBox = document.getElementById(`progressBox_${key}`);
+      const progBar = document.getElementById(`progressBar_${key}`);
+
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...'; }
+      if (progBox) progBox.style.display = 'block';
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'blob';
+
+      xhr.onprogress = (evt) => {
+        if (evt.lengthComputable && progBar) {
+          const percent = Math.round((evt.loaded / evt.total) * 100);
+          progBar.style.width = percent + '%';
+        }
+      };
+
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const blob = xhr.response;
+          await saveVideoToDB(url, blob, title);
+          localBlobUrls[url] = URL.createObjectURL(blob);
+          if (btn) btn.innerHTML = 'اكتمل التحميل!';
+          listenForAvailableVideos();
+        } else {
+          alert('تعذر تحميل الفيديو: خطأ بالخادم ' + xhr.status);
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة'; }
+        }
+      };
+
+      xhr.onerror = () => {
+        alert('حدث خطأ بالاتصال أثناء تنزيل الفيديو.');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة'; }
+      };
+
+      xhr.send();
+    }
+
+    function playLocalVideo(url, title) {
+      const blobUrl = localBlobUrls[url];
+      if (!blobUrl) {
+        alert('لم يتم العثور على الملف المحلي، يرجى إعادة تحميله');
+        return;
+      }
+      player.src({ src: blobUrl, type: 'video/mp4' });
+      player.play();
+      // إرسال حالة التشغيل عبر فايربيس مع الاحتفاظ بالرابط الأصلي ليعرف الطرف الآخر أي حلقة تعمل
+      const videoData = { src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
+      db.ref('videoState').set(videoData);
+      db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function copyLocalUrl(url) {
+      const blobUrl = localBlobUrls[url];
+      if (blobUrl) {
+        navigator.clipboard.writeText(blobUrl).then(() => {
+          alert('تم نسخ الرابط المحلي (Local Blob URL) بنجاح!');
+        }).catch(() => {
+          prompt('انسخ الرابط المحلي يدوياً:', blobUrl);
+        });
+      } else {
+        alert('الرابط المحلي غير جاهز');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initIndexedDB);
+
 
     // Google Drive Picker (تم ترك كودك هنا مع ملاحظة هامة)
     const CLIENT_ID = '925753610772-ih6q5ghbeg6g2imqtnefv9dqdsnjd1sv.apps.googleusercontent.com';
