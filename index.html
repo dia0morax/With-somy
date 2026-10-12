@@ -1481,8 +1481,18 @@
               </div>
               <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0;">${displaySize}</span>
             </div>
-            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 5px;">
-              <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.2s;"></div>
+            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; margin: 3px 0;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #a5b4fc; font-weight: bold; margin-bottom: 4px;">
+                <span id="progSize_${safeKey}">0 MB / 0 MB</span>
+                <span id="progPercent_${safeKey}" style="color: #38bdf8;">0%</span>
+              </div>
+              <div style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; height: 7px;">
+                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.15s ease;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;">
+                <span id="progSpeed_${safeKey}">السرعة: --</span>
+                <span id="progEta_${safeKey}">الوقت المتبقي: --:--</span>
+              </div>
             </div>
             <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
               ${isDownloaded ? `
@@ -1491,8 +1501,10 @@
                 <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 4px 6px; font-size: 0.7rem; background: #ef4444; border-radius: 6px;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i></button>
               ` : `
                 <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 4px 10px; font-size: 0.7rem; background: #3b82f6; border-radius: 6px;"><i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك</button>
+                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 4px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 6px;"><i class="fa-solid fa-xmark"></i> إلغاء التحميل</button>
               `}
             </div>
+
           </div>
         `;
       });
@@ -1554,45 +1566,114 @@
     }
 
 
+    const activeDownloadRequests = {}; // إدارة طلبات التحميل لإيقافها فورياً
+
     function downloadVideoToLocal(url, title, key) {
       const btn = document.getElementById(`dlBtn_${key}`);
+      const cancelBtn = document.getElementById(`cancelDlBtn_${key}`);
       const progBox = document.getElementById(`progressBox_${key}`);
       const progBar = document.getElementById(`progressBar_${key}`);
+      const progSize = document.getElementById(`progSize_${key}`);
+      const progPercent = document.getElementById(`progPercent_${key}`);
+      const progSpeed = document.getElementById(`progSpeed_${key}`);
+      const progEta = document.getElementById(`progEta_${key}`);
 
       if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...'; }
+      if (cancelBtn) cancelBtn.style.display = 'inline-flex';
       if (progBox) progBox.style.display = 'block';
 
       const xhr = new XMLHttpRequest();
+      activeDownloadRequests[key] = xhr;
+
+      const startTime = Date.now();
+      let lastTime = startTime;
+      let lastLoaded = 0;
+
       xhr.open('GET', url, true);
       xhr.responseType = 'blob';
 
       xhr.onprogress = (evt) => {
-        if (evt.lengthComputable && progBar) {
+        if (evt.lengthComputable) {
+          const now = Date.now();
           const percent = Math.round((evt.loaded / evt.total) * 100);
-          progBar.style.width = percent + '%';
+          const loadedMB = (evt.loaded / (1024 * 1024)).toFixed(1);
+          const totalMB = (evt.total / (1024 * 1024)).toFixed(1);
+
+          if (progBar) progBar.style.width = percent + '%';
+          if (progPercent) progPercent.innerText = percent + '%';
+          if (progSize) progSize.innerText = `${loadedMB} MB / ${totalMB} MB`;
+
+          const timeDiff = (now - lastTime) / 1000;
+          if (timeDiff >= 0.8) {
+            const bytesDiff = evt.loaded - lastLoaded;
+            const speedBytesPerSec = bytesDiff / timeDiff;
+            const speedMB = (speedBytesPerSec / (1024 * 1024)).toFixed(2);
+            if (progSpeed) progSpeed.innerText = `السرعة: ${speedMB} MB/s`;
+
+            const remainingBytes = evt.total - evt.loaded;
+            const secondsLeft = speedBytesPerSec > 0 ? Math.round(remainingBytes / speedBytesPerSec) : 0;
+            const m = Math.floor(secondsLeft / 60);
+            const s = secondsLeft % 60;
+            if (progEta) progEta.innerText = `الوقت المتبقي: ${m}:${s < 10 ? '0' : ''}${s}`;
+
+            lastTime = now;
+            lastLoaded = evt.loaded;
+          }
         }
       };
 
       xhr.onload = async () => {
+        delete activeDownloadRequests[key];
         if (xhr.status === 200) {
-          const blob = xhr.response;
-          await saveVideoToDB(url, blob, title);
-          localBlobUrls[url] = URL.createObjectURL(blob);
+          const rawBlob = xhr.response;
+          const videoBlob = new Blob([rawBlob], { type: 'video/mp4' });
+
+          await saveVideoToDB(url, videoBlob, title);
+          localBlobUrls[url] = URL.createObjectURL(videoBlob);
           if (btn) btn.innerHTML = 'اكتمل التحميل!';
           listenForAvailableVideos();
         } else {
           alert('تعذر تحميل الفيديو: خطأ بالخادم ' + xhr.status);
-          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة'; }
+          resetDownloadUI(key);
         }
       };
 
       xhr.onerror = () => {
+        delete activeDownloadRequests[key];
         alert('حدث خطأ بالاتصال أثناء تنزيل الفيديو.');
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة'; }
+        resetDownloadUI(key);
+      };
+
+      xhr.onabort = () => {
+        delete activeDownloadRequests[key];
+        resetDownloadUI(key);
       };
 
       xhr.send();
     }
+
+    // دالة إيقاف وإلغاء التحميل الجاري فوراً
+    function abortLocalDownload(key) {
+      if (activeDownloadRequests[key]) {
+        activeDownloadRequests[key].abort();
+        delete activeDownloadRequests[key];
+        alert('تم إيقاف وإلغاء عملية التحميل بنجاح.');
+      }
+      resetDownloadUI(key);
+    }
+
+    function resetDownloadUI(key) {
+      const btn = document.getElementById(`dlBtn_${key}`);
+      const cancelBtn = document.getElementById(`cancelDlBtn_${key}`);
+      const progBox = document.getElementById(`progressBox_${key}`);
+      const progBar = document.getElementById(`progressBar_${key}`);
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك'; }
+      if (cancelBtn) cancelBtn.style.display = 'none';
+      if (progBox) progBox.style.display = 'none';
+      if (progBar) progBar.style.width = '0%';
+    }
+
 
     function playLocalVideo(url, title) {
       const blobUrl = localBlobUrls[url];
