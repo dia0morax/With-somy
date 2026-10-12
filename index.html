@@ -107,14 +107,25 @@
 /* وهج إضافي داخل صندوق الشات نفسه (تم تثبيته بدون فلتر لتخفيف التعليق) */
     .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%); z-index: 0; pointer-events: none; }
 
-    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
+    #messages { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
     
     /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
-    .msg-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
-    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 60px; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
+.msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; align-self: flex-end; }
+    .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
+    .swipe-reply-indicator { position: absolute; left: 10px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.85rem; opacity: 0; transform: scale(0.5); pointer-events: none; z-index: 1; transition: border-color 0.15s, background-color 0.15s, color 0.15s, transform 0.1s; }
+    .swipe-reply-indicator.ready { border-color: var(--accent); background: var(--accent); color: #fff; transform: scale(1.2) !important; box-shadow: 0 0 12px var(--accent); }
+    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
+    .reply-badge { background: rgba(0,0,0,0.35); border-right: 3px solid var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: #cbd5e1; cursor: pointer; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: right; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .reply-badge:hover { filter: brightness(1.2); }
+    .chat-bottom-bar { display: flex; flex-direction: column; width: 100%; margin-top: 6px; z-index: 100; position: relative; }
+    .reply-preview { width: 100%; background: rgba(15, 23, 42, 0.98); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--accent); display: none; justify-content: space-between; align-items: center; font-size: 0.8rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); margin-bottom: 6px; box-sizing: border-box; }
+    .reply-preview.active { display: flex !important; animation: popIn 0.3s ease-out; }
+
+
+
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
     .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
@@ -267,11 +278,13 @@
     }
 
     /* 📱 تخصيص وضع الجوال الشامل (Mobile UI Mode) */
-    body.device-mobile .content-area { padding: 8px !important; gap: 8px !important; }
+body.device-mobile .content-area { padding: 8px !important; gap: 8px !important; }
     body.device-mobile .status-bar { padding: 6px 10px !important; font-size: 0.75rem !important; border-radius: 12px !important; }
-    body.device-mobile .chat-container { padding: 10px !important; border-radius: 14px !important; }
+body.device-mobile .chat-container { padding: 10px !important; border-radius: 14px !important; }
     body.device-mobile .msg-content { padding: 8px 12px !important; font-size: 0.85rem !important; border-radius: 14px !important; }
+
     body.device-mobile .chat-sticker { width: 105px !important; height: 105px !important; }
+
     body.device-mobile .chat-img { max-width: 140px !important; }
     body.device-mobile input[type="text"], body.device-mobile select { padding: 8px 12px !important; font-size: 0.85rem !important; border-radius: 10px !important; }
     body.device-mobile .icon-btn { padding: 8px !important; font-size: 1rem !important; }
@@ -666,20 +679,26 @@
          <!-- 🤖 شريط الاقتراحات الذكية للملصقات (يظهر تلقائياً) -->
       <div id="stickerSuggestions" class="sticker-suggestions"></div>
       
-      <div class="input-group" style="margin-top: 8px; z-index: 5; position: relative;">
-        <!-- تم استبدال الإيموجيز بأيقونات ذات إطار شفاف فقط -->
-   <div class="input-group" style="margin-top: 8px; z-index: 5; position: relative;">
-        <!-- تم استبدال الإيموجيز بأيقونات ذات إطار شفاف فقط -->
-        <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
-        <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="إرسال صورة"><i class="fa-regular fa-image"></i></button>
-        
-        <button onclick="toggleStickers()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="الملصقات المحفوظة"><i class="fa-regular fa-face-smile"></i></button>
-        
-        <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
-        <button onclick="sendMessage()" style="padding: 10px 18px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);"><i class="fa-solid fa-paper-plane"></i></button>
+<div class="chat-bottom-bar">
+        <div id="replyPreview" class="reply-preview">
+          <div style="display:flex; flex-direction: column; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 85%;">
+             <b id="replyName" style="color: var(--accent); font-size: 0.75rem;"></b>
+             <span id="replyText" style="color: #cbd5e1; text-overflow: ellipsis; overflow: hidden; font-size: 0.72rem;"></span>
+          </div>
+          <button onclick="cancelReply()" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="input-group">
+          <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
+          <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="إرسال صورة"><i class="fa-regular fa-image"></i></button>
+          
+          <button onclick="toggleStickers()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="الملصقات المحفوظة"><i class="fa-regular fa-face-smile"></i></button>
+          
+          <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+          <button onclick="sendMessage()" style="padding: 10px 18px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
       </div>
-    </div>
   </div>
+
 
   <script>
     // 1. إعدادات Firebase (استخدمت مفاتيحك الخاصة)
@@ -1047,18 +1066,121 @@
       return; 
     }
 
+let currentReplyContext = null;
+    function setReplyContext(key, name, text) {
+        currentReplyContext = { key, name, text };
+        document.getElementById('replyName').innerText = `رد على ${name}`;
+        document.getElementById('replyText').innerText = text;
+        document.getElementById('replyPreview').classList.add('active');
+        document.getElementById('messageInput').focus();
+    }
+    function cancelReply() {
+        currentReplyContext = null;
+        document.getElementById('replyPreview').classList.remove('active');
+    }
+    function scrollToMsg(key) {
+        const el = document.getElementById(`msg-item-${key}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.backgroundColor = 'rgba(139, 92, 246, 0.3)';
+            el.style.borderRadius = '12px';
+            setTimeout(() => { el.style.backgroundColor = 'transparent'; }, 1500);
+        }
+    }
+
+let swipeStartX = 0, swipeStartY = 0, currentSwipingKey = null, isHorizontalSwipe = false, vibrateDone = false, isReadyToReply = false;
+    function handleSwipeStart(e, key) {
+        if (e.touches && e.touches.length > 1) return;
+        swipeStartX = e.touches ? e.touches[0].clientX : e.clientX;
+        swipeStartY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentSwipingKey = key;
+        isHorizontalSwipe = false;
+        vibrateDone = false;
+        isReadyToReply = false;
+        const item = document.getElementById(`msg-item-${key}`);
+        if (item) item.style.transition = 'none';
+    }
+    function handleSwipeMove(e, key) {
+        if (swipeStartX === null || currentSwipingKey !== key) return;
+        const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+        const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+        const diffX = currentX - swipeStartX;
+        const diffY = currentY - swipeStartY;
+
+        if (!isHorizontalSwipe) {
+            if (Math.abs(diffY) > Math.abs(diffX)) {
+                swipeStartX = null; swipeStartY = null;
+                return;
+            }
+            if (diffX > 10) isHorizontalSwipe = true;
+        }
+
+        if (isHorizontalSwipe && diffX > 0) {
+            if (e.cancelable) e.preventDefault();
+            const moveX = Math.min(diffX * 0.6, 65);
+            const item = document.getElementById(`msg-item-${key}`);
+            const indicator = document.getElementById(`swipe-indicator-${key}`);
+            
+            if (item) item.style.transform = `translateX(${moveX}px)`;
+
+            if (indicator) {
+                const progress = Math.min(moveX / 45, 1);
+                indicator.style.opacity = progress;
+                indicator.style.transform = `scale(${0.5 + progress * 0.5})`;
+                if (progress >= 1) {
+                    indicator.classList.add('ready');
+                    isReadyToReply = true;
+                    if (!vibrateDone && navigator.vibrate) {
+                        navigator.vibrate(25);
+                        vibrateDone = true;
+                    }
+                } else {
+                    indicator.classList.remove('ready');
+                    isReadyToReply = false;
+                    vibrateDone = false;
+                }
+            }
+        }
+    }
+    function handleSwipeEnd(e, key, name, text) {
+        if (swipeStartX === null || currentSwipingKey !== key) return;
+        const item = document.getElementById(`msg-item-${key}`);
+        const indicator = document.getElementById(`swipe-indicator-${key}`);
+
+        if (item) {
+            item.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            item.style.transform = 'translateX(0)';
+        }
+
+        if (indicator) {
+            indicator.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            indicator.style.opacity = '0';
+            indicator.style.transform = 'scale(0.5)';
+            indicator.classList.remove('ready');
+            setTimeout(() => { indicator.style.transition = ''; }, 250);
+        }
+
+        if (isReadyToReply) {
+            setReplyContext(key, name, text);
+        }
+
+        swipeStartX = null; swipeStartY = null; currentSwipingKey = null; isHorizontalSwipe = false; vibrateDone = false; isReadyToReply = false;
+    }
+
+
+
+
     function sendMessage() {
       if (!currentUser) return;
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       if (text) {
-        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false });
-        // تفريغ الحقل وإبقاء التركيز لإرسال رسائل متتالية
+        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
         input.value = "";
         input.focus();
         db.ref(`typing/${userId}`).remove();
+        cancelReply();
         
-        // إخفاء شريط الاقتراحات بعد إرسال الرسالة
         const suggestBox = document.getElementById('stickerSuggestions');
         if (suggestBox) suggestBox.classList.remove('active');
       }
@@ -1082,10 +1204,11 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
+const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
           // تمت إضافة الجنس (gender) هنا
-          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false });
+          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
           db.ref(`typing/${userId}`).remove();
+          cancelReply();
         };
         img.src = e.target.result;
       };
@@ -1103,16 +1226,27 @@
       }
     }
 
-    // دالة بناء وتوليد عناصر الرسائل
+// دالة بناء وتوليد عناصر الرسائل
     function renderMessagesFromList(messagesList) {
       const msgDiv = document.getElementById('messages');
       if (!msgDiv) return;
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
 
       let htmlBuilder = "";
+      let previousTime = 0;
+
       messagesList.forEach(item => {
         const m = item.val;
         const msgKey = item.key;
+
+        // التوقيت: يظهر إذا مر 30 دقيقة على آخر رسالة
+        if (m.time && (m.time - previousTime >= 30 * 60 * 1000)) {
+            const dateObj = new Date(m.time);
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+            htmlBuilder += `<div class="msg-system" style="background:transparent; border:none; opacity:0.6; font-size:0.7rem; padding: 2px;">${hours}:${minutes}</div>`;
+        }
+        previousTime = m.time || previousTime;
 
         if (m.isSystem) {
           htmlBuilder += `<div class="msg-system">${m.text}</div>`;
@@ -1151,33 +1285,84 @@
             reactionsHtml += `</div>`;
           }
 
-          htmlBuilder += `
-            <div class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="flex-direction: ${flexDir};">
-              <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
-              <div style="display:flex; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; max-width: 82%; min-width: fit-content;">
-                  <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
-                       style="width: max-content; max-width: 100%; min-width: 70px; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
-                       ondblclick="addReaction('${msgKey}', '❤️')" 
-                       onmousedown="startLongPress(event, '${msgKey}')" 
-                       onmouseup="cancelLongPress()" 
-                       onmouseleave="cancelLongPress()" 
-                       ontouchstart="startLongPress(event, '${msgKey}')" 
-                       ontouchend="cancelLongPress()"
-                       oncontextmenu="event.preventDefault(); showReactionMenu(event, '${msgKey}');">
-                    <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
-                    <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%;">${contentHtml}</div>
-                  </div>
-                  ${reactionsHtml}
+          const replyHtml = m.replyTo ? `<div class="reply-badge" onclick="scrollToMsg('${m.replyTo.key}')"><b style="color:var(--accent); font-size:0.7rem;">رد على ${m.replyTo.name}</b><br><span style="font-size:0.75rem;">${m.replyTo.text}</span></div>` : '';
+          const previewTextForReply = (m.text ? m.text.replace(/'/g, "\\'").substring(0, 30) : (m.isSticker ? 'ملصق' : 'صورة'));
+          const senderNameEscaped = m.name.replace(/'/g, "\\'");
+
+htmlBuilder += `
+            <div class="msg-row-wrapper">
+              <div id="swipe-indicator-${msgKey}" class="swipe-reply-indicator">
+                <i class="fa-solid fa-reply"></i>
+              </div>
+              <div id="msg-item-${msgKey}" class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="width: 100%; min-width: 0; flex-direction: ${flexDir};"
+                   ontouchstart="handleSwipeStart(event, '${msgKey}')"
+                   ontouchmove="handleSwipeMove(event, '${msgKey}')"
+                   ontouchend="handleSwipeEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
+                <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
+                <div style="display:flex; flex:0 1 auto; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
+                    ${replyHtml}
+                    <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
+                         style="width: fit-content; max-width: 100%; min-width: 0; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
+                         ondblclick="addReaction('${msgKey}', '❤️')" 
+                         onmousedown="startLongPress(event, '${msgKey}')" 
+                         onmouseup="cancelLongPress()" 
+                         onmouseleave="cancelLongPress()" 
+                         ontouchstart="startLongPress(event, '${msgKey}')" 
+                         ontouchend="cancelLongPress()"
+                         oncontextmenu="event.preventDefault(); showReactionMenu(event, '${msgKey}');">
+                      <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                      <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
+                    </div>
+                    ${reactionsHtml}
+                    <div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>
+                </div>
               </div>
             </div>
           `;
+
+
+
         }
       });
 
       msgDiv.innerHTML = htmlBuilder;
       if (isScrolledToBottom || window.isChatLocked) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
+        if (messagesList.length > 0 && currentUser) {
+            const lastMsgId = messagesList[messagesList.length - 1].key;
+            db.ref(`lastSeen/${userId}`).set({ avatar: currentUser.avatar, msgKey: lastMsgId });
+        }
       }
+      renderSeenAvatars();
+    }
+
+let lastSeenData = {};
+    db.ref('lastSeen').on('value', snap => {
+        lastSeenData = snap.val() || {};
+        renderSeenAvatars();
+    });
+
+    function renderSeenAvatars() {
+        document.querySelectorAll('.seen-container').forEach(el => el.innerHTML = '');
+        const seenByMsg = {};
+        Object.keys(lastSeenData).forEach(uid => {
+            if (uid !== userId) {
+                const data = lastSeenData[uid];
+                if (!seenByMsg[data.msgKey]) seenByMsg[data.msgKey] = [];
+                seenByMsg[data.msgKey].push(data.avatar);
+            }
+        });
+
+        Object.keys(seenByMsg).forEach(msgKey => {
+            const container = document.getElementById(`seen-${msgKey}`);
+            if (container) {
+                let html = '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
+                seenByMsg[msgKey].forEach(avatar => {
+                    html += `<img src="${avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);">`;
+                });
+                container.innerHTML = html;
+            }
+        });
     }
 
     // عرض الكاش المحفوظ فوراً من ذاكرة الهاتف عند فتح الصفحة
@@ -1975,12 +2160,13 @@
         }
     }
 
-    function sendSavedSticker(imgSrc) {
+function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
       document.getElementById('stickersPanel').style.display = 'none'; // إغلاق سريع
       requestAnimationFrame(() => {
           setTimeout(() => {
-              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false });
+              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
+              cancelReply();
           }, 10);
       });
     }
