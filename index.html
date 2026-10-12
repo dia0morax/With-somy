@@ -520,15 +520,16 @@
       </div>
 
       <!-- قسم الإعدادات المتقدمة: الفيديوهات المرفوعة والتحميل المحلي Local -->
-      <details style="background: rgba(0,0,0,0.3); border: 1px solid var(--accent); border-radius: 12px; margin-top: 6px;">
-        <summary style="padding: 10px 14px; font-size: 0.85rem; color: var(--accent); font-weight: 800;"><i class="fa-solid fa-download" style="margin-left: 6px;"></i> إعدادات متقدمة: الفيديوهات المتاحة والمشاهدة المحلية (Local)</summary>
-        <div class="details-content" style="padding: 10px; gap: 8px;">
-          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">فيديوهات مرفوعة من موقع الرفع تلقائياً. حمّلها لتصبح Local ومشاهدة بدون تقطيع:</p>
-          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
-             <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">جاري البحث عن فيديوهات مرفوعة...</span>
+      <details style="background: rgba(0,0,0,0.35); border: 1px solid var(--accent); border-radius: 12px; margin-top: 6px; overflow: hidden;">
+        <summary style="padding: 8px 12px; font-size: 0.8rem; color: var(--accent); font-weight: 800; cursor: pointer;"><i class="fa-solid fa-download" style="margin-left: 6px;"></i> إعدادات متقدمة: الفيديوهات المتاحة (Local)</summary>
+        <div class="details-content" style="padding: 8px; gap: 6px; max-height: 250px; overflow-y: auto;">
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">حمّل الحلقة لتصبح Local ومشاهدة بدون تقطيع وبلا استهلاك نت:</p>
+          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 6px;">
+             <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">جاري تجهيز القائمة...</span>
           </div>
         </div>
       </details>
+
 
       <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;"><i class="fa-solid fa-trash-can" style="margin-left: 5px;"></i> مسح بيانات الشات والسجل</button>
 
@@ -1428,52 +1429,130 @@
     }
 
     function listenForAvailableVideos() {
-      db.ref('availableVideos').on('value', async (snap) => {
-        const listDiv = document.getElementById('localVideosList');
-        if (!listDiv) return;
+      // عرض فوري وسريع من الكاش المخزن محلياً لمنع تأخير الـ 5 ثوانٍ
+      try {
+        const cached = localStorage.getItem('cached_available_videos');
+        if (cached) renderAvailableVideosUI(JSON.parse(cached));
+      } catch(e) {}
 
+      db.ref('availableVideos').on('value', async (snap) => {
         if (!snap.exists()) {
-          listDiv.innerHTML = '<span style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">لا توجد فيديوهات مرفوعة حتى الآن</span>';
+          const listDiv = document.getElementById('localVideosList');
+          if (listDiv) listDiv.innerHTML = '<span style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">لا توجد فيديوهات مرفوعة حتى الآن</span>';
+          try { localStorage.removeItem('cached_available_videos'); } catch(e) {}
           return;
         }
 
-        let html = '';
         const items = [];
         snap.forEach(c => { items.push({ key: c.key, ...c.val() }); });
         items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-        for (let item of items) {
-          const localRecord = await checkVideoInDB(item.url);
-          const isDownloaded = !!localRecord;
-          if (isDownloaded && !localBlobUrls[item.url]) {
-            localBlobUrls[item.url] = URL.createObjectURL(localRecord.blob);
-          }
-          const safeKey = item.key;
-          const displaySize = item.size ? (item.size / (1024 * 1024)).toFixed(1) + ' MB' : '';
+        try { localStorage.setItem('cached_available_videos', JSON.stringify(items)); } catch(e) {}
 
-          html += `
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.8rem; font-weight: bold; color: #fff; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.title}">${item.title}</span>
-                <span style="font-size: 0.7rem; color: var(--text-muted);">${displaySize}</span>
-              </div>
-              <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; height: 6px;">
-                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.2s;"></div>
-              </div>
-              <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-end;">
-                ${isDownloaded ? `
-                  <button onclick="playLocalVideo('${item.url}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 5px 12px; font-size: 0.75rem; background: #10b981;"><i class="fa-solid fa-play"></i> تشغيل Local</button>
-                  <button onclick="copyLocalUrl('${item.url}')" style="padding: 5px 10px; font-size: 0.75rem; background: var(--accent);"><i class="fa-regular fa-copy"></i> نسخ الرابط Local</button>
-                ` : `
-                  <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${item.title.replace(/'/g, "\\'")}', '${safeKey}')" style="padding: 5px 12px; font-size: 0.75rem; background: #3b82f6;"><i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك للمشاهدة</button>
-                `}
-              </div>
-            </div>
-          `;
-        }
-        listDiv.innerHTML = html;
+        await renderAvailableVideosUI(items);
+        cleanOrphanLocalVideos(items.map(it => it.url));
       });
     }
+
+    async function renderAvailableVideosUI(items) {
+      const listDiv = document.getElementById('localVideosList');
+      if (!listDiv) return;
+
+      // فحص مسبق متوازي لجميع الفيديوهات لتسريع العملية دون انتظار تسلسلي
+      const records = await Promise.all(items.map(it => checkVideoInDB(it.url)));
+
+      let html = '';
+      items.forEach((item, index) => {
+        const localRecord = records[index];
+        const isDownloaded = !!localRecord;
+        if (isDownloaded && !localBlobUrls[item.url]) {
+          localBlobUrls[item.url] = URL.createObjectURL(localRecord.blob);
+        }
+        const safeKey = item.key;
+        const displaySize = item.size ? (item.size / (1024 * 1024)).toFixed(1) + ' MB' : '';
+        const safeTitle = (item.title || 'فيديو بدون عنوان').replace(/'/g, "\\'");
+
+        html += `
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 7px; display: flex; flex-direction: column; gap: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 5px; max-width: 75%; overflow: hidden;">
+                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: transparent; border: none; color: #f59e0b; padding: 2px 4px; font-size: 0.75rem; cursor: pointer; box-shadow: none;" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
+                <span style="font-size: 0.75rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.title}">${item.title}</span>
+              </div>
+              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0;">${displaySize}</span>
+            </div>
+            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 5px;">
+              <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.2s;"></div>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+              ${isDownloaded ? `
+                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" style="padding: 4px 8px; font-size: 0.7rem; background: #10b981; border-radius: 6px;"><i class="fa-solid fa-play"></i> تشغيل</button>
+                <button onclick="copyLocalUrl('${item.url}')" style="padding: 4px 8px; font-size: 0.7rem; background: var(--accent); border-radius: 6px;"><i class="fa-regular fa-copy"></i> نسخ الرابط</button>
+                <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 4px 6px; font-size: 0.7rem; background: #ef4444; border-radius: 6px;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i></button>
+              ` : `
+                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 4px 10px; font-size: 0.7rem; background: #3b82f6; border-radius: 6px;"><i class="fa-solid fa-cloud-arrow-down"></i> حمله لديك</button>
+              `}
+            </div>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+
+    // دالة تعديل اسم الفيديو وتحديثه للطرفين لحظياً
+    function editVideoTitle(videoKey, oldTitle) {
+      const newTitle = prompt("أدخل الاسم الجديد للحلقة (سيظهر للجميع):", oldTitle);
+      if (newTitle && newTitle.trim() && newTitle.trim() !== oldTitle) {
+        db.ref('availableVideos/' + videoKey).update({ title: newTitle.trim() });
+      }
+    }
+
+
+    // دالة حذف الفيديو يدوياً من جهاز المستخدم الحالي فقط
+    function deleteSingleLocalVideo(videoUrl) {
+      if (!confirm("هل تريد حذف هذا الفيديو من جهازك فقط وتحرير المساحة؟")) return;
+      if (!idb) return;
+
+      const tx = idb.transaction('localVideos', 'readwrite');
+      const store = tx.objectStore('localVideos');
+      store.delete(videoUrl);
+
+      tx.oncomplete = () => {
+        if (localBlobUrls[videoUrl]) {
+          URL.revokeObjectURL(localBlobUrls[videoUrl]);
+          delete localBlobUrls[videoUrl];
+        }
+        alert("تم حذف الفيديو من مساحة هذا الجهاز بنجاح!");
+        listenForAvailableVideos();
+      };
+    }
+
+    // دالة مسح الفيديوهات تلقائياً من جهاز المستخدم إذا تم حذفها من باكبليز
+    function cleanOrphanLocalVideos(activeUrls) {
+      if (!idb) return;
+      try {
+        const tx = idb.transaction('localVideos', 'readwrite');
+        const store = tx.objectStore('localVideos');
+        const req = store.getAll();
+
+        req.onsuccess = () => {
+          const storedVideos = req.result || [];
+          storedVideos.forEach(v => {
+            if (!activeUrls.includes(v.url)) {
+              store.delete(v.url);
+              if (localBlobUrls[v.url]) {
+                URL.revokeObjectURL(localBlobUrls[v.url]);
+                delete localBlobUrls[v.url];
+              }
+              console.log("تم تحرير المساحة وحذف فيديو لم يعد متاحاً في السيرفر:", v.title);
+            }
+          });
+        };
+      } catch (err) {
+        console.error("Auto clean error:", err);
+      }
+    }
+
 
     function downloadVideoToLocal(url, title, key) {
       const btn = document.getElementById(`dlBtn_${key}`);
