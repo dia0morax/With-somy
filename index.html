@@ -968,21 +968,32 @@
       const st = snap.val();
       if (!st) return;
 
-      // 1. تحميل مقطع جديد (تجاوز ذكي لتقييد المتصفح لكل الروابط)
+      // 1. تحميل مقطع جديد (مع دعم ذكي للمحلي Local لمنع توقف الفيديو والمزامنة)
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        // تفعيل طبقة اللمس السحرية لأي فيديو جديد (يوتيوب أو جوجل درايف)
         const videoBox = document.getElementById('videoBox');
         if (videoBox) videoBox.classList.add('require-interaction');
 
-        player.pause();
-        player.src({ src: st.src, type: st.type || 'video/mp4' });
+        // فحص هل هذا الفيديو محمل مسبقاً كـ Local على هذا الجهاز؟
+        checkVideoInDB(st.src).then(localRecord => {
+          let targetSrc = st.src;
+          if (localRecord && localRecord.blob) {
+            if (!localBlobUrls[st.src]) {
+              localBlobUrls[st.src] = URL.createObjectURL(localRecord.blob);
+            }
+            targetSrc = localBlobUrls[st.src];
+          }
 
-        setTimeout(() => { isSystemAction = false; }, 500);
+          player.pause();
+          player.src({ src: targetSrc, type: 'video/mp4' });
+
+          setTimeout(() => { isSystemAction = false; }, 500);
+        });
         return;
       }
+
 
       // 2. حساب التأخير الزمني للإنترنت
       const now = Date.now();
@@ -1575,9 +1586,12 @@
 
       xhr.onload = async () => {
         if (xhr.status === 200) {
-          const blob = xhr.response;
-          await saveVideoToDB(url, blob, title);
-          localBlobUrls[url] = URL.createObjectURL(blob);
+          // إجبار نوع الملف على video/mp4 لحل مشكلة تعليق الصورة وظهور الصوت فقط
+          const rawBlob = xhr.response;
+          const videoBlob = new Blob([rawBlob], { type: 'video/mp4' });
+
+          await saveVideoToDB(url, videoBlob, title);
+          localBlobUrls[url] = URL.createObjectURL(videoBlob);
           if (btn) btn.innerHTML = 'اكتمل التحميل!';
           listenForAvailableVideos();
         } else {
@@ -1600,14 +1614,25 @@
         alert('لم يتم العثور على الملف المحلي، يرجى إعادة تحميله');
         return;
       }
+      
+      // تعيين الرابط الحالي لمنع تكرار الإيقاف والتحميل
+      window.currentLoadedUrl = url;
+      isSystemAction = true;
+
       player.src({ src: blobUrl, type: 'video/mp4' });
-      player.play();
-      // إرسال حالة التشغيل عبر فايربيس مع الاحتفاظ بالرابط الأصلي ليعرف الطرف الآخر أي حلقة تعمل
+      
+      setTimeout(() => {
+        player.play().catch(() => {});
+        isSystemAction = false;
+      }, 200);
+
+      // إرسال حالة التشغيل عبر فايربيس ليعمل عند الطرف الآخر فوراً ويتزامن مع نسخته المحلية
       const videoData = { src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
       db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
       document.getElementById('settingsModal').style.display = 'none';
     }
+
 
     function copyLocalUrl(url) {
       const blobUrl = localBlobUrls[url];
