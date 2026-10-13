@@ -3444,8 +3444,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       initPresence();
     }
 
-// 4. نظام المتواجدين الآن (Presence)
-    window.currentUserSource = 'متوقف'; // متغير ذكي لحفظ مصدر التشغيل الحالي
+// 4. نظام المتواجدين الآن والمصادر المحدث لحظياً (Real-time Presence)
+    window.currentUserSource = localStorage.getItem('last_active_source') || 'متوقف';
     
     function initPresence() {
       if(!currentUser) return;
@@ -3453,60 +3453,76 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       const userRef = db.ref('onlineUsers/' + userId);
       const connectedRef = db.ref('.info/connected');
       
-      // نظام التواجد المباشر الحقيقي (Real-time Presence)
       connectedRef.on('value', (snap) => {
         if (snap.val() === true) {
-          userRef.onDisconnect().remove().then(() => {
-            userRef.set({ name: currentUser.name, avatar: currentUser.avatar, source: window.currentUserSource });
+          userRef.onDisconnect().remove();
+          userRef.set({ 
+            name: currentUser.name, 
+            avatar: currentUser.avatar, 
+            source: (player && !player.paused() && window.currentUserSource !== 'متوقف') ? window.currentUserSource : 'متوقف',
+            timestamp: Date.now()
           });
         }
       });
 
-      // استماع لحدث الطرد الفردي من الفيديو (يجعل الشاشة سوداء)
+      // استماع لحدث الطرد الفردي من الفيديو (يجعل الشاشة سوداء لحظياً)
       db.ref('kickVideo/' + userId).on('value', (snap) => {
          if(snap.val()) {
              window.currentLoadedUrl = "";
              window.currentUserSource = 'متوقف';
+             localStorage.setItem('last_active_source', 'متوقف');
              player.pause();
              player.src({ type: 'video/mp4', src: '' }); 
-             player.reset(); // تصفير المشغل لجعله أسود بالكامل
+             player.reset();
              db.ref('onlineUsers/' + userId).update({ source: 'متوقف' });
-             db.ref('kickVideo/' + userId).remove(); // مسح الأمر بعد تنفيذه
+             db.ref('kickVideo/' + userId).remove();
          }
       });
 
+      // تحديث لحظي لقائمتي المتصلين ومصادر التشغيل فور حدوث أي حركة بالخادم
       db.ref('onlineUsers').on('value', (snap) => {
         const bar = document.getElementById('usersStatus');
         const sourceList = document.getElementById('playbackSourcesList'); 
         
-        bar.innerHTML = "<b>المتصلون:</b> ";
-        if(sourceList) sourceList.innerHTML = ""; 
+        if (bar) bar.innerHTML = "<b>المتصلون:</b> ";
+        if (sourceList) sourceList.innerHTML = ""; 
         
+        if (!snap.exists()) {
+          if (bar) bar.innerHTML += "<span>لا يوجد أحد</span>";
+          if (sourceList) sourceList.innerHTML = "<span style='font-size:0.75rem; color:var(--text-muted); text-align:center; padding:8px;'>لا يوجد متصلون</span>";
+          return;
+        }
+
         let count = 0;
         snap.forEach(child => {
           count++;
           const u = child.val();
           const uid = child.key;
+          const userSrc = u.source || 'متوقف';
+          const isUserPlaying = userSrc !== 'متوقف';
+          const statusDotColor = isUserPlaying ? '#10b981' : '#f59e0b';
+          const sourceBadgeColor = isUserPlaying ? '#10b981' : '#94a3b8';
           
-          // 1. تحديث شريط المتصلين القديم
-          bar.innerHTML += `
-            <div class="user-badge" title="${u.name}">
-              <span class="user-dot" style="background: ${(!u.source || u.source === 'متوقف') ? '#f59e0b' : '#10b981'}; box-shadow: 0 0 5px ${(!u.source || u.source === 'متوقف') ? 'rgba(245, 158, 11, 0.5)' : 'rgba(16, 185, 129, 0.5)'};"></span>
-              <img src="${u.avatar}" class="user-avatar" />
-              <span>${u.name}</span>
-              <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
-            </div>
-          `;
+          // 1. شريط المتصلين
+          if (bar) {
+            bar.innerHTML += `
+              <div class="user-badge" title="${u.name}">
+                <span class="user-dot" style="background: ${statusDotColor}; box-shadow: 0 0 6px ${statusDotColor};"></span>
+                <img src="${u.avatar}" class="user-avatar" />
+                <span>${u.name}</span>
+                <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
+              </div>
+            `;
+          }
 
-          // 2. تحديث قائمة مصادر التشغيل في القائمة الجانبية
-          if(sourceList) {
-              let sourceColor = (!u.source || u.source === 'متوقف') ? '#94a3b8' : '#10b981';
+          // 2. قائمة مصادر التشغيل
+          if (sourceList) {
               sourceList.innerHTML += `
-                <div class="source-item">
-                   <div class="source-info">
-                       <img src="${u.avatar}" class="user-avatar" style="width:20px; height:20px;" />
-                       <span class="source-name" title="${u.name}">${u.name}</span>
-                       <span class="source-badge" style="color: ${sourceColor}; border-color: ${sourceColor};">${u.source || 'متوقف'}</span>
+                <div class="source-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; margin-bottom:6px; border:1px solid rgba(226,232,240,0.08); border-radius:12px; background:rgba(255,255,255,0.035);">
+                   <div class="source-info" style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                       <img src="${u.avatar}" class="user-avatar" style="width:22px; height:22px; border-radius:50%;" />
+                       <span class="source-name" style="font-size:0.85rem; font-weight:700; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90px;" title="${u.name}">${u.name}</span>
+                       <span class="source-badge" style="font-size:0.65rem; padding:2px 6px; border-radius:6px; color:${sourceBadgeColor}; border:1px solid ${sourceBadgeColor}; background:rgba(0,0,0,0.4); white-space:nowrap;">${userSrc}</span>
                    </div>
                    <button class="source-kick-btn" onclick="kickIndividualVideo('${uid}')" title="إيقاف الفيديو لديه فقط (شاشة سوداء)">
                        <i class="fa-solid fa-xmark"></i>
@@ -3515,9 +3531,10 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
               `;
           }
         });
-        if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
+        if (count === 0 && bar) bar.innerHTML += "<span>لا يوجد أحد</span>";
       });
     }
+
 
     // دالة طرد المستخدمين المعلقين
     function kickUser(kId) {
@@ -3601,14 +3618,18 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       window.isLocalPlaybackActive = false; // إعادة ضبط الوضع ليقبل المصدر الجديد
       const media = parseSmartUrl(url);
       
-const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
+      const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
       db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
       window.currentUserSource = 'رابط أونلاين';
-      db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+      localStorage.setItem('last_active_source', 'رابط أونلاين');
+      if (currentUser) {
+        db.ref('onlineUsers/' + userId).update({ source: 'رابط أونلاين' });
+      }
       sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
       document.getElementById('videoUrlInput').value = "";
     }
+
 
 
     // دالة القفز الزمني السريع (الجديدة)
@@ -3702,8 +3723,13 @@ const videoData = { src: media.src, type: media.type, action: 'load', time: 0, t
 
 // --- أحداث المشغل (ترسل إلى Firebase وتحدث الواجهة لحظياً) ---
     player.on('play', () => {
-      if (currentUser && window.currentUserSource !== 'متوقف') {
-         db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+      if (currentUser) {
+         let currentSrc = window.currentUserSource;
+         if (!currentSrc || currentSrc === 'متوقف') {
+            currentSrc = window.isLocalPlaybackActive ? 'كاش داخلي' : 'رابط أونلاين';
+            window.currentUserSource = currentSrc;
+         }
+         db.ref('onlineUsers/' + userId).update({ source: currentSrc });
       }
       if (isSystemAction) return; 
       db.ref('videoState').update({ action: 'play', time: player.currentTime(), timestamp: Date.now(), sender: currentUser.name });
@@ -3718,6 +3744,7 @@ const videoData = { src: media.src, type: media.type, action: 'load', time: 0, t
       db.ref('videoState').update({ action: 'pause', time: player.currentTime(), timestamp: Date.now(), sender: currentUser.name });
       sendSystemMessage(`${currentUser.name} أوقف الفيديو ⏸️`);
     });
+
 
     player.on('seeked', () => {
       if (isSystemAction) return;
@@ -4700,16 +4727,19 @@ async function renderAvailableVideosUI(items) {
         return;
       }
       window.isLocalPlaybackActive = true;
+      window.currentUserSource = 'كاش داخلي';
+      localStorage.setItem('last_active_source', 'كاش داخلي');
       player.src({ src: blobUrl, type: 'video/mp4' });
       player.play();
-// إرسال حالة التشغيل عبر فايربيس مع الاحتفاظ بالرابط الأصلي ليعرف الطرف الآخر أي حلقة تعمل
       const videoData = { src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
       db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
-      window.currentUserSource = 'كاش داخلي';
-      db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+      if (currentUser) {
+        db.ref('onlineUsers/' + userId).update({ source: 'كاش داخلي' });
+      }
       document.getElementById('settingsModal').style.display = 'none';
     }
+
 
     // دالة التوجيه والتحميل المباشر داخل تطبيق 1DM
     function downloadVia1DM(videoUrl, videoTitle) {
@@ -4753,16 +4783,18 @@ async function renderAvailableVideosUI(items) {
         db.ref('videoState').update({ action: 'play', time: 0, timestamp: Date.now(), sender: currentUser.name });
         setTimeout(() => { isSystemAction = false; }, 500);
 
-if (currentUser) {
+        if (currentUser) {
           db.ref('history').push({ url: file.name + ' (ملفات الجهاز)', time: Date.now(), sender: currentUser.name });
           window.currentUserSource = 'ملفات الجهاز';
-          db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+          localStorage.setItem('last_active_source', 'ملفات الجهاز');
+          db.ref('onlineUsers/' + userId).update({ source: 'ملفات الجهاز' });
         }
         document.getElementById('settingsModal').style.display = 'none';
         alert('تم تشغيل الفيديو من ملفات الجهاز بنجاح كـ Local وبدون استهلاك للإنترنت!');
         input.value = ""; // تصفير الحقل ليقبل الاختيار مرة أخرى
       }
     }
+
 
 
 
