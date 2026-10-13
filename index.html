@@ -149,12 +149,13 @@
     .reaction-badge { background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 2px 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.4); animation: popBadge 0.3s ease-out; cursor: pointer; transition: 0.2s; }
     .reaction-badge:hover { transform: scale(1.1); border-color: var(--accent); }
     @keyframes popBadge { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-       /* جعل الرسائل والملصقات بلوك جامد لمنع تحديد النص وقوائم حفظ الصور بالموبايل */
+/* جعل الرسائل والملصقات بلوك جامد لمنع تحديد النص وقوائم حفظ الصور بالموبايل */
     .msg-content, .chat-img, .chat-sticker, .msg-item img {
         -webkit-user-select: none !important;
         user-select: none !important;
         -webkit-touch-callout: none !important; /* تمنع ظهور قائمة "حفظ الصورة" في الموبايل */
         -webkit-user-drag: none !important;
+        -webkit-tap-highlight-color: transparent !important; /* يمنع المربع الأزرق المزعج عند الضغط المطول */
     }
     
  /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
@@ -2775,9 +2776,78 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       font-weight: 600;
     }
 
-    .drawer-action .drawer-state {
+.drawer-action .drawer-state {
       color: var(--text-muted);
       font-size: 0.78rem;
+    }
+
+    /* ستايلات قسم مصادر التشغيل الجديد */
+    .source-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+      margin-bottom: 6px;
+    }
+    .source-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .source-name {
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90px;
+    }
+    .source-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: rgba(0,0,0,0.4);
+      white-space: nowrap;
+    }
+    .source-kick-btn {
+      width: 28px !important;
+      min-width: 28px !important;
+      height: 28px !important;
+      min-height: 28px !important;
+      border-radius: 8px !important;
+      background: rgba(239, 68, 68, 0.1) !important;
+      color: #ef4444 !important;
+      border: 1px solid rgba(239, 68, 68, 0.3) !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+    }
+    .source-kick-btn:hover {
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+    .force-stop-all-btn {
+      width: 100%;
+      background: rgba(239, 68, 68, 0.15) !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      color: #ef4444 !important;
+      padding: 10px !important;
+      border-radius: 12px !important;
+      margin-top: 5px;
+      justify-content: center !important;
+      gap: 8px;
+    }
+    .force-stop-all-btn:hover {
+      background: #ef4444 !important;
+      color: #fff !important;
     }
 
     @media (orientation: landscape) and (min-width: 700px) {
@@ -2949,10 +3019,11 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     </div>
   </div>
 
-  <!-- قائمة التفاعلات السريعة المنبثقة -->
+<!-- قائمة التفاعلات السريعة المنبثقة -->
   <div id="reactionMenu" class="reaction-menu">
     <span onclick="addReactionAndClose('😭')">😭</span>
     <span onclick="addReactionAndClose('❤️')">❤️</span>
+    <span onclick="addReactionAndClose('🤣')">🤣</span>
     <span onclick="addReactionAndClose('😔')">😔</span>
     <span onclick="addReactionAndClose('😡')">😡</span>
     <span onclick="addReactionAndClose('😖')">😖</span>
@@ -2960,8 +3031,6 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <span onclick="addReactionAndClose('🧛‍♀️')">🧛‍♀️</span>
     <span onclick="addReactionAndClose('💔')">💔</span>
     <span onclick="addReactionAndClose('🙏')">🙏</span>
-    <span onclick="addReactionAndClose('😼')">😼</span>
-    <span onclick="addReactionAndClose('😈')">😈</span>
     <span onclick="customReactionPrompt()" class="more-btn" title="المزيد..."><i class="fa-solid fa-plus"></i></span>
   </div>
 
@@ -3122,10 +3191,22 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         </button>
       </div>
 
-      <section class="drawer-section" aria-label="المتصلون">
+<section class="drawer-section" aria-label="المتصلون">
         <span class="drawer-section-label">المتصلون الآن</span>
         <div class="status-bar">
           <div id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+        </div>
+      </section>
+
+      <section class="drawer-section" aria-label="مصادر التشغيل">
+        <span class="drawer-section-label">مصدر التشغيل الحالي</span>
+        <div style="display: flex; flex-direction: column; width: 100%;">
+          <div id="playbackSourcesList" style="display: flex; flex-direction: column; width: 100%;">
+             <!-- سيتم إضافة المتصلين ومصادرهم هنا برمجياً -->
+          </div>
+          <button class="drawer-action force-stop-all-btn" type="button" onclick="forceStopAllVideos()" title="إيقاف الفيديو للجميع وجعل الشاشة سوداء">
+            <i class="fa-solid fa-power-off" aria-hidden="true"></i><span>إيقاف جميع الفيديوهات</span>
+          </button>
         </div>
       </section>
 
@@ -3357,24 +3438,60 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       // استخدمنا userId الثابت بدلاً من push()
       const userRef = db.ref('onlineUsers/' + userId);
       
-      userRef.onDisconnect().remove();
-      userRef.set({ name: currentUser.name, avatar: currentUser.avatar });
+userRef.onDisconnect().remove();
+      userRef.set({ name: currentUser.name, avatar: currentUser.avatar, source: 'متوقف' });
+
+      // استماع لحدث الطرد الفردي من الفيديو (يجعل الشاشة سوداء)
+      db.ref('kickVideo/' + userId).on('value', (snap) => {
+         if(snap.val()) {
+             window.currentLoadedUrl = "";
+             player.pause();
+             player.src({ type: 'video/mp4', src: '' }); 
+             player.reset(); // تصفير المشغل لجعله أسود بالكامل
+             db.ref('onlineUsers/' + userId).update({ source: 'متوقف' });
+             db.ref('kickVideo/' + userId).remove(); // مسح الأمر بعد تنفيذه
+         }
+      });
 
       db.ref('onlineUsers').on('value', (snap) => {
         const bar = document.getElementById('usersStatus');
+        const sourceList = document.getElementById('playbackSourcesList'); 
+        
         bar.innerHTML = "<b>المتصلون:</b> ";
+        if(sourceList) sourceList.innerHTML = ""; 
+        
         let count = 0;
         snap.forEach(child => {
           count++;
           const u = child.val();
+          const uid = child.key;
+          
+          // 1. تحديث شريط المتصلين القديم
           bar.innerHTML += `
             <div class="user-badge" title="${u.name}">
               <span class="user-dot"></span>
               <img src="${u.avatar}" class="user-avatar" />
               <span>${u.name}</span>
-              <button class="kick-btn" onclick="kickUser('${child.key}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
+              <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
             </div>
           `;
+
+          // 2. تحديث قائمة مصادر التشغيل في القائمة الجانبية
+          if(sourceList) {
+              let sourceColor = (!u.source || u.source === 'متوقف') ? '#94a3b8' : '#10b981';
+              sourceList.innerHTML += `
+                <div class="source-item">
+                   <div class="source-info">
+                       <img src="${u.avatar}" class="user-avatar" style="width:20px; height:20px;" />
+                       <span class="source-name" title="${u.name}">${u.name}</span>
+                       <span class="source-badge" style="color: ${sourceColor}; border-color: ${sourceColor};">${u.source || 'متوقف'}</span>
+                   </div>
+                   <button class="source-kick-btn" onclick="kickIndividualVideo('${uid}')" title="إيقاف الفيديو لديه فقط (شاشة سوداء)">
+                       <i class="fa-solid fa-xmark"></i>
+                   </button>
+                </div>
+              `;
+          }
         });
         if(count === 0) bar.innerHTML += "<span>لا يوجد أحد</span>";
       });
@@ -3398,6 +3515,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       }
     }, 2000);
 
+// دالة مساعدة لنسخ التوقيت
+    window.copyUserTime = function(timeStr) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(timeStr).then(() => {
+          alert('تم نسخ الوقت: ' + timeStr);
+        });
+      }
+    };
+
     // استقبال التوقيت وعرضه
     db.ref('playbackPositions').on('value', (snap) => {
       const syncBar = document.getElementById('syncStatus');
@@ -3409,7 +3535,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         if(d.name) {
           const m = Math.floor(d.time / 60);
           const s = Math.floor(d.time % 60).toString().padStart(2, '0');
-          html += `<span style="margin-left: 12px; color: #f8fafc;">${d.name}: <span style="color:#22c55e;">${m}:${s}</span></span>`;
+          const timeStr = `${m}:${s}`;
+          html += `<span style="margin-left: 12px; color: #f8fafc;">${d.name}: <span style="color:#22c55e; cursor:pointer;" ondblclick="copyUserTime('${timeStr}')" title="انقر مرتين لنسخ الوقت">${timeStr}</span></span>`;
           count++;
         }
       });
@@ -3443,7 +3570,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       
       const videoData = { src: media.src, type: media.type, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
-      db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
+db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name });
+      db.ref('onlineUsers/' + userId).update({ source: 'رابط أونلاين' });
       sendSystemMessage(`${currentUser.name} قام بتغيير مقطع الفيديو 🎬`);
       document.getElementById('videoUrlInput').value = "";
     }
@@ -3490,21 +3618,48 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       setTimeout(() => { isSystemAction = false; }, 500);
     }
 
-    // دالة المزامنة الإجبارية للجميع (Sync Beacon) - تم وضعها هنا بالضبط
+// دالة المزامنة الإجبارية للجميع (Smart Backward Sync) - تم وضعها هنا بالضبط
     function forceSync() {
       if (!currentUser || !player) return;
-      isSystemAction = true;
-      const currentT = player.currentTime();
-      db.ref('videoState').update({ time: currentT, timestamp: Date.now(), sender: currentUser.name, action: player.paused() ? 'pause' : 'play' });
       
       // تفاعل بصري صغير للزر عند الضغط ليؤكد الإرسال
       if (event && event.currentTarget) {
         const btn = event.currentTarget;
         btn.style.transform = "scale(0.8)";
-        setTimeout(() => { btn.style.transform = "scale(1)"; isSystemAction = false; }, 200);
-      } else {
-        isSystemAction = false;
+        setTimeout(() => { btn.style.transform = "scale(1)"; }, 200);
       }
+
+      // جلب أوقات جميع المتصلين للبحث عن الأبطأ (أقل توقيت)
+      db.ref('playbackPositions').once('value').then((snap) => {
+        let minTime = player.currentTime(); // نبدأ بوقت الشخص الحالي كحد أقصى
+        
+        if (snap.exists()) {
+          snap.forEach(child => {
+            const data = child.val();
+            if (data && data.time !== undefined && data.time < minTime) {
+              minTime = data.time;
+            }
+          });
+        }
+        
+        isSystemAction = true;
+        db.ref('videoState').update({ 
+          time: minTime, 
+          timestamp: Date.now(), 
+          sender: currentUser.name, 
+          action: player.paused() ? 'pause' : 'play' 
+        });
+        
+        // إرسال إشعار نظام بالشات
+        db.ref('chat').push({ 
+          name: "نظام المزامنة 🤖", 
+          text: "تمت مزامنة الجميع على وقت أبطأ شخص ⏱️", 
+          isSystem: true, 
+          time: Date.now() 
+        });
+
+        setTimeout(() => { isSystemAction = false; }, 500);
+      });
     }
 
         // --- أحداث المشغل (ترسل إلى Firebase) ---
@@ -3526,10 +3681,20 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       sendSystemMessage(`${currentUser.name} قام بتقديم/تأخير الفيديو ⏩`);
     });
 
-    // --- استقبال الأوامر من Firebase ---
+// --- استقبال الأوامر من Firebase ---
     db.ref('videoState').on('value', (snap) => {
       const st = snap.val();
       if (!st) return;
+
+      // --- نظام إيقاف جميع الفيديوهات (Stop All) ---
+      if (st.action === 'stop_all') {
+          window.currentLoadedUrl = "";
+          player.pause();
+          player.src({ type: 'video/mp4', src: '' }); 
+          player.reset(); // جعل الشاشة سوداء
+          db.ref('onlineUsers/' + userId).update({ source: 'متوقف' });
+          return;
+      }
 
       // 1. تحميل مقطع جديد مع حماية التشغيل المحلي من الاستبدال القسري
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
@@ -3585,6 +3750,26 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         setTimeout(() => { isSystemAction = false; }, 300);
       }
     });
+
+// ==========================================
+    // أوامر التحكم الإدارية (الإخراج الفردي والإيقاف للجميع)
+    // ==========================================
+    function kickIndividualVideo(targetUserId) {
+        if(confirm("هل أنت متأكد من إيقاف الفيديو لدى هذا الشخص فقط؟ ستصبح شاشته سوداء.")) {
+            db.ref('kickVideo/' + targetUserId).set(Date.now());
+        }
+    }
+
+    function forceStopAllVideos() {
+        if(confirm("هل أنت متأكد من إيقاف المشاهدة لجميع المتصلين؟ ستصبح الشاشات سوداء للجميع.")) {
+            db.ref('videoState').set({ 
+                action: 'stop_all', 
+                timestamp: Date.now(), 
+                sender: currentUser.name 
+            });
+            sendSystemMessage(`${currentUser.name} قام بإيقاف الفيديو للجميع 🛑`);
+        }
+    }
 
     // ==========================================
     // 6. نظام الشات والإشعارات
@@ -4476,7 +4661,8 @@ async function renderAvailableVideosUI(items) {
       // إرسال حالة التشغيل عبر فايربيس مع الاحتفاظ بالرابط الأصلي ليعرف الطرف الآخر أي حلقة تعمل
       const videoData = { src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name };
       db.ref('videoState').set(videoData);
-      db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
+db.ref('history').push({ url: title + ' (Local)', time: Date.now(), sender: currentUser.name });
+      db.ref('onlineUsers/' + userId).update({ source: 'كاش داخلي' });
       document.getElementById('settingsModal').style.display = 'none';
     }
 
@@ -4522,8 +4708,9 @@ async function renderAvailableVideosUI(items) {
         db.ref('videoState').update({ action: 'play', time: 0, timestamp: Date.now(), sender: currentUser.name });
         setTimeout(() => { isSystemAction = false; }, 500);
 
-        if (currentUser) {
+if (currentUser) {
           db.ref('history').push({ url: file.name + ' (ملفات الجهاز)', time: Date.now(), sender: currentUser.name });
+          db.ref('onlineUsers/' + userId).update({ source: 'ملفات الجهاز' });
         }
         document.getElementById('settingsModal').style.display = 'none';
         alert('تم تشغيل الفيديو من ملفات الجهاز بنجاح كـ Local وبدون استهلاك للإنترنت!');
@@ -4588,7 +4775,8 @@ async function renderAvailableVideosUI(items) {
         const streamUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id=' + file.id)}`;
         
         db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
-        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
+db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
+        db.ref('onlineUsers/' + userId).update({ source: 'رابط أونلاين' });
         sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
       }
     }
