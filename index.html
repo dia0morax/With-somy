@@ -3767,13 +3767,16 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           return;
       }
 
-      // 1. تحميل مقطع جديد مع حماية التشغيل المحلي من الاستبدال القسري
+      // 1. تحميل مقطع جديد مع حماية التشغيل المحلي من الاستبدال القسري وتحديث المصدر تلقائياً
       if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
         
-        // إذا كان المستخدم مشغلاً فيديو محلياً (استوديو أو كاش)، لن نقطعه ونتركه متزامناً فقط في التوقيت
-        if (!window.isLocalPlaybackActive) {
+        // تحديد المصدر الحقيقي للطرف المستمع تلقائياً
+        if (window.isLocalPlaybackActive) {
+          window.currentUserSource = 'كاش داخلي';
+        } else {
+          window.currentUserSource = 'رابط أونلاين';
           const videoBox = document.getElementById('videoBox');
           if (videoBox) videoBox.classList.add('require-interaction');
 
@@ -3781,9 +3784,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           player.src({ src: st.src, type: st.type || 'video/mp4' });
         }
 
+        localStorage.setItem('last_active_source', window.currentUserSource);
+        if (currentUser) {
+          db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+        }
+
         setTimeout(() => { isSystemAction = false; }, 500);
         return;
       }
+
 
       // 2. حساب التأخير الزمني للإنترنت
 
@@ -3811,15 +3820,27 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           player.playbackRate(1.0);
       }
 
-      // 4. مزامنة حالة التشغيل والإيقاف
+      // 4. مزامنة حالة التشغيل والإيقاف مع تثبيت مصدر المشاهدة
       if (st.action === 'play' && player.paused()) {
         isSystemAction = true;
+        let activeSrc = window.currentUserSource;
+        if (!activeSrc || activeSrc === 'متوقف') {
+          activeSrc = window.isLocalPlaybackActive ? 'كاش داخلي' : 'رابط أونلاين';
+          window.currentUserSource = activeSrc;
+        }
+        if (currentUser) {
+          db.ref('onlineUsers/' + userId).update({ source: activeSrc });
+        }
         player.play().catch(() => { isSystemAction = false; });
       } else if (st.action === 'pause' && !player.paused()) {
         isSystemAction = true;
+        if (currentUser) {
+          db.ref('onlineUsers/' + userId).update({ source: 'متوقف' });
+        }
         player.pause();
         setTimeout(() => { isSystemAction = false; }, 300);
       }
+
     });
 
 // ==========================================
