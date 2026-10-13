@@ -3223,11 +3223,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       <section class="drawer-section" aria-label="الغرفة">
         <span class="drawer-section-label">الغرفة</span>
         <nav class="drawer-nav" aria-label="إعدادات الغرفة">
-          <button class="drawer-action" type="button" onclick="skipTime(85)" title="تخطي الشارة، 85 ثانية" aria-label="تخطي الشارة">
+<button class="drawer-action" type="button" onclick="skipTime(85)" title="تخطي الشارة، 85 ثانية" aria-label="تخطي الشارة">
             <i class="fa-solid fa-forward-fast" aria-hidden="true"></i><span>تخطي الشارة</span>
-          </button>
-          <button id="deviceModeBtn" class="drawer-action" type="button" onclick="toggleDeviceMode()" title="تبديل وضع العرض" aria-label="تبديل وضع العرض">
-            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="deviceModeText">جوال</span>
           </button>
           <button class="drawer-action" type="button" onclick="openProfileModal()" title="تغيير الملف الشخصي" aria-label="الملف الشخصي">
             <i class="fa-solid fa-user-astronaut" aria-hidden="true"></i><span>الملف الشخصي</span>
@@ -3515,12 +3512,23 @@ userRef.onDisconnect().remove();
       }
     }, 2000);
 
-// دالة مساعدة لنسخ التوقيت
+// دالة مساعدة لنسخ التوقيت متوافقة مع جميع الهواتف
     window.copyUserTime = function(timeStr) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(timeStr).then(() => {
           alert('تم نسخ الوقت: ' + timeStr);
+        }).catch(() => {
+          alert('حدث خطأ أثناء النسخ، يرجى المحاولة مرة أخرى.');
         });
+      } else {
+        // بديل للأجهزة القديمة
+        const tempInput = document.createElement("input");
+        tempInput.value = timeStr;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert('تم نسخ الوقت: ' + timeStr);
       }
     };
 
@@ -3536,7 +3544,7 @@ userRef.onDisconnect().remove();
           const m = Math.floor(d.time / 60);
           const s = Math.floor(d.time % 60).toString().padStart(2, '0');
           const timeStr = `${m}:${s}`;
-          html += `<span style="margin-left: 12px; color: #f8fafc;">${d.name}: <span style="color:#22c55e; cursor:pointer;" ondblclick="copyUserTime('${timeStr}')" title="انقر مرتين لنسخ الوقت">${timeStr}</span></span>`;
+          html += `<span style="margin-left: 12px; color: #f8fafc; display: inline-flex; align-items: center; gap: 4px;">${d.name}: <span style="color:#22c55e;">${timeStr}</span> <i class="fa-regular fa-copy" style="color:#94a3b8; cursor:pointer; font-size: 0.85rem;" onclick="copyUserTime('${timeStr}')" title="انسخ الوقت"></i></span>`;
           count++;
         }
       });
@@ -3618,7 +3626,7 @@ db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name })
       setTimeout(() => { isSystemAction = false; }, 500);
     }
 
-// دالة المزامنة الإجبارية للجميع (Smart Backward Sync) - تم وضعها هنا بالضبط
+// دالة المزامنة الإجبارية للجميع (Smart Backward Sync) المحدثة بالكامل
     function forceSync() {
       if (!currentUser || !player) return;
       
@@ -3629,35 +3637,39 @@ db.ref('history').push({ url: url, time: Date.now(), sender: currentUser.name })
         setTimeout(() => { btn.style.transform = "scale(1)"; }, 200);
       }
 
-      // جلب أوقات جميع المتصلين للبحث عن الأبطأ (أقل توقيت)
+      // جلب أوقات جميع المتصلين بدقة للبحث عن الأبطأ (أقل توقيت فعلي)
       db.ref('playbackPositions').once('value').then((snap) => {
-        let minTime = player.currentTime(); // نبدأ بوقت الشخص الحالي كحد أقصى
+        let minTime = player.currentTime(); 
         
         if (snap.exists()) {
           snap.forEach(child => {
             const data = child.val();
-            if (data && data.time !== undefined && data.time < minTime) {
+            // البحث عن أقل وقت مسجل صالح
+            if (data && typeof data.time === 'number' && data.time >= 0 && data.time < minTime) {
               minTime = data.time;
             }
           });
         }
         
         isSystemAction = true;
+        
+        // إجبار تشغيل المزامنة بناءً على أقل توقيت تم العثور عليه
         db.ref('videoState').update({ 
           time: minTime, 
           timestamp: Date.now(), 
           sender: currentUser.name, 
           action: player.paused() ? 'pause' : 'play' 
-        });
-        
-        // إرسال إشعار نظام بالشات
-        db.ref('chat').push({ 
-          name: "نظام المزامنة 🤖", 
-          text: "تمت مزامنة الجميع على وقت أبطأ شخص ⏱️", 
-          isSystem: true, 
-          time: Date.now() 
+        }).then(() => {
+          // إرسال إشعار نظام بالشات يوضح إتمام العملية
+          db.ref('chat').push({ 
+            name: "نظام المزامنة 🤖", 
+            text: `قام ${currentUser.name} بمزامنة الجميع على وقت أبطأ شخص ⏱️`, 
+            isSystem: true, 
+            time: Date.now() 
+          });
         });
 
+        // تحرير القفل بعد نصف ثانية
         setTimeout(() => { isSystemAction = false; }, 500);
       });
     }
