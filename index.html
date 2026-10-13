@@ -422,7 +422,1420 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         display: none !important;
     }
 
- </style>
+    /* =========================================================
+       واجهة Anime Watch Together — إعادة تصميم خفيفة ومتجاوبة
+       ========================================================= */
+
+    :root {
+      color-scheme: dark;
+      --bg-color-1: #090e17;
+      --bg-color-2: #101827;
+      --bg-color-3: #0c1420;
+      --bg-content: #111b29;
+      --bg-hover: #1a2737;
+      --text-main: #edf2fa;
+      --text-muted: #98a7ba;
+      --accent: #8b7cf6;
+      --accent-hover: #a397ff;
+      --glass-bg: #101a28;
+      --glass-border: rgba(190, 205, 225, 0.11);
+      --glass-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+      --msg-mine-gradient: var(--accent);
+      --btn-gradient: var(--accent);
+      --surface-raised: #172333;
+      --surface-soft: rgba(255, 255, 255, 0.045);
+    }
+
+    body.theme-pink {
+      --bg-color-1: #100d16;
+      --bg-color-2: #191321;
+      --bg-color-3: #100d16;
+      --accent: #d979a5;
+      --accent-hover: #ed91b7;
+      --btn-gradient: var(--accent);
+      --msg-mine-gradient: var(--accent);
+    }
+
+    body.theme-blue {
+      --bg-color-1: #08111a;
+      --bg-color-2: #101c28;
+      --bg-color-3: #08111a;
+      --accent: #38a9d6;
+      --accent-hover: #66c4e9;
+      --btn-gradient: var(--accent);
+      --msg-mine-gradient: var(--accent);
+    }
+
+    body.theme-cozy {
+      --bg-color-1: #14110e;
+      --bg-color-2: #201a15;
+      --bg-color-3: #14110e;
+      --accent: #d99a48;
+      --accent-hover: #edb86e;
+      --btn-gradient: var(--accent);
+      --msg-mine-gradient: var(--accent);
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: var(--bg-color-1) !important;
+      color: var(--text-main);
+      overscroll-behavior: none;
+    }
+
+    body::before,
+    body::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    body {
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      box-shadow: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.2;
+      transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        opacity 150ms ease,
+        transform 150ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+
+    button:active {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--accent-hover);
+      outline-offset: 2px;
+    }
+
+    button.icon-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      min-height: 40px;
+      padding: 0 !important;
+      border-radius: 50%;
+      font-size: 0.96rem !important;
+    }
+
+    button i,
+    .status-bar i {
+      font-size: 0.9em;
+      line-height: 1;
+    }
+
+    input[type="text"],
+    select {
+      min-width: 0;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      background: #0c1420;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      background: #0c1420;
+      box-shadow: 0 0 0 3px rgba(139, 124, 246, 0.14);
+    }
+
+    input[type="text"]::placeholder {
+      color: #7f8da1;
+      opacity: 1;
+      font-weight: 400;
+    }
+
+    select option {
+      background: #111b29;
+      color: var(--text-main);
+    }
+
+    .content-area {
+      min-width: 0;
+      min-height: 0;
+      padding: 12px;
+      gap: 10px;
+      background: transparent;
+    }
+
+    .status-bar,
+    .chat-container,
+    details,
+    .modal-card,
+    #stickersPanel {
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      box-shadow: var(--glass-shadow);
+      border-radius: 15px;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    .status-bar {
+      min-width: 0;
+      min-height: 42px;
+      padding: 5px 9px;
+      gap: 8px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      scrollbar-width: none;
+    }
+
+    .status-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .status-bar > div {
+      min-width: 0;
+    }
+
+    .status-bar button {
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0 9px !important;
+      border-radius: 10px;
+      font-size: 0.82rem !important;
+    }
+
+    #usersStatus {
+      gap: 7px !important;
+      scrollbar-width: none;
+    }
+
+    #usersStatus > b {
+      flex: 0 0 auto;
+      color: #c4cede;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .user-badge {
+      position: relative;
+      min-height: 34px;
+      padding: 3px 9px 3px 5px;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.035);
+      transition: background-color 150ms ease, border-color 150ms ease;
+    }
+
+    .user-badge:hover {
+      transform: none;
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .user-avatar {
+      width: 25px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .user-dot {
+      width: 7px;
+      height: 7px;
+      border: 1px solid var(--glass-bg);
+      box-shadow: none;
+    }
+
+    .kick-btn {
+      width: 25px;
+      min-width: 25px;
+      height: 25px;
+      min-height: 25px;
+      padding: 0 !important;
+      border-radius: 50%;
+      font-size: 0.68rem !important;
+    }
+
+    .video-container {
+      min-width: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: #05070b;
+      box-shadow: none;
+    }
+
+    .video-container::after {
+      display: none;
+    }
+
+    .video-js .vjs-control-bar {
+      background: rgba(9, 14, 23, 0.94);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .video-js .vjs-play-progress {
+      background: var(--accent);
+    }
+
+    .video-js .vjs-slider {
+      background-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .content-area > .status-bar {
+      flex-shrink: 0;
+    }
+
+    .chat-container {
+      min-width: 0;
+      min-height: 0;
+      padding: 14px;
+      background: #0d1521;
+      box-shadow: none;
+    }
+
+    .chat-container::before {
+      display: none;
+    }
+
+    #messages {
+      gap: 11px;
+      padding: 4px 2px 12px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 175, 195, 0.25) transparent;
+    }
+
+    .msg-item {
+      gap: 8px;
+      font-size: 0.88rem;
+      animation: messageFadeIn 160ms ease-out both;
+    }
+
+    @keyframes messageFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: none;
+    }
+
+    .msg-item[style*="row-reverse"] .msg-avatar {
+      border-color: var(--accent);
+    }
+
+    /* امنع صفوف الرسائل من الانكماش إلى عرض النص أو الصفر داخل Flex */
+    .msg-row-wrapper {
+      flex: 0 0 auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .msg-row-wrapper > .msg-item {
+      flex: 0 0 100% !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+
+    /* أعطِ منطقة الرسالة عرضاً محدداً؛ لا تستخدم max-content هنا */
+    .msg-item > .msg-avatar + div {
+      flex: 0 1 82% !important;
+      width: 82% !important;
+      max-width: 620px !important;
+      min-width: 0 !important;
+    }
+
+    /* اجعل الفقاعة بعرض النص الطبيعي ضمن المساحة المتاحة */
+    .msg-content {
+      display: block;
+      width: fit-content !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      padding: 9px 13px;
+      border: 1px solid transparent;
+      border-radius: 17px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.6;
+      direction: rtl !important;
+      text-align: right !important;
+      unicode-bidi: plaintext !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+      box-shadow: none !important;
+    }
+
+    /* أزل العرض النسبي الذي كان يسبب دورة في حساب عرض الفقاعة */
+    .msg-content > div:last-of-type {
+      display: block !important;
+      width: auto !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      direction: rtl !important;
+      text-align: right !important;
+      unicode-bidi: plaintext !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+    }
+
+    /* طبّق اتجاه العربية مباشرة على عنصر النص الفعلي */
+    .msg-content > div:last-of-type > div {
+      display: block;
+      width: auto !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      direction: rtl !important;
+      text-align: right !important;
+      unicode-bidi: plaintext !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+    }
+
+    .msg-content > .msg-name {
+      direction: rtl !important;
+      text-align: right !important;
+    }
+
+    .msg-item[style*="row-reverse"] .msg-content {
+      border: 1px solid rgba(255, 255, 255, 0.07) !important;
+      border-bottom-right-radius: 5px;
+      background: var(--accent) !important;
+      color: #fff !important;
+      box-shadow: none !important;
+    }
+
+    .msg-item[style*="row"]:not([style*="row-reverse"]) .msg-content {
+      border: 1px solid rgba(255, 255, 255, 0.075) !important;
+      border-bottom-left-radius: 5px;
+      background: #172231 !important;
+      color: var(--text-main) !important;
+      box-shadow: none !important;
+    }
+
+    .msg-item[style*="row"] .msg-content.sticker-bg,
+    .msg-item[style*="row-reverse"] .msg-content.sticker-bg {
+      padding: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .msg-name {
+      margin-bottom: 3px;
+      color: #c5cede;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .reply-badge {
+      border-radius: 7px;
+      background: rgba(0, 0, 0, 0.2);
+      box-shadow: none;
+      font-size: 0.7rem;
+    }
+
+    .chat-img {
+      max-width: min(200px, 60vw);
+      border-radius: 11px;
+      box-shadow: none;
+    }
+
+    .chat-img:hover,
+    .chat-sticker:hover {
+      transform: none;
+    }
+
+    .chat-sticker {
+      width: 96px !important;
+      height: 96px !important;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .msg-system {
+      padding: 5px 12px;
+      border: 1px solid var(--glass-border);
+      background: #182333;
+      color: #c4cede;
+      font-size: 0.73rem;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .reactions-badge-container {
+      gap: 5px;
+      margin-top: -5px;
+    }
+
+    .reaction-badge {
+      border-color: var(--glass-border);
+      background: #172231;
+      box-shadow: none;
+      font-size: 0.78rem;
+    }
+
+    .reaction-badge:hover {
+      transform: none;
+    }
+
+    .reaction-menu {
+      gap: 6px;
+      padding: 8px 11px;
+      border-color: var(--glass-border);
+      background: #111b29;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .reaction-menu span {
+      font-size: 1.2rem;
+      text-shadow: none;
+    }
+
+    .reaction-menu span:hover {
+      transform: scale(1.12);
+    }
+
+    .chat-bottom-bar {
+      flex-shrink: 0;
+      margin-top: 8px;
+    }
+
+    .chat-bottom-bar .input-group {
+      min-width: 0;
+      min-height: 48px;
+      gap: 5px;
+      padding: 3px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: #111b29;
+      overflow: visible;
+    }
+
+    .chat-bottom-bar .input-group input[type="text"] {
+      flex: 1 1 auto;
+      width: 0;
+      min-width: 0;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      box-shadow: none;
+      font-size: 16px;
+    }
+
+    .chat-bottom-bar .input-group input[type="text"]:focus {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .chat-bottom-bar .input-group button {
+      flex: 0 0 auto;
+      width: 42px;
+      min-width: 42px;
+      height: 42px;
+      min-height: 42px;
+      padding: 0 !important;
+      border-radius: 50%;
+    }
+
+    .chat-bottom-bar .input-group .icon-btn {
+      border-color: transparent !important;
+      background: transparent !important;
+      color: var(--text-muted) !important;
+      box-shadow: none !important;
+    }
+
+    .chat-bottom-bar .input-group .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: var(--text-main) !important;
+    }
+
+    .chat-bottom-bar .input-group button:last-child {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .reply-preview {
+      border-color: var(--glass-border);
+      background: #111b29;
+      box-shadow: none;
+    }
+
+    .typing-indicator {
+      min-height: 20px;
+    }
+
+    .typing-dot {
+      box-shadow: none;
+    }
+
+    #resizerSlider {
+      z-index: 105;
+      border: 0 !important;
+      background: transparent !important;
+      transition: background-color 150ms ease;
+    }
+
+    #resizerSlider > div {
+      width: 38px !important;
+      height: 4px !important;
+      border-radius: 999px !important;
+      background: #69778b !important;
+      box-shadow: none !important;
+      transition: background-color 150ms ease, opacity 150ms ease;
+    }
+
+    #resizerSlider:hover,
+    #resizerSlider:active {
+      background: rgba(255, 255, 255, 0.035) !important;
+    }
+
+    #resizerSlider:hover > div,
+    #resizerSlider:active > div {
+      width: 38px !important;
+      height: 4px !important;
+      background: var(--accent) !important;
+      box-shadow: none !important;
+    }
+
+    .modal-overlay {
+      padding: 20px;
+      background: rgba(3, 7, 12, 0.76);
+      animation-duration: 160ms;
+    }
+
+    .modal-card {
+      width: min(100%, 520px);
+      max-width: min(520px, calc(100vw - 40px)) !important;
+      max-height: min(88dvh, 800px);
+      min-height: 0;
+      padding: 22px;
+      gap: 14px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      border-radius: 18px;
+      background: #111b29;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+      overscroll-behavior: contain;
+    }
+
+    /* إعدادات المشاهدة: التمرير في النافذة نفسها حتى لا تُقص أزرار الأقسام */
+    #settingsModal .modal-card {
+      min-height: 0;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      overscroll-behavior: contain;
+    }
+
+    #settingsModal details {
+      flex: 0 0 auto;
+      overflow: visible !important;
+    }
+
+    #settingsModal details > summary {
+      min-height: 46px;
+      height: auto;
+      gap: 8px;
+      flex-wrap: wrap;
+      line-height: 1.45;
+    }
+
+    #settingsModal details > .details-content {
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overflow-x: visible !important;
+      overflow-y: visible !important;
+    }
+
+    /* منع اختفاء أزرار Drive وتشغيل الرابط عند ضيق الشاشة */
+    #settingsModal .input-group {
+      min-width: 0;
+      flex-wrap: wrap !important;
+      overflow: visible !important;
+    }
+
+    #settingsModal .input-group > input[type="text"] {
+      flex: 1 1 145px;
+      min-width: 0;
+    }
+
+    #settingsModal .input-group > button {
+      flex: 0 0 auto;
+      min-width: 42px;
+      min-height: 42px;
+    }
+
+    /* زر اختيار فيديو من ملفات الهاتف أو الاستوديو */
+    #settingsModal details > .details-content > div:first-child > button {
+      width: 100%;
+      min-height: 46px;
+      height: auto;
+      padding: 9px 12px !important;
+      line-height: 1.45;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    /* أزرار التشغيل والتحميل والنسخ في قائمة الفيديوهات */
+    #settingsModal #localVideosList button {
+      min-width: 0;
+      min-height: 42px !important;
+      height: auto;
+      padding: 6px 4px !important;
+      line-height: 1.35;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-card::before {
+      display: none;
+    }
+
+    .modal-card > * {
+      z-index: 1;
+    }
+
+    .modal-card h2,
+    .modal-card h3 {
+      letter-spacing: 0;
+      text-shadow: none;
+    }
+
+    #imageModal {
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 16px !important;
+    }
+
+    #stickersPanel {
+      min-width: 0;
+      min-height: 0;
+      border-color: var(--glass-border);
+      border-radius: 18px;
+      background: #111b29;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.36);
+      overflow: hidden;
+    }
+
+    /* عنوان لوحة الملصقات وأزرار الإدارة */
+    #stickersPanel > div:first-child {
+      flex: 0 0 auto;
+      min-width: 0;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    #stickersPanel > div:first-child > b {
+      flex: 0 0 auto;
+      color: var(--text-main) !important;
+      font-size: 0.82rem !important;
+    }
+
+    #stickersPanel > div:first-child > div {
+      min-width: 0;
+      gap: 5px !important;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    #stickersPanel > div:first-child > div > button {
+      flex: 0 0 auto;
+      min-width: 36px;
+      min-height: 36px !important;
+      height: 36px;
+      padding: 0 10px !important;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px !important;
+      box-shadow: none;
+      font-size: 0.74rem !important;
+    }
+
+    /* التبويبات: تبقى قابلة للتمرير ولا تختفي عند كثرة الأقسام */
+    #stickersPanel #stickerTabs {
+      flex: 0 0 auto;
+      min-width: 0;
+      max-width: 100%;
+      gap: 6px;
+      margin: 0;
+      padding: 3px 1px 9px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-bottom: 1px solid var(--glass-border);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 175, 195, 0.25) transparent;
+    }
+
+    #stickersPanel #stickerTabs .tab-btn {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 5px 12px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: #172333;
+      color: #cbd5e1;
+      box-shadow: none;
+      font-size: 0.75rem;
+    }
+
+    #stickersPanel #stickerTabs .tab-btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* شبكة الملصقات: تتمدد داخل اللوحة وتحتفظ بالتمرير */
+    #stickersPanel #stickersContainer {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)) !important;
+      gap: 9px !important;
+      align-content: start;
+      padding: 5px 2px 10px;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 175, 195, 0.25) transparent;
+    }
+
+    /* شكل الملصق عند العرض العادي */
+    #stickersPanel #stickersContainer > img {
+      display: block;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+      object-fit: cover !important;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px !important;
+      background: #172333;
+      box-shadow: none !important;
+      transition: border-color 150ms ease, transform 150ms ease;
+    }
+
+    #stickersPanel #stickersContainer > img:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* بطاقات الملصقات وأزرار تعديل التاج والحذف */
+    #stickersPanel #stickersContainer > div {
+      min-width: 0;
+      padding: 7px !important;
+      gap: 5px;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 13px !important;
+      background: #172333 !important;
+      box-shadow: none;
+    }
+
+    #stickersPanel #stickersContainer > div img {
+      display: block;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+      object-fit: cover !important;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px !important;
+      box-shadow: none !important;
+    }
+
+    #stickersPanel #stickersContainer > div > span {
+      max-width: 100% !important;
+      color: var(--text-muted) !important;
+      font-size: 0.68rem !important;
+    }
+
+    #stickersPanel #stickersContainer > div button {
+      min-width: 0;
+      min-height: 34px !important;
+      height: 34px;
+      padding: 0 !important;
+      border-radius: 9px !important;
+      box-shadow: none;
+    }
+
+    /* بطاقة إضافة ملصق إلى قسم */
+    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] {
+      min-height: 88px;
+      border: 1px dashed var(--accent) !important;
+      border-radius: 13px !important;
+      background: rgba(139, 124, 246, 0.08) !important;
+    }
+
+    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] i,
+    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] span {
+      color: var(--accent-hover) !important;
+    }
+
+    /* نافذة اختيار ملصق لإضافته إلى قسم */
+    #categoryPickerModal .modal-card {
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    #categoryPickerModal #pickerStickersContainer {
+      min-width: 0;
+      min-height: 0;
+      grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)) !important;
+      gap: 9px !important;
+      overscroll-behavior: contain;
+    }
+
+    #categoryPickerModal #pickerStickersContainer > div {
+      min-width: 0;
+      padding: 7px !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 12px !important;
+      background: #172333 !important;
+    }
+
+    #categoryPickerModal #pickerStickersContainer > div:hover {
+      border-color: var(--accent) !important;
+    }
+
+    #categoryPickerModal #pickerStickersContainer > div img {
+      display: block;
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+      object-fit: cover !important;
+      border-radius: 9px !important;
+    }
+
+    #categoryPickerModal #pickerStickersContainer > div span {
+      max-width: 100% !important;
+      color: var(--text-muted) !important;
+      font-size: 0.68rem !important;
+    }
+
+    @media (max-width: 640px) {
+      #stickersPanel > div:first-child {
+        align-items: flex-start;
+      }
+
+      #stickersPanel > div:first-child > div {
+        justify-content: flex-start;
+      }
+
+      #stickersPanel #stickersContainer {
+        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)) !important;
+        gap: 7px !important;
+      }
+    }
+
+    .sticker-tabs {
+      gap: 6px;
+      border-color: var(--glass-border);
+    }
+
+    .tab-btn {
+      min-height: 34px;
+      padding: 4px 12px;
+      border-color: transparent;
+      background: #1a2737;
+      box-shadow: none;
+    }
+
+    .tab-btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: none;
+    }
+
+    .tab-btn:hover {
+      transform: none;
+      background: #253448;
+    }
+
+    details {
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    summary {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.035);
+      font-size: 0.84rem;
+      transition: background-color 150ms ease;
+    }
+
+    summary:hover {
+      background: rgba(255, 255, 255, 0.065);
+    }
+
+    summary > i:last-child {
+      transition: transform 180ms ease;
+    }
+
+    details[open] > summary > i:last-child {
+      transform: rotate(180deg);
+    }
+
+    .details-content {
+      gap: 10px;
+      padding: 13px;
+      border-top-color: var(--glass-border);
+      border-radius: 0 0 11px 11px;
+      background: rgba(5, 10, 17, 0.34) !important;
+    }
+
+    .avatar-picker {
+      gap: 10px;
+      padding: 14px;
+      border-color: var(--glass-border);
+      border-radius: 16px;
+      background: #0d1521;
+      box-shadow: none;
+    }
+
+    .avatar-opt {
+      width: 52px;
+      height: 52px;
+      border-width: 2px;
+      box-shadow: none;
+    }
+
+    .avatar-opt:hover {
+      transform: scale(1.04);
+    }
+
+    .avatar-opt.selected {
+      transform: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139, 124, 246, 0.15);
+    }
+
+    .history-item,
+    .schedule-item,
+    .memory-card {
+      border-color: var(--glass-border);
+      border-radius: 11px;
+      background: #172231;
+      box-shadow: none;
+    }
+
+    .history-item:hover,
+    .schedule-item:hover {
+      transform: none;
+      border-color: var(--accent);
+      background: #1a2737;
+    }
+
+    .schedule-item.pinned-next {
+      border-width: 1px !important;
+      box-shadow: none;
+    }
+
+    .memory-card {
+      background: #172231;
+    }
+
+    .custom-slider {
+      height: 5px;
+      background: #2a3748;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139, 124, 246, 0.14);
+    }
+
+    .custom-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.06);
+    }
+
+    .custom-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139, 124, 246, 0.14);
+    }
+
+    .timeline-container {
+      gap: 14px;
+      border-color: var(--accent);
+    }
+
+    .memory-sticker:hover {
+      transform: rotate(-8deg);
+    }
+
+    @media (orientation: portrait) {
+      body {
+        flex-direction: column !important;
+      }
+
+      .video-container {
+        height: var(--custom-video-height, clamp(150px, 32dvh, 280px));
+        min-height: 130px;
+        max-height: 66dvh;
+        border-radius: 0;
+      }
+
+      #resizerSlider {
+        width: 100% !important;
+        height: 12px !important;
+        min-height: 12px;
+        cursor: ns-resize !important;
+        border: 0 !important;
+      }
+
+      #resizerSlider > div {
+        width: 38px !important;
+        height: 4px !important;
+      }
+
+      .content-area {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        height: 0;
+        padding: 10px !important;
+        gap: 8px !important;
+      }
+
+      .chat-container {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        padding: 11px !important;
+      }
+    }
+
+    @media (orientation: landscape) {
+      html,
+      body {
+        width: 100vw !important;
+        height: 100dvh !important;
+        flex-direction: row !important;
+      }
+
+      .video-container {
+        width: var(--custom-video-width, 66vw) !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+        max-width: 84vw !important;
+        border: 0 !important;
+        border-inline-end: 1px solid var(--glass-border);
+      }
+
+      #resizerSlider {
+        display: flex !important;
+        flex: 0 0 12px !important;
+        width: 12px !important;
+        height: 100dvh !important;
+        cursor: ew-resize !important;
+        border: 0 !important;
+      }
+
+      #resizerSlider > div {
+        width: 4px !important;
+        height: 38px !important;
+      }
+
+      #resizerSlider:hover > div,
+      #resizerSlider:active > div {
+        width: 4px !important;
+        height: 38px !important;
+      }
+
+      .content-area {
+        flex: 1 1 0% !important;
+        width: auto !important;
+        height: 100dvh !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        padding: 10px !important;
+        gap: 8px !important;
+      }
+
+      .chat-container {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        padding: 10px !important;
+      }
+
+      .msg-content {
+        padding: 8px 11px !important;
+        font-size: 0.82rem !important;
+      }
+
+      .msg-avatar {
+        width: 27px !important;
+        height: 27px !important;
+      }
+
+      .chat-sticker {
+        width: 78px !important;
+        height: 78px !important;
+      }
+
+      .chat-img {
+        max-width: 140px !important;
+      }
+
+      .status-bar {
+        min-height: 38px;
+        padding: 3px 7px !important;
+        font-size: 0.72rem !important;
+      }
+
+      #stickersPanel {
+        inset: 8px 8px 54px 8px !important;
+        max-height: none !important;
+        padding: 8px !important;
+      }
+
+      #stickersContainer {
+        grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)) !important;
+        gap: 6px !important;
+      }
+
+      .sticker-suggestions {
+        right: 8px !important;
+        bottom: 50px !important;
+        left: 8px !important;
+        padding: 7px !important;
+      }
+
+      .sticker-suggestions img {
+        width: 48px !important;
+        height: 48px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .status-bar {
+        min-height: 40px;
+        padding: 4px 7px;
+        gap: 5px;
+        border-radius: 12px;
+        font-size: 0.74rem;
+      }
+
+      .status-bar button {
+        min-width: 34px;
+        min-height: 34px;
+        padding: 0 7px !important;
+      }
+
+      #usersStatus {
+        gap: 5px !important;
+      }
+
+      #usersStatus .user-badge {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
+        min-height: 34px;
+        margin-inline-start: -8px;
+        padding: 2px;
+        justify-content: center;
+        border: 2px solid #101a28;
+        border-radius: 50%;
+        background: #1a2737;
+      }
+
+      #usersStatus .user-badge:first-of-type {
+        margin-inline-start: 0;
+      }
+
+      #usersStatus .user-avatar {
+        width: 28px;
+        height: 28px;
+        border: 0;
+      }
+
+      #usersStatus .user-badge > span:not(.user-dot) {
+        display: none;
+      }
+
+      #usersStatus .user-dot {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 8px;
+        height: 8px;
+      }
+
+      #usersStatus .kick-btn {
+        position: absolute;
+        top: -4px;
+        left: -5px;
+        width: 18px;
+        min-width: 18px;
+        height: 18px;
+        min-height: 18px;
+        padding: 0 !important;
+        border: 1px solid #101a28;
+        border-radius: 50%;
+        font-size: 0.56rem !important;
+      }
+
+      .chat-container {
+        border-radius: 14px;
+      }
+
+      .msg-content {
+        max-width: 90% !important;
+        padding: 8px 11px;
+        font-size: 0.84rem;
+      }
+
+      .chat-sticker {
+        width: 82px !important;
+        height: 82px !important;
+      }
+
+      .chat-img {
+        max-width: min(170px, 58vw);
+      }
+
+      .chat-bottom-bar .input-group {
+        min-height: 48px;
+      }
+
+      .chat-bottom-bar .input-group button {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+      }
+
+      .modal-overlay:not(#imageModal) {
+        align-items: flex-end !important;
+        padding: 0 !important;
+      }
+
+      .modal-overlay:not(#imageModal) .modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 88dvh !important;
+        padding: 22px 18px max(18px, env(safe-area-inset-bottom)) !important;
+        gap: 13px !important;
+        border-right: 0;
+        border-bottom: 0;
+        border-left: 0;
+        border-radius: 22px 22px 0 0 !important;
+      }
+
+      #imageModal {
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 14px !important;
+      }
+
+      #stickersPanel {
+        top: auto !important;
+        right: 10px !important;
+        bottom: max(10px, env(safe-area-inset-bottom)) !important;
+        left: 10px !important;
+        height: min(72dvh, 580px) !important;
+        max-height: 72dvh !important;
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .content-area {
+        padding: 7px !important;
+        gap: 6px !important;
+      }
+
+      .status-bar {
+        gap: 4px;
+        padding: 3px 5px;
+      }
+
+      .chat-container {
+        padding: 8px !important;
+      }
+
+      .chat-bottom-bar .input-group {
+        gap: 3px;
+      }
+
+      .chat-bottom-bar .input-group button {
+        width: 38px;
+        min-width: 38px;
+        height: 38px;
+        min-height: 38px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+  </style>
 
 </head>
 <body>
@@ -1088,48 +2501,84 @@ let currentReplyContext = null;
         }
     }
 
-let swipeStartX = 0, swipeStartY = 0, currentSwipingKey = null, isHorizontalSwipe = false, vibrateDone = false, isReadyToReply = false;
+let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizontalSwipe = false, vibrateDone = false, isReadyToReply = false, suppressTouchReactionUntil = 0;
     function handleSwipeStart(e, key) {
         if (e.touches && e.touches.length > 1) return;
-        swipeStartX = e.touches ? e.touches[0].clientX : e.clientX;
-        swipeStartY = e.touches ? e.touches[0].clientY : e.clientY;
+        const point = e.touches ? e.touches[0] : e;
+        swipeStartX = point.clientX;
+        swipeStartY = point.clientY;
         currentSwipingKey = key;
         isHorizontalSwipe = false;
         vibrateDone = false;
         isReadyToReply = false;
+
         const item = document.getElementById(`msg-item-${key}`);
-        if (item) item.style.transition = 'none';
+        if (item) {
+            item.style.transition = 'none';
+            item.style.transform = 'translateX(0)';
+        }
     }
+
     function handleSwipeMove(e, key) {
         if (swipeStartX === null || currentSwipingKey !== key) return;
-        const currentX = e.touches ? e.touches[0].clientX : e.clientX;
-        const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-        const diffX = currentX - swipeStartX;
-        const diffY = currentY - swipeStartY;
+
+        const point = e.touches ? e.touches[0] : e;
+        const diffX = point.clientX - swipeStartX;
+        const diffY = point.clientY - swipeStartY;
+
+        /* أي حركة واضحة تعني أن المستخدم يسحب، وليست ضغطة مطوّلة */
+        if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+            cancelLongPress();
+        }
 
         if (!isHorizontalSwipe) {
             if (Math.abs(diffY) > Math.abs(diffX)) {
-                swipeStartX = null; swipeStartY = null;
+                swipeStartX = null;
+                swipeStartY = null;
+                currentSwipingKey = null;
+
+                const item = document.getElementById(`msg-item-${key}`);
+                if (item) {
+                    item.style.transition = '';
+                    item.style.transform = '';
+                }
                 return;
             }
-            if (diffX > 10) isHorizontalSwipe = true;
+
+            if (diffX > 10) {
+                isHorizontalSwipe = true;
+                suppressTouchReactionUntil = Date.now() + 700;
+            }
         }
 
         if (isHorizontalSwipe && diffX > 0) {
             if (e.cancelable) e.preventDefault();
-            const moveX = Math.min(diffX * 0.6, 65);
+
+            cancelLongPress();
+            suppressTouchReactionUntil = Date.now() + 700;
+
+            if (currentReactionMsgKey === key) {
+                closeReactionMenu();
+            }
+
+            /* تحريك مباشر مع الإصبع، مع حد يمنع سحب الرسالة خارج الواجهة */
+            const moveX = Math.min(diffX, 96);
             const item = document.getElementById(`msg-item-${key}`);
             const indicator = document.getElementById(`swipe-indicator-${key}`);
-            
-            if (item) item.style.transform = `translateX(${moveX}px)`;
+
+            if (item) {
+                item.style.transform = `translateX(${moveX}px)`;
+            }
 
             if (indicator) {
                 const progress = Math.min(moveX / 45, 1);
                 indicator.style.opacity = progress;
                 indicator.style.transform = `scale(${0.5 + progress * 0.5})`;
+
                 if (progress >= 1) {
                     indicator.classList.add('ready');
                     isReadyToReply = true;
+
                     if (!vibrateDone && navigator.vibrate) {
                         navigator.vibrate(25);
                         vibrateDone = true;
@@ -1142,13 +2591,21 @@ let swipeStartX = 0, swipeStartY = 0, currentSwipingKey = null, isHorizontalSwip
             }
         }
     }
+
     function handleSwipeEnd(e, key, name, text) {
         if (swipeStartX === null || currentSwipingKey !== key) return;
+
+        cancelLongPress();
+
+        if (isHorizontalSwipe) {
+            suppressTouchReactionUntil = Date.now() + 700;
+        }
+
         const item = document.getElementById(`msg-item-${key}`);
         const indicator = document.getElementById(`swipe-indicator-${key}`);
 
         if (item) {
-            item.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            item.style.transition = 'transform 240ms cubic-bezier(0.22, 0.8, 0.25, 1)';
             item.style.transform = 'translateX(0)';
         }
 
@@ -1164,7 +2621,12 @@ let swipeStartX = 0, swipeStartY = 0, currentSwipingKey = null, isHorizontalSwip
             setReplyContext(key, name, text);
         }
 
-        swipeStartX = null; swipeStartY = null; currentSwipingKey = null; isHorizontalSwipe = false; vibrateDone = false; isReadyToReply = false;
+        swipeStartX = null;
+        swipeStartY = null;
+        currentSwipingKey = null;
+        isHorizontalSwipe = false;
+        vibrateDone = false;
+        isReadyToReply = false;
     }
 
 
@@ -2284,24 +3746,39 @@ function sendSavedSticker(imgSrc) {
     // ==========================================
     // محرك التفاعلات السريعة (Reactions System)
     // ==========================================
-    let longPressTimer;
+    let longPressTimer = null;
     let currentReactionMsgKey = null;
 
     function startLongPress(e, msgKey) {
       cancelLongPress();
+
       longPressTimer = setTimeout(() => {
+        if (currentSwipingKey === msgKey && isHorizontalSwipe) return;
         showReactionMenu(e, msgKey);
-      }, 500); // 500 ملي ثانية كافية لاعتبارها ضغطة مطولة
+      }, 500); // تبقى الضغطة المطوّلة متاحة عند ثبات الإصبع
     }
 
     function cancelLongPress() {
       clearTimeout(longPressTimer);
+      longPressTimer = null;
     }
 
     function showReactionMenu(e, msgKey) {
-      e.preventDefault(); 
+      if (e && e.preventDefault) e.preventDefault();
+
+      /* لا تفتح الرياكشن أثناء السحب أو بسبب قائمة المتصفح بعده مباشرة */
+      if (
+        (currentSwipingKey === msgKey && isHorizontalSwipe) ||
+        (e && e.type === 'contextmenu' && Date.now() < suppressTouchReactionUntil)
+      ) {
+        if (currentReactionMsgKey === msgKey) {
+          closeReactionMenu();
+        }
+        return;
+      }
+
       currentReactionMsgKey = msgKey;
-      
+
       let clientX, clientY;
       if (e.touches && e.touches.length > 0) {
         clientX = e.touches[0].clientX;
@@ -2313,14 +3790,16 @@ function sendSavedSticker(imgSrc) {
 
       const menu = document.getElementById('reactionMenu');
       menu.classList.add('show');
-      
+
       // حساب ذكي لمكان ظهور القائمة لكي لا تخرج خارج الشاشة
-      let top = clientY - 70; 
-      if (top < 20) top = clientY + 40; 
-      
+      let top = clientY - 70;
+      if (top < 20) top = clientY + 40;
+
       let left = clientX - (menu.offsetWidth / 2);
       if (left < 10) left = 10;
-      if (left + menu.offsetWidth > window.innerWidth - 10) left = window.innerWidth - menu.offsetWidth - 10;
+      if (left + menu.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - menu.offsetWidth - 10;
+      }
 
       menu.style.top = top + 'px';
       menu.style.left = left + 'px';
