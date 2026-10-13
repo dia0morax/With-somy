@@ -1835,6 +1835,1026 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       }
     }
 
+    /* طبقة التصميم الجديدة: مساحة مشاهدة مركزة ودردشة بكامل الارتفاع */
+    :root {
+      --bg-color-1: #070b14;
+      --bg-color-2: #0b1220;
+      --bg-color-3: #111a2b;
+      --text-main: #f2f5fb;
+      --text-muted: #8c9ab0;
+      --accent: #8b7cf6;
+      --accent-hover: #a79cff;
+      --glass-bg: #0b1220;
+      --glass-border: rgba(226, 232, 240, 0.1);
+      --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      --msg-mine-gradient: linear-gradient(135deg, #6457db, #8170f3);
+      --btn-gradient: linear-gradient(135deg, #6457db, #8170f3);
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      background: #070b14;
+    }
+
+    body {
+      isolation: isolate;
+    }
+
+    body::before,
+    body::after {
+      display: none;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background: #070b14;
+    }
+
+    .watch-stage {
+      position: relative;
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+      background: #000;
+    }
+
+    #videoBox.video-container {
+      width: 100% !important;
+      height: clamp(150px, var(--custom-video-height, 31vh), 60vh) !important;
+      min-width: 0 !important;
+      min-height: 150px !important;
+      max-height: 60vh !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      background: #000 !important;
+    }
+
+    .video-js {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #videoBox .vjs-control-bar {
+      background: rgba(4, 7, 13, 0.9);
+    }
+
+    #resizerSlider {
+      position: relative;
+      z-index: 10;
+      flex: 0 0 7px !important;
+      width: 100% !important;
+      height: 7px !important;
+      min-height: 7px !important;
+      border: 0 !important;
+      background: #101827 !important;
+      cursor: ns-resize !important;
+    }
+
+    #resizerSlider > div {
+      width: 42px !important;
+      height: 3px !important;
+      border-radius: 99px !important;
+      background: rgba(219, 226, 239, 0.32) !important;
+    }
+
+    #resizerSlider:hover > div,
+    #resizerSlider:active > div {
+      background: var(--accent) !important;
+    }
+
+    .content-area {
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      gap: 0 !important;
+      overflow: hidden !important;
+      background: #070b14 !important;
+    }
+
+    .chat-container {
+      position: relative;
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: column !important;
+      width: 100%;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      padding: 12px 14px max(10px, env(safe-area-inset-bottom)) !important;
+      overflow: hidden !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: #0a101b !important;
+      box-shadow: none !important;
+    }
+
+    .chat-container::before {
+      display: none !important;
+    }
+
+    #messages {
+      flex: 1 1 auto;
+      min-height: 0;
+      gap: 12px;
+      padding: 4px 2px 12px;
+      scroll-behavior: smooth;
+      scrollbar-color: rgba(148, 163, 184, 0.22) transparent;
+    }
+
+    .msg-item {
+      gap: 9px;
+      font-size: 0.9rem;
+      animation: messageFadeIn 160ms ease-out both;
+    }
+
+    @keyframes messageFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(226, 232, 240, 0.13);
+      box-shadow: none;
+    }
+
+    .msg-content {
+      padding: 9px 13px;
+      border-radius: 18px;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+
+    .msg-item[style*="row-reverse"] .msg-content {
+      border-bottom-right-radius: 5px;
+      box-shadow: none !important;
+    }
+
+    .msg-item[style*="row"] .msg-content {
+      border-bottom-left-radius: 5px;
+      box-shadow: none !important;
+    }
+
+    .chat-bottom-bar {
+      flex: 0 0 auto;
+      width: 100%;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .chat-bottom-bar .input-group {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      min-width: 0;
+      padding: 5px;
+      border: 1px solid rgba(226, 232, 240, 0.1);
+      border-radius: 999px;
+      background: #111a28;
+    }
+
+    .chat-bottom-bar .input-group input[type="text"] {
+      flex: 1 1 auto;
+      width: 0;
+      min-width: 0;
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 0 !important;
+      border-radius: 999px;
+      background: transparent !important;
+      box-shadow: none !important;
+      color: var(--text-main);
+      font-size: 0.92rem;
+    }
+
+    .chat-bottom-bar .input-group input[type="text"]:focus {
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    button,
+    .chat-bottom-bar .input-group button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      box-shadow: none;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    button:hover {
+      transform: none;
+      filter: none;
+      box-shadow: none;
+    }
+
+    .chat-bottom-bar .input-group .icon-btn {
+      flex: 0 0 38px;
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 50%;
+      background: transparent !important;
+      color: #aeb8ca !important;
+      font-size: 0.95rem;
+    }
+
+    .chat-bottom-bar .input-group .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: var(--text-main) !important;
+    }
+
+    .chat-bottom-bar .input-group > button:last-child {
+      flex: 0 0 40px;
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      min-height: 40px;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 50%;
+      background: var(--accent) !important;
+      color: #fff !important;
+      font-size: 0.95rem !important;
+    }
+
+    .chat-bottom-bar .input-group > button:last-child:hover {
+      background: var(--accent-hover) !important;
+    }
+
+    .reply-preview {
+      border-color: rgba(139, 124, 246, 0.35);
+      background: #111a28;
+      box-shadow: none;
+    }
+
+    .app-menu-button {
+      position: absolute;
+      z-index: 130;
+      top: max(12px, env(safe-area-inset-top));
+      right: 12px;
+      display: inline-flex;
+      width: 42px;
+      min-width: 42px;
+      height: 42px;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 50%;
+      background: rgba(8, 13, 22, 0.76) !important;
+      color: #fff !important;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .app-menu-button:hover,
+    .app-menu-button:focus-visible {
+      border-color: rgba(255, 255, 255, 0.27) !important;
+      background: #182235 !important;
+    }
+
+    .control-actions {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-actions .app-menu-button {
+      position: static;
+      z-index: auto;
+      top: auto;
+      right: auto;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0 !important;
+      border-color: rgba(226, 232, 240, 0.1) !important;
+      background: #111a28 !important;
+      color: #d8e0ed !important;
+      font-size: 0.9rem;
+    }
+
+    .control-actions .app-menu-button:hover,
+    .control-actions .app-menu-button:focus-visible {
+      border-color: rgba(139, 124, 246, 0.45) !important;
+      background: rgba(139, 124, 246, 0.12) !important;
+    }
+
+    .drawer-scrim {
+      position: fixed;
+      z-index: 1400;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: rgba(0, 0, 0, 0.58);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .app-drawer {
+      position: fixed;
+      z-index: 1410;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      width: min(88vw, 380px);
+      flex-direction: column;
+      gap: 18px;
+      padding: max(18px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom));
+      overflow-x: hidden;
+      overflow-y: auto;
+      border-left: 1px solid var(--glass-border);
+      background: #0b1220;
+      box-shadow: -18px 0 48px rgba(0, 0, 0, 0.32);
+      transform: translateX(105%);
+      transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      overscroll-behavior: contain;
+    }
+
+    body.drawer-open .drawer-scrim {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    body.drawer-open .app-drawer {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .drawer-title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .drawer-title strong {
+      color: var(--text-main);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .drawer-title span {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .drawer-close {
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0 !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 50%;
+      background: transparent !important;
+      color: #c6cede !important;
+    }
+
+    .drawer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .drawer-section-label {
+      color: #91a0b7;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .app-drawer .status-bar {
+      display: flex;
+      flex: 0 0 auto;
+      flex-wrap: wrap !important;
+      gap: 9px;
+      min-width: 0;
+      min-height: 0;
+      padding: 12px;
+      overflow: visible;
+      white-space: normal;
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      background: #101929;
+      box-shadow: none;
+    }
+
+    .app-drawer .status-bar > div {
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    #usersStatus {
+      display: flex !important;
+      flex: 1 0 100% !important;
+      flex-wrap: wrap;
+      align-items: center;
+      min-height: 34px;
+      overflow-x: auto;
+    }
+
+    .app-drawer .status-bar button {
+      min-width: 38px;
+      min-height: 38px;
+      padding: 0 11px !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.035) !important;
+      color: #dce3ef !important;
+      font-size: 0.82rem !important;
+    }
+
+    .app-drawer .status-bar button:hover {
+      border-color: rgba(139, 124, 246, 0.45) !important;
+      background: rgba(139, 124, 246, 0.12) !important;
+    }
+
+    .app-drawer .user-badge {
+      padding: 4px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .app-drawer .input-group {
+      display: flex;
+      flex: 1 0 100%;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .app-drawer input[type="text"] {
+      min-height: 38px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #0a101b;
+    }
+
+    #stickersPanel {
+      position: fixed !important;
+      z-index: 1500 !important;
+      top: auto !important;
+      right: 0 !important;
+      bottom: max(66px, calc(env(safe-area-inset-bottom) + 58px)) !important;
+      left: 0 !important;
+      display: none;
+      width: min(100%, 540px);
+      height: min(62dvh, 520px) !important;
+      max-height: calc(100dvh - 110px) !important;
+      margin-inline: auto;
+      padding: 14px !important;
+      border: 1px solid rgba(226, 232, 240, 0.12) !important;
+      border-bottom: 0 !important;
+      border-radius: 22px 22px 0 0 !important;
+      background: #101827 !important;
+      box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.42) !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      animation: stickerDrawerIn 180ms ease-out;
+    }
+
+    @keyframes stickerDrawerIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #stickersPanel #stickerTabs {
+      flex: 0 0 auto;
+      min-width: 0;
+      max-width: 100%;
+      gap: 7px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 3px 1px 9px;
+      border-bottom: 1px solid var(--glass-border);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #stickersPanel #stickerTabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    #stickersPanel #stickerTabs .tab-btn {
+      flex: 0 0 auto;
+      min-height: 33px;
+      padding: 4px 13px;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: #172235;
+      color: #ccd5e4;
+      box-shadow: none;
+    }
+
+    #stickersPanel #stickerTabs .tab-btn.active {
+      border-color: var(--accent);
+      background: rgba(139, 124, 246, 0.2);
+      color: #d8d2ff;
+    }
+
+    #stickersPanel #stickersContainer {
+      grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)) !important;
+      gap: 9px !important;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #stickersPanel #stickersContainer > img,
+    #stickersPanel #stickersContainer > div img {
+      aspect-ratio: 1;
+      border-radius: 13px !important;
+      box-shadow: none !important;
+    }
+
+    input[type="text"],
+    select {
+      border-color: rgba(226, 232, 240, 0.12);
+      background: #101827;
+      color: var(--text-main);
+    }
+
+    .modal-overlay {
+      padding: 16px;
+      background: rgba(2, 6, 14, 0.78);
+    }
+
+    .modal-card {
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      background: #0f1724;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+
+    /* شريط تحكم واضح أسفل الفيديو مباشرة */
+    .control-bar {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex: 0 0 auto;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      min-height: 58px;
+      padding: 7px 8px;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-top: 1px solid rgba(226, 232, 240, 0.055);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.08);
+      background: #0b121e;
+    }
+
+    .control-button {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-width: 40px;
+      min-height: 42px;
+      padding: 0 6px !important;
+      border: 1px solid rgba(226, 232, 240, 0.1) !important;
+      border-radius: 999px;
+      background: #111a28 !important;
+      color: #d8e0ed !important;
+      font-size: 0.72rem !important;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: none !important;
+    }
+
+    .control-button i,
+    .drawer-jump button i {
+      font-size: 0.83rem;
+    }
+
+    .control-button:hover {
+      border-color: rgba(139, 124, 246, 0.45) !important;
+      background: rgba(139, 124, 246, 0.12) !important;
+    }
+
+    .control-button.icon-only {
+      flex: 0 0 36px;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0 !important;
+      border-radius: 50%;
+      gap: 0;
+      font-size: 0 !important;
+    }
+
+    .control-button.icon-only span {
+      display: none !important;
+    }
+
+    .control-button.icon-only i {
+      font-size: 0.92rem;
+    }
+
+    .control-button.sync-control {
+      min-width: 0;
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0 !important;
+      border-color: rgba(139, 124, 246, 0.25) !important;
+      color: #d6d0ff !important;
+      font-size: 0.76rem !important;
+    }
+
+    .control-button.sync-control.icon-only {
+      flex: 0 0 36px;
+      border-radius: 50%;
+    }
+
+    .control-sync-status {
+      flex: 1 1 0;
+      width: 1%;
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      color: #cbd5e1;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      text-align: right;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .control-sync-status::-webkit-scrollbar {
+      display: none;
+    }
+
+    .drawer-jump {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .drawer-jump #jumpTimeInput {
+      flex: 1 1 auto;
+      width: 1%;
+      min-width: 0;
+      min-height: 42px;
+      padding: 0 11px;
+      border: 1px solid rgba(226, 232, 240, 0.1);
+      border-radius: 12px;
+      background: #0a101b;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      text-align: center;
+      direction: ltr;
+    }
+
+    .drawer-jump button {
+      display: inline-flex;
+      flex: 0 0 42px;
+      width: 42px;
+      min-width: 42px;
+      height: 42px;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+      border: 1px solid rgba(139, 124, 246, 0.24) !important;
+      border-radius: 12px;
+      background: rgba(139, 124, 246, 0.12) !important;
+      color: #d6d0ff !important;
+      box-shadow: none !important;
+    }
+
+    .drawer-jump button i {
+      font-size: 0.95rem;
+    }
+
+    /* درج منظم: كل إجراء صف كامل مع أيقونة واسم واضح */
+    .app-drawer {
+      width: min(70vw, 300px);
+      gap: 0;
+      padding: max(16px, env(safe-area-inset-top)) 15px max(18px, env(safe-area-inset-bottom));
+    }
+
+    .drawer-header {
+      margin-bottom: 5px;
+      padding-bottom: 14px;
+    }
+
+    .drawer-close {
+      display: inline-flex;
+      width: auto;
+      min-width: 78px;
+      height: 38px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 10px !important;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
+
+    .drawer-section {
+      gap: 9px;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.08);
+    }
+
+    .drawer-section:last-child {
+      border-bottom: 0;
+    }
+
+    .drawer-section-label {
+      color: #aebbd0;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .app-drawer .status-bar {
+      display: block;
+      min-height: 0;
+      padding: 8px;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    #usersStatus {
+      display: flex !important;
+      flex: none !important;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 7px !important;
+      max-height: min(25vh, 170px);
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    #usersStatus > b {
+      flex: 0 0 auto;
+      padding: 2px 3px 5px;
+      font-size: 0.8rem;
+    }
+
+    .app-drawer #usersStatus .user-badge {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      min-height: 40px;
+      align-items: center;
+      justify-content: flex-start;
+      margin-inline-start: 0;
+      padding: 5px 7px;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .app-drawer #usersStatus .user-badge > span:not(.user-dot) {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.82rem;
+    }
+
+    .app-drawer #usersStatus .kick-btn {
+      position: static;
+      display: inline-flex;
+      width: auto;
+      min-width: 58px;
+      top: auto;
+      left: auto;
+      height: 30px;
+      min-height: 30px;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 7px !important;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 999px;
+      font-size: 0.72rem !important;
+    }
+
+    .app-drawer #usersStatus .kick-btn::after {
+      content: "طرد";
+      font-size: 0.72rem;
+    }
+
+    .drawer-status {
+      max-height: 90px;
+      padding: 9px 10px;
+      overflow-y: auto;
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #c2ccdc;
+      font-size: 0.78rem;
+      line-height: 1.65;
+    }
+
+    .drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      width: 100%;
+    }
+
+    .drawer-action {
+      display: flex;
+      flex: 0 0 auto;
+      width: 100%;
+      min-height: 48px;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 0 13px !important;
+      border: 1px solid transparent !important;
+      border-radius: 13px;
+      background: transparent !important;
+      color: #e2e8f0 !important;
+      text-align: right;
+      font-size: 0.92rem !important;
+      font-weight: 600;
+      box-shadow: none !important;
+    }
+
+    .drawer-action:hover,
+    .drawer-action:focus-visible {
+      border-color: rgba(226, 232, 240, 0.08) !important;
+      background: rgba(255, 255, 255, 0.055) !important;
+    }
+
+    .drawer-action > i:first-child {
+      display: inline-flex;
+      flex: 0 0 22px;
+      width: 22px;
+      justify-content: center;
+      color: #a99eff;
+      font-size: 0.95rem;
+    }
+
+    #deviceModeBtn::after {
+      content: "تبديل وضع العرض";
+      margin-inline-start: auto;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    #theaterBtn::after {
+      content: "وضع السينما";
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    #lockChatBtn::after {
+      content: "قفل أو فتح الشات";
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .drawer-action .drawer-state {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    @media (orientation: landscape) and (min-width: 700px) {
+      .app-shell {
+        display: grid !important;
+        grid-template-columns: minmax(40vw, min(var(--custom-video-width, 70vw), calc(100vw - 327px))) 7px minmax(320px, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+        flex-direction: row !important;
+        align-items: stretch;
+      }
+
+      .watch-stage {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: stretch;
+        min-height: 0;
+      }
+
+      #videoBox.video-container {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        border-left: 0 !important;
+      }
+
+      #resizerSlider {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: stretch;
+        width: 7px !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        cursor: ew-resize !important;
+      }
+
+      .control-bar {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 56px;
+      }
+
+      #resizerSlider > div {
+        width: 3px !important;
+        height: 42px !important;
+      }
+
+      .content-area {
+        grid-column: 3;
+        grid-row: 1;
+        grid-row: 1 / span 2;
+        width: auto !important;
+        height: 100% !important;
+        padding: 0 !important;
+      }
+
+      .chat-container {
+        padding: 12px 12px max(10px, env(safe-area-inset-bottom)) !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .chat-container {
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+      }
+
+      .chat-bottom-bar .input-group {
+        gap: 4px;
+        padding: 4px;
+      }
+
+      .app-drawer {
+        width: min(70vw, 300px);
+      }
+    }
+
   </style>
 
 </head>
@@ -1880,23 +2900,52 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <span style="color: #fff; margin-top: 12px; font-size: 0.85rem; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px;">انقر خارج الصورة للإغلاق | انقر على الصورة للزوم 🔍</span>
   </div>
 
-<!-- لوحة الملصقات المحفوظة والأقسام -->
-  <div id="stickersPanel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; background: rgba(15, 23, 42, 0.98); border: 1px solid var(--accent); border-radius: 16px; padding: 12px; z-index: 500; flex-direction: column; gap: 8px; box-shadow: 0 -5px 20px rgba(0,0,0,0.6);">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <b style="color: var(--accent); font-size: 0.85rem;"><i class="fa-solid fa-icons" style="margin-left: 5px;"></i> الملصقات</b>
-      <div style="display: flex; gap: 5px;">
-        <button id="editStickersBtn" onclick="toggleEditStickers()" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b; border-radius:8px;"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
-        <button onclick="addStickerCategory()" style="padding: 4px 10px; font-size: 0.75rem; background: #3b82f6; border-radius:8px;" title="إضافة قسم جديد"><i class="fa-solid fa-folder-plus"></i> قسم</button>
+<!-- ستايلات Premium UI المخصصة للقوائم الجديدة -->
+  <style>
+    .premium-panel { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .premium-toolbar-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s ease; cursor: pointer; padding: 0; font-size: 0.9rem; }
+    .premium-toolbar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateY(-2px); }
+    .premium-toolbar-btn.active-state { background: rgba(139, 92, 246, 0.2); color: var(--accent); border-color: rgba(139, 92, 246, 0.4); }
+    .premium-toolbar-btn.danger-state:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
+    .premium-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; }
+    .premium-ghost-btn { background: rgba(255,255,255,0.05); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; font-size: 0.85rem; font-weight: 600; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .premium-ghost-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+    .premium-danger-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 12px; font-size: 0.85rem; font-weight: 700; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .premium-danger-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); }
+    .premium-input { background: rgba(0,0,0,0.2) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 10px !important; color: #fff !important; }
+    .premium-input:focus { border-color: var(--accent) !important; background: rgba(0,0,0,0.4) !important; }
+    #stickerTabs .tab-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 16px; color: #94a3b8; font-weight: 600; transition: 0.2s; }
+    #stickerTabs .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+  </style>
+
+  <!-- لوحة الملصقات المحفوظة والأقسام (Premium Redesign) -->
+  <div id="stickersPanel" class="premium-panel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; z-index: 500; flex-direction: column; gap: 12px; padding: 16px;">
+    
+    <!-- شريط الأدوات العلوي النظيف -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(139, 92, 246, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+          <i class="fa-solid fa-icons"></i>
+        </div>
+        <b style="color: #f8fafc; font-size: 0.95rem; font-weight: 700;">الملصقات</b>
+      </div>
+      
+      <div style="display: flex; gap: 6px;">
+        <button id="editStickersBtn" onclick="toggleEditStickers()" class="premium-toolbar-btn" title="تعديل الملصقات"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button onclick="addStickerCategory()" class="premium-toolbar-btn" title="إضافة قسم جديد"><i class="fa-solid fa-folder-plus"></i></button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
-        <button onclick="document.getElementById('stickerUpload').click()" style="padding: 4px 10px; font-size: 0.75rem; background: #10b981; border-radius:8px;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
-        <button onclick="toggleStickers()" style="padding: 4px 10px; font-size: 0.75rem; background: #ef4444; border-radius:8px;"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('stickerUpload').click()" class="premium-toolbar-btn" title="رفع ملصق جديد"><i class="fa-solid fa-cloud-arrow-up"></i></button>
+        <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+        <button onclick="toggleStickers()" class="premium-toolbar-btn danger-state" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
+
     <!-- شريط الأقسام (Tabs) -->
-    <div id="stickerTabs" class="sticker-tabs"></div>
-    <!-- حاوية الملصقات -->
-    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 8px; overflow-y: auto; padding-bottom: 10px; align-items: start; align-content: start; flex: 1;">
-       <span style="font-size: 0.8rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center;">جاري تحميل الملصقات...</span>
+    <div id="stickerTabs" class="sticker-tabs" style="border: none; padding-bottom: 4px; gap: 8px;"></div>
+    
+    <!-- حاوية الملصقات (Grid محسّن) -->
+    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 10px; align-items: start; align-content: start; flex: 1;">
+       <span style="font-size: 0.85rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top: 20px;">جاري تحميل الملصقات...</span>
     </div>
   </div>
 
@@ -1916,63 +2965,64 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <span onclick="customReactionPrompt()" class="more-btn" title="المزيد..."><i class="fa-solid fa-plus"></i></span>
   </div>
 
-  <!-- النافذة المنبثقة لإعدادات المشاهدة (تم وضع أيقونات FontAwesome) -->
+  <!-- النافذة المنبثقة لإعدادات المشاهدة (Premium Redesign) -->
   <div id="settingsModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
-    <div class="modal-card" style="max-width: 90%; gap: 10px;" onclick="event.stopPropagation()">
-      <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="margin-left: 8px;"></i> إعدادات المشاهدة</h3>
+    <div class="modal-card premium-panel" style="max-width: 420px; width: 92%; gap: 16px; padding: 24px;" onclick="event.stopPropagation()">
       
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-link" style="margin-left: 5px;"></i> تشغيل رابط جديد:</b>
-        <div class="input-group">
-          <button onclick="openDrivePicker()" style="background: #2563eb; padding: 8px;"><i class="fa-brands fa-google-drive" style="margin-left: 4px;"></i> Drive</button>
-          <input type="text" id="videoUrlInput" placeholder="رابط MP4 مباشر..." style="padding: 8px;" />
-          <button onclick="changeVideoManual()" style="padding: 8px;"><i class="fa-solid fa-play"></i></button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <div style="width: 36px; height: 36px; border-radius: 12px; background: rgba(139, 92, 246, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem;">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <h3 style="color: #f8fafc; margin: 0; font-size: 1.2rem; font-weight: 800;">إعدادات المشاهدة</h3>
+      </div>
+      
+      <!-- كارت تشغيل رابط جديد -->
+      <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-link" style="margin-left: 4px;"></i> تشغيل رابط جديد</span>
+        <div class="input-group" style="gap: 8px;">
+          <button onclick="openDrivePicker()" class="premium-ghost-btn" style="padding: 0 12px; height: 44px; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.1);" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
+          <input type="text" id="videoUrlInput" class="premium-input" placeholder="رابط MP4 مباشر..." style="height: 44px; padding: 0 14px;" />
+          <button onclick="changeVideoManual()" style="height: 44px; padding: 0 16px; border-radius: 10px; box-shadow: none;"><i class="fa-solid fa-play"></i></button>
         </div>
       </div>
 
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-        <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-palette" style="margin-left: 5px;"></i> المظهر:</b>
-        <div style="display: flex; gap: 5px; justify-content: center;">
-          <button onclick="setTheme('default')" style="background: #0f172a; flex:1; padding: 6px;">داكن</button>
-          <button onclick="setTheme('pink')" style="background: #ec4899; flex:1; padding: 6px;">وردي</button>
-          <button onclick="setTheme('blue')" style="background: #0284c7; flex:1; padding: 6px;">سمائي</button>
-          <button onclick="setTheme('cozy')" style="background: #d97706; flex:1; padding: 6px;">مريح</button>
-        </div>
+      <!-- كارت سجل المشاهدة -->
+      <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
+         <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 4px;"></i> سجل المشاهدة</span>
+         <div id="historyList" style="max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">لا توجد مقاطع سابقة</div>
       </div>
 
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px; text-align: right;">
-         <b style="color: var(--text-main); font-size: 0.85rem;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 5px;"></i> سجل المشاهدة:</b>
-         <div id="historyList" style="max-height: 80px; overflow-y: auto;">لا توجد مقاطع سابقة</div>
-      </div>
-
-      <!-- قسم الإعدادات المتقدمة: الفيديوهات المرفوعة والتحميل المحلي Local بتوزيع متناسق للموبايل -->
-      <details style="background: rgba(10, 15, 30, 0.7); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 14px; margin-top: 6px; overflow: hidden; width: 100%; box-sizing: border-box;">
-        <summary style="padding: 10px 12px; font-size: 0.8rem; color: var(--accent); font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> إعدادات متقدمة: الحلقات والتشغيل المحلي</span><i class="fa-solid fa-angle-down" style="font-size: 0.75rem;"></i></summary>
-        <div class="details-content" style="padding: 10px; gap: 8px; max-height: 270px; overflow-y: auto; overflow-x: hidden; width: 100%; box-sizing: border-box;">
+      <!-- قسم الإعدادات المتقدمة (تصميم مدمج ونظيف) -->
+      <details style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; width: 100%;">
+        <summary style="padding: 14px 16px; font-size: 0.85rem; color: #e2e8f0; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: transparent;">
+          <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-server" style="color: var(--accent);"></i> الحلقات والتشغيل المحلي</span>
+          <i class="fa-solid fa-angle-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+        </summary>
+        
+        <div class="details-content" style="padding: 16px; gap: 16px; max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.05);">
           
-          <!-- بطاقة تشغيل فيديو من ملفات الجهاز بتصميم مرتب وموزون -->
-          <div style="background: rgba(139, 92, 246, 0.1); border: 1px dashed rgba(139, 92, 246, 0.4); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box;">
+          <!-- زر التشغيل من الجهاز -->
+          <div style="display: flex; flex-direction: column; gap: 6px;">
             <input type="file" id="manualDeviceVideoInput" accept="video/*" style="display: none;" onchange="playFromDeviceFiles(this)">
-            <button onclick="document.getElementById('manualDeviceVideoInput').click()" style="width: 100%; padding: 7px; font-size: 0.75rem; background: var(--btn-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-folder-open"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
-            <span style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">لتشغيل أي حلقة حملتها على الآيباد/الهاتف بدون إنترنت وبالمزامنة</span>
+            <button onclick="document.getElementById('manualDeviceVideoInput').click()" class="premium-ghost-btn" style="width: 100%; border-color: rgba(139, 92, 246, 0.4); color: #d8b4fe; background: rgba(139, 92, 246, 0.1);"><i class="fa-solid fa-folder-open"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
+            <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center; line-height: 1.4;">لتشغيل حلقة محملة مسبقاً على جهازك بدون استهلاك إنترنت وبالمزامنة الكاملة.</span>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px;">
-            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">الحلقات المرفوعة بالسيرفر:</span>
-          </div>
+          <div style="height: 1px; background: rgba(255,255,255,0.08); width: 100%;"></div>
 
-          <div id="localVideosList" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box;">
-             <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center; padding: 8px;">جاري تجهيز القائمة...</span>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">الحلقات المرفوعة بالسيرفر:</span>
+            <div id="localVideosList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+               <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 10px;">جاري تجهيز القائمة...</span>
+            </div>
           </div>
         </div>
       </details>
 
-
-
-
-      <button onclick="clearDatabase()" style="background: #ef4444; margin-top: 8px;"><i class="fa-solid fa-trash-can" style="margin-left: 5px;"></i> مسح بيانات الشات والسجل</button>
-
-      <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark" style="margin-left: 5px;"></i> إغلاق</button>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <button onclick="clearDatabase()" class="premium-danger-btn"><i class="fa-solid fa-trash-can"></i> مسح بيانات الشات والسجل</button>
+        <button onclick="document.getElementById('settingsModal').style.display='none'" class="premium-ghost-btn" style="border: none; background: rgba(255,255,255,0.03);"><i class="fa-solid fa-xmark"></i> إغلاق النافذة</button>
+      </div>
     </div>
   </div>
 
@@ -2035,82 +3085,148 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     </div>
   </div>
 
-  <div class="video-container" id="videoBox">
-    <div class="click-overlay" onclick="triggerSmartPlay()"></div>
-    <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
-  </div>
-  <!-- ↔️ شريط التحكم الذكي بحجم الفيديو -->
-  <div id="resizerSlider" style="height: 10px; background: rgba(255,255,255,0.08); border-bottom: 1px solid var(--accent); cursor: ns-resize; display: flex; align-items: center; justify-content: center; z-index: 105; touch-action: none;" title="اسحب لتكبير/تصغير المشغل">
-    <div style="width: 40px; height: 3px; background: var(--accent); border-radius: 2px;"></div>
-  </div>
-
-  <div class="content-area">
-    <div class="status-bar" style="justify-content: space-between; flex-wrap: nowrap; gap: 5px;">
-      <div style="display:flex; gap:10px; align-items:center; overflow-x:auto; flex: 1;" id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
-      
-      <!-- ميزات القفز والتقديم والتأخير السريع -->
-      <div style="display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px;">
-        <button onclick="skipTime(-5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تأخير 5 ثواني"><i class="fa-solid fa-backward-step"></i></button>
-        <input type="text" id="jumpTimeInput" placeholder="06:35" style="width: 65px; padding: 4px; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff;">
-        <button onclick="jumpToTime()" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent);" title="انتقال"><i class="fa-solid fa-bolt"></i></button>
-        <button onclick="skipTime(5)" style="padding: 4px 10px; font-size: 0.75rem; background: transparent; box-shadow: none;" title="تقديم 5 ثواني"><i class="fa-solid fa-forward-step"></i></button>
-        <!-- زر تخطي الشارة 85 ثانية -->
-        <button onclick="skipTime(85)" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #ec4899; box-shadow: none; border-radius: 6px;" title="تخطي الشارة (85 ثانية)"><i class="fa-solid fa-forward-fast"></i></button>
+  <div class="app-shell">
+    <section class="watch-stage" aria-label="مشغل الفيديو">
+      <div class="video-container" id="videoBox">
+        <div class="click-overlay" onclick="triggerSmartPlay()"></div>
+        <video id="videoPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls playsinline preload="auto"></video>
       </div>
+    </section>
 
-      <div style="display: flex; gap: 4px;">
-        <!-- 📱 زر التبديل بين وضع الجوال والآيباد -->
-        <button id="deviceModeBtn" onclick="toggleDeviceMode()" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa;" title="تبديل وضع العرض (جوال / آيباد)"><i class="fa-solid fa-mobile-screen"></i> <span id="deviceModeText">جوال</span></button>
-        <button onclick="openProfileModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #475569;"><i class="fa-solid fa-user-astronaut"></i></button>
-      </div>
-    </div>
-    
-    <div class="status-bar" style="justify-content: space-between; font-size: 0.75rem; color: #a5b4fc; margin-top: -5px; margin-bottom: 5px;">
-      <div id="syncStatus"><i class="fa-regular fa-clock" style="margin-left: 5px;"></i> جاري التحميل...</div>
-      <div style="display: flex; gap: 6px;">
-        <!-- 🎬 زر وضع السينما -->
-        <button id="theaterBtn" onclick="toggleTheaterMode()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #a855f7; box-shadow: none;" title="وضع السينما"><i class="fa-solid fa-film"></i></button>
-
-        <!-- زر المزامنة -->
-        <button onclick="forceSync()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: none;" title="مزامنة إجبارية"><i class="fa-solid fa-tower-broadcast"></i></button>
-        
-        <!-- قفل الشات -->
-        <button id="lockChatBtn" onclick="toggleChatLock()" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="قفل الشات"><i class="fa-solid fa-lock-open"></i></button>
-        
-        <!-- زر الإعدادات (مصغر) -->
-        <button onclick="document.getElementById('settingsModal').style.display='flex';" style="padding: 4px 12px; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); box-shadow: none;" title="الإعدادات"><i class="fa-solid fa-gear"></i></button>
-        
-        <!-- 🌟 زر جدولنا الجديد -->
-        <button onclick="openFeatures()" style="padding: 4px 12px; font-size: 0.8rem; background: var(--btn-gradient);"><i class="fa-solid fa-calendar-days"></i> جدولنا</button>
-      </div>
+    <div id="resizerSlider" title="اسحب لتكبير أو تصغير المشغل">
+      <div></div>
     </div>
 
-    <!-- 3. منطقة الشات وبداخلها زر إرسال الصور والملصقات بجانب حقل الكتابة -->
-    <div class="chat-container">
-      <div id="messages"></div>
-      <div id="typingArea" class="typing-indicator"></div>
-         <!-- 🤖 شريط الاقتراحات الذكية للملصقات (يظهر تلقائياً) -->
-      <div id="stickerSuggestions" class="sticker-suggestions"></div>
-      
-<div class="chat-bottom-bar">
-        <div id="replyPreview" class="reply-preview">
-          <div style="display:flex; flex-direction: column; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 85%;">
-             <b id="replyName" style="color: var(--accent); font-size: 0.75rem;"></b>
-             <span id="replyText" style="color: #cbd5e1; text-overflow: ellipsis; overflow: hidden; font-size: 0.72rem;"></span>
+    <section class="control-bar" aria-label="التحكم بالمشاهدة">
+      <div class="control-actions" aria-label="أدوات سريعة">
+        <button id="appMenuBtn" class="app-menu-button" type="button" aria-label="فتح قائمة التحكم" aria-controls="appDrawer" aria-expanded="false" onclick="toggleAppDrawer()">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <button class="control-button sync-control icon-only" type="button" onclick="forceSync()" title="مزامنة الآن" aria-label="مزامنة الآن">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div id="syncStatus" class="control-sync-status" role="status"><b>التوقيت:</b> جاري التحميل...</div>
+    </section>
+
+    <button id="drawerScrim" class="drawer-scrim" type="button" aria-label="إغلاق القائمة" tabindex="-1" onclick="closeAppDrawer()"></button>
+
+    <aside id="appDrawer" class="app-drawer" aria-label="قائمة التحكم" aria-hidden="true">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <strong>إعدادات المشاهدة</strong>
+          <span>إعدادات الغرفة والتحكم</span>
+        </div>
+        <button class="drawer-close" type="button" aria-label="إغلاق القائمة" onclick="closeAppDrawer()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>إغلاق</span>
+        </button>
+      </div>
+
+      <section class="drawer-section" aria-label="المتصلون">
+        <span class="drawer-section-label">المتصلون الآن</span>
+        <div class="status-bar">
+          <div id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
+        </div>
+      </section>
+
+      <section class="drawer-section" aria-label="الانتقال إلى وقت محدد">
+        <span class="drawer-section-label">الانتقال إلى وقت</span>
+        <div class="drawer-jump">
+          <input type="text" id="jumpTimeInput" placeholder="06:35" aria-label="الانتقال إلى وقت" onkeydown="if(event.key==='Enter') jumpToTime()">
+          <button type="button" onclick="jumpToTime()" title="انتقال إلى الوقت" aria-label="تنفيذ الانتقال">
+            <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="drawer-section" aria-label="الغرفة">
+        <span class="drawer-section-label">الغرفة</span>
+        <nav class="drawer-nav" aria-label="إعدادات الغرفة">
+          <button class="drawer-action" type="button" onclick="skipTime(85)" title="تخطي الشارة، 85 ثانية" aria-label="تخطي الشارة">
+            <i class="fa-solid fa-forward-fast" aria-hidden="true"></i><span>تخطي الشارة</span>
+          </button>
+          <button id="deviceModeBtn" class="drawer-action" type="button" onclick="toggleDeviceMode()" title="تبديل وضع العرض" aria-label="تبديل وضع العرض">
+            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="deviceModeText">جوال</span>
+          </button>
+          <button class="drawer-action" type="button" onclick="openProfileModal()" title="تغيير الملف الشخصي" aria-label="الملف الشخصي">
+            <i class="fa-solid fa-user-astronaut" aria-hidden="true"></i><span>الملف الشخصي</span>
+          </button>
+          <button id="lockChatBtn" class="drawer-action" type="button" onclick="toggleChatLock()" title="قفل أو فتح الشات" aria-label="قفل أو فتح الشات">
+            <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+          </button>
+          <button id="theaterBtn" class="drawer-action" type="button" onclick="toggleTheaterMode()" title="وضع السينما" aria-label="وضع السينما">
+            <i class="fa-solid fa-film" aria-hidden="true"></i>
+          </button>
+          <button class="drawer-action" type="button" onclick="document.getElementById('settingsModal').style.display='flex';" title="إعدادات الفيديو" aria-label="إعدادات الفيديو">
+            <i class="fa-solid fa-gear" aria-hidden="true"></i><span>إعدادات الفيديو</span>
+          </button>
+        </nav>
+      </section>
+
+      <section class="drawer-section" aria-label="الميزات">
+        <span class="drawer-section-label">الميزات</span>
+        <nav class="drawer-nav" aria-label="ميزات الغرفة">
+          <button class="drawer-action" type="button" onclick="openFeatures()" title="جدولنا وشجرة الذكريات" aria-label="جدولنا وشجرة الذكريات">
+            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>جدولنا وشجرة الذكريات</span>
+          </button>
+        </nav>
+      </section>
+    </aside>
+
+    <main class="content-area">
+      <section class="chat-container" aria-label="الدردشة اللحظية">
+        <div id="messages"></div>
+        <div id="typingArea" class="typing-indicator"></div>
+        <div id="stickerSuggestions" class="sticker-suggestions"></div>
+
+        <div class="chat-bottom-bar">
+          <div id="replyPreview" class="reply-preview">
+            <div style="display:flex; flex-direction: column; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 85%;">
+              <b id="replyName" style="color: var(--accent); font-size: 0.75rem;"></b>
+              <span id="replyText" style="color: #cbd5e1; text-overflow: ellipsis; overflow: hidden; font-size: 0.72rem;"></span>
+            </div>
+            <button type="button" onclick="cancelReply()" aria-label="إلغاء الرد" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
           </div>
-          <button onclick="cancelReply()" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+          <div class="input-group">
+            <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
+            <button type="button" onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة" aria-label="إرسال صورة"><i class="fa-regular fa-image"></i></button>
+            <button type="button" onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة" aria-label="فتح الملصقات"><i class="fa-regular fa-face-smile"></i></button>
+            <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+            <button type="button" onclick="sendMessage()" aria-label="إرسال الرسالة"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
         </div>
-        <div class="input-group">
-          <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
-          <button onclick="document.getElementById('imageUpload').click()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="إرسال صورة"><i class="fa-regular fa-image"></i></button>
-          
-          <button onclick="toggleStickers()" class="icon-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none;" title="الملصقات المحفوظة"><i class="fa-regular fa-face-smile"></i></button>
-          
-          <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
-          <button onclick="sendMessage()" style="padding: 10px 18px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-      </div>
+      </section>
+    </main>
   </div>
+
+  <script>
+    function setAppDrawer(open) {
+      const drawer = document.getElementById('appDrawer');
+      const menuButton = document.getElementById('appMenuBtn');
+      const isOpen = Boolean(open);
+      document.body.classList.toggle('drawer-open', isOpen);
+      drawer.setAttribute('aria-hidden', String(!isOpen));
+      menuButton.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    function toggleAppDrawer() {
+      setAppDrawer(!document.body.classList.contains('drawer-open'));
+    }
+
+    function closeAppDrawer() {
+      setAppDrawer(false);
+    }
+
+    document.getElementById('appDrawer').addEventListener('click', function (event) {
+      if (event.target.closest('button')) closeAppDrawer();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && document.body.classList.contains('drawer-open')) {
+        closeAppDrawer();
+      }
+    });
+  </script>
 
 
   <script>
@@ -2168,7 +3284,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
     }
 
-    const savedTheme = localStorage.getItem('app_theme') || 'default';
+    const savedTheme = 'default';
     function setTheme(themeName) {
       const isMobile = document.body.classList.contains('device-mobile');
       const isTheater = document.body.classList.contains('theater-mode');
@@ -3119,7 +4235,7 @@ let lastSeenData = {};
       });
     }
 
-    async function renderAvailableVideosUI(items) {
+async function renderAvailableVideosUI(items) {
       const listDiv = document.getElementById('localVideosList');
       if (!listDiv) return;
 
@@ -3138,47 +4254,45 @@ let lastSeenData = {};
         const safeTitle = (item.title || 'فيديو بدون عنوان').replace(/'/g, "\\'");
 
         html += `
-          <div style="background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; width: 100%; box-sizing: border-box;">
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box;">
             
             <!-- السطر العلوي: اسم الحلقة + زر التعديل + الحجم -->
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; width: 100%;">
-              <div style="display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0;">
-                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: transparent; border: none; color: #f59e0b; padding: 0 4px; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; box-shadow: none;" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
-                <span style="font-size: 0.75rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${item.title}">${item.title}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 0.7rem; cursor: pointer; flex-shrink: 0; box-shadow: none; transition: 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='#cbd5e1'; this.style.background='rgba(255,255,255,0.05)'" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
+                <span style="font-size: 0.8rem; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${item.title}">${item.title}</span>
               </div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; font-family: monospace; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 6px;">${displaySize}</span>
+              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; font-family: monospace; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${displaySize}</span>
             </div>
 
             <!-- شريط تقدم التحميل المتقدم -->
-            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; box-sizing: border-box;">
-              <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #a5b4fc; font-weight: bold; margin-bottom: 4px;">
+            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; box-sizing: border-box;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #a5b4fc; font-weight: bold; margin-bottom: 6px;">
                 <span id="progSize_${safeKey}">0 MB / 0 MB</span>
-                <span id="progPercent_${safeKey}" style="color: #38bdf8;">0%</span>
+                <span id="progPercent_${safeKey}" style="color: var(--accent);">0%</span>
               </div>
-              <div style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; height: 6px;">
-                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--btn-gradient); transition: width 0.15s ease;"></div>
+              <div style="width: 100%; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; height: 6px;">
+                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.15s ease; border-radius: 99px;"></div>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 6px;">
                 <span id="progSpeed_${safeKey}">السرعة: --</span>
                 <span id="progEta_${safeKey}">الوقت المتبقي: --:--</span>
               </div>
             </div>
 
-            <!-- أزرار الإجراءات موزونة بنظام Grid مريح للشاشات الصغيرة -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 5px; width: 100%; margin-top: 2px; box-sizing: border-box;">
+            <!-- أزرار الإجراءات (Premium Ghost Buttons) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 6px; width: 100%; box-sizing: border-box;">
               ${isDownloaded ? `
-                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" style="padding: 5px 8px; font-size: 0.7rem; background: #10b981; border-radius: 7px; width: 100%;"><i class="fa-solid fa-play"></i> تشغيل</button>
-                <button onclick="copyLocalUrl('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: var(--accent); border-radius: 7px; width: 100%;"><i class="fa-regular fa-copy"></i> الرابط</button>
-                <button onclick="deleteSingleLocalVideo('${item.url}')" style="padding: 5px 8px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
+                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #34d399; border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.1);"><i class="fa-solid fa-play"></i> تشغيل</button>
+                <button onclick="copyLocalUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;"><i class="fa-regular fa-copy"></i> الرابط</button>
+                <button onclick="deleteSingleLocalVideo('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.2); background: rgba(248, 113, 113, 0.05);" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
               ` : `
-                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" style="padding: 6px 6px; font-size: 0.7rem; background: #3b82f6; border-radius: 7px; width: 100%;"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
-                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" style="padding: 6px 6px; font-size: 0.7rem; background: #0284c7; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
-                <button onclick="copyDirectVideoUrl('${item.url}')" style="padding: 6px 6px; font-size: 0.7rem; background: #475569; color: #fff; border-radius: 7px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px;" title="نسخ رابط الفيديو المباشر">نسخ😒</button>
-                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" style="display: none; padding: 6px 6px; font-size: 0.7rem; background: #ef4444; border-radius: 7px; width: 100%;"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.1);"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
+                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
+                <button onclick="copyDirectVideoUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="نسخ رابط الفيديو المباشر"><i class="fa-regular fa-copy"></i> نسخ</button>
+                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" class="premium-ghost-btn" style="display: none; padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1);"><i class="fa-solid fa-xmark"></i> إلغاء</button>
               `}
             </div>
-
-
           </div>
         `;
 
