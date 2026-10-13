@@ -2834,19 +2834,34 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       background: #ef4444 !important;
       color: #fff !important;
     }
-    .force-stop-all-btn {
+.force-stop-all-btn {
       width: 100%;
       background: rgba(239, 68, 68, 0.15) !important;
       border: 1px solid rgba(239, 68, 68, 0.4) !important;
       color: #ef4444 !important;
       padding: 10px !important;
       border-radius: 12px !important;
-      margin-top: 5px;
+      margin-top: 6px;
       justify-content: center !important;
       gap: 8px;
     }
     .force-stop-all-btn:hover {
       background: #ef4444 !important;
+      color: #fff !important;
+    }
+    .video-settings-btn {
+      width: 100%;
+      background: rgba(139, 124, 246, 0.15) !important;
+      border: 1px solid rgba(139, 124, 246, 0.4) !important;
+      color: #d8d2ff !important;
+      padding: 10px !important;
+      border-radius: 12px !important;
+      margin-top: 10px;
+      justify-content: center !important;
+      gap: 8px;
+    }
+    .video-settings-btn:hover {
+      background: rgba(139, 124, 246, 0.25) !important;
       color: #fff !important;
     }
 
@@ -3198,12 +3213,16 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         </div>
       </section>
 
-      <section class="drawer-section" aria-label="مصادر التشغيل">
+<section class="drawer-section" aria-label="مصادر التشغيل">
         <span class="drawer-section-label">مصدر التشغيل الحالي</span>
         <div style="display: flex; flex-direction: column; width: 100%;">
           <div id="playbackSourcesList" style="display: flex; flex-direction: column; width: 100%;">
              <!-- سيتم إضافة المتصلين ومصادرهم هنا برمجياً -->
           </div>
+          <button class="drawer-action video-settings-btn" type="button" onclick="document.getElementById('settingsModal').style.display='flex';" title="تشغيل فيديو جديد" aria-label="تشغيل فيديو جديد">
+            <i class="fa-solid fa-play" aria-hidden="true"></i><span>تشغيل فيديو جديد</span>
+          </button>
+
           <button class="drawer-action force-stop-all-btn" type="button" onclick="forceStopAllVideos()" title="إيقاف الفيديو للجميع وجعل الشاشة سوداء">
             <i class="fa-solid fa-power-off" aria-hidden="true"></i><span>إيقاف جميع الفيديوهات</span>
           </button>
@@ -3232,11 +3251,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           <button id="lockChatBtn" class="drawer-action" type="button" onclick="toggleChatLock()" title="قفل أو فتح الشات" aria-label="قفل أو فتح الشات">
             <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
           </button>
-          <button id="theaterBtn" class="drawer-action" type="button" onclick="toggleTheaterMode()" title="وضع السينما" aria-label="وضع السينما">
+<button id="theaterBtn" class="drawer-action" type="button" onclick="toggleTheaterMode()" title="وضع السينما" aria-label="وضع السينما">
             <i class="fa-solid fa-film" aria-hidden="true"></i>
-          </button>
-          <button class="drawer-action" type="button" onclick="document.getElementById('settingsModal').style.display='flex';" title="إعدادات الفيديو" aria-label="إعدادات الفيديو">
-            <i class="fa-solid fa-gear" aria-hidden="true"></i><span>إعدادات الفيديو</span>
           </button>
         </nav>
       </section>
