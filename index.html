@@ -5385,7 +5385,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
 
 
 
-    // إرسال الصور (مع ضغط الحجم وإضافة الجنس)
+    // إرسال الصور بالجودة الكاملة الأصلية بدون تخفيف
     function sendImage(input) {
       if (!currentUser) return;
       const file = input.files[0];
@@ -5393,27 +5393,24 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
       
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 300; 
-          const scaleSize = MAX_WIDTH / img.width;
-          canvas.width = MAX_WIDTH;
-          canvas.height = img.height * scaleSize;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
-const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
-          // تمت إضافة الجنس (gender) هنا
-          db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
-          db.ref(`typing/${userId}`).remove();
-          cancelReply();
-        };
-        img.src = e.target.result;
+        const fullQualityDataUrl = e.target.result;
+        db.ref('chat').push({ 
+          name: currentUser.name, 
+          senderId: userId, 
+          avatar: currentUser.avatar, 
+          gender: currentUser.gender || 'male', 
+          img: fullQualityDataUrl, 
+          time: Date.now(), 
+          isSystem: false, 
+          replyTo: currentReplyContext 
+        });
+        db.ref(`typing/${userId}`).remove();
+        cancelReply();
       };
       reader.readAsDataURL(file);
       input.value = "";
     }
+
 
     // زر التفريغ المعزول والمحدث (يحذف الشات، السجل، وأوقات المشاهدة)
     function clearDatabase() {
@@ -6482,12 +6479,13 @@ async function renderAvailableVideosUI(items) {
     function renderCategories() {
         const tabsDiv = document.getElementById('stickerTabs');
         if(!tabsDiv) return;
-        let html = `<button class="tab-btn ${currentCategoryId === 'all' ? 'active' : ''}" onclick="selectCategory('all')">الكل 🌟</button>`;
+        let html = `<button class="tab-btn ${currentCategoryId === 'all' ? 'active' : ''}" onclick="selectCategory('all')" title="عرض كل الملصقات" style="display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-shapes" style="font-size: 0.85rem;"></i><span>الكل</span></button>`;
         globalCategories.forEach(c => {
             html += `<button class="tab-btn ${currentCategoryId === c.key ? 'active' : ''}" onclick="selectCategory('${c.key}')" oncontextmenu="event.preventDefault(); deleteCategory('${c.key}')">${c.name}</button>`;
         });
         tabsDiv.innerHTML = html;
     }
+
 
     function selectCategory(id) {
         currentCategoryId = id;
