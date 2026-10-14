@@ -7,7 +7,7 @@
   
   <!-- إعدادات تطبيق الويب (PWA) -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#091321">
+  <meta name="theme-color" content="#020617">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Anime Together">
@@ -36,15 +36,17 @@
 
   <style>
     :root {
-      --bg-color-1: #020617; --bg-color-2: #0f172a; --bg-color-3: #1e1b4b;
-      --text-main: #f8fafc; --text-muted: #94a3b8; 
-      --accent: #77b9f3; --accent-hover: #a0d2ff;
-      --glass-bg: rgba(15, 23, 42, 0.55);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      --msg-mine-gradient: linear-gradient(135deg, #34699c 0%, #417fb2 100%);
-      --btn-gradient: linear-gradient(135deg, #417fb2 0%, #5798ca 100%);
+      color-scheme: dark;
+      --bg-color-1: #030712; --bg-color-2: #071022; --bg-color-3: #0c1933;
+      --text-main: #f0f7ff; --text-muted: #7fa2c9; 
+      --accent: #0ea5e9; --accent-hover: #38bdf8;
+      --glass-bg: rgba(7, 16, 34, 0.78);
+      --glass-border: rgba(56, 189, 248, 0.16);
+      --glass-shadow: 0 20px 50px rgba(2, 6, 23, 0.75);
+      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%);
+      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 50%, #0ea5e9 100%);
     }
+
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', system-ui, sans-serif; }
     
@@ -58,7 +60,7 @@
     
 /* زيادة السطوع (تم تخفيفها لتسريع الأجهزة الضعيفة وإلغاء الحركة المستمرة) */
     body::before, body::after { content: ''; position: absolute; border-radius: 50%; z-index: -1; pointer-events: none; }
-    body::before { width: 75vw; height: 75vw; background: radial-gradient(circle, rgba(62, 116, 166, 0.15) 0%, transparent 70%); top: -10%; left: -10%; }
+    body::before { width: 75vw; height: 75vw; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); top: -10%; left: -10%; }
     body::after { width: 65vw; height: 65vw; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%); bottom: -5%; right: -10%; }
 
     /* حجم ثابت 240px يمنع الفيديو من التصاغر عند فتح الكيبورد */
@@ -92,20 +94,20 @@
 .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
 
     button { padding: 10px 20px; background: var(--btn-gradient); border: none; border-radius: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(67, 132, 189, 0.4); filter: brightness(1.1); }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); filter: brightness(1.1); }
     button:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
     button.icon-btn { padding: 12px; font-size: 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); box-shadow: none; border-radius: 14px; }
-    button.icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 15px rgba(67, 132, 189, 0.2); }
+    button.icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
 
 .input-group { display: flex; gap: 10px; width: 100%; align-items: center; }
     input[type="text"], select { flex: 1; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10, 10, 15, 0.9); color: #fff; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.2s; }
-    input[type="text"]:focus, select:focus { border-color: var(--accent); background: #000; box-shadow: 0 0 0 2px rgba(67, 132, 189, 0.3); }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); background: #000; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3); }
     input[type="text"]::placeholder { color: var(--text-muted); font-weight: 400; }
 
     .chat-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; position: relative; min-height: 250px; }
     
 /* وهج إضافي داخل صندوق الشات نفسه (تم تثبيته بدون فلتر لتخفيف التعليق) */
-    .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: radial-gradient(circle, rgba(67, 132, 189, 0.07) 0%, transparent 70%); z-index: 0; pointer-events: none; }
+    .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%); z-index: 0; pointer-events: none; }
 
     #messages { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
     
@@ -129,7 +131,7 @@
 
     
     .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
-    .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(67, 132, 189, 0.2) !important; }
+    .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
     .msg-item[style*="row"] .msg-content { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; }
 
     .msg-name { font-weight: 800; font-size: 0.75rem; margin-bottom: 6px; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -181,7 +183,7 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     
     .modal-card { width: 100%; max-width: 380px; padding: 32px 24px; display: flex; flex-direction: column; gap: 20px; position: relative; overflow: hidden; }
-    .modal-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(67, 132, 189, 0.15) 0%, transparent 60%); z-index: 0; pointer-events: none; }
+    .modal-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 60%); z-index: 0; pointer-events: none; }
     .modal-card > * { z-index: 1; }
     .modal-card h2, .modal-card h3 { font-weight: 800; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     
@@ -197,7 +199,7 @@
     .details-content { padding: 16px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2) !important; border-radius: 0 0 14px 14px; }
     
     .history-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; border: 1px solid transparent; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
-    .history-item:hover { border-color: var(--accent); background: rgba(67, 132, 189, 0.1); transform: translateX(-5px); }
+    .history-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); transform: translateX(-5px); }
 
     .delete-btn-msg { color: #f87171; opacity: 0.6; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 0 6px; }
     .delete-btn-msg:hover { opacity: 1; transform: scale(1.3); color: #ef4444; }
@@ -339,7 +341,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         transition: background 0.2s ease;
     }
     #resizerSlider:active, #resizerSlider:hover { 
-        background: rgba(67, 132, 189, 0.18) !important; 
+        background: rgba(139, 92, 246, 0.25) !important; 
     }
     #resizerSlider:active div, #resizerSlider:hover div { 
         background: var(--accent-hover) !important; 
@@ -356,9 +358,9 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     /* 🌟 ستايلات جدولنا وشجرة الذكريات (Timeline) */
     .schedule-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; transition: 0.3s; }
      /* 🏆 ستايل العمل المثبت (المشاهدة التالية) */
-    .schedule-item.pinned-next { border: 2px solid #77b9f3 !important; background: rgba(119, 185, 243, 0.1) !important; box-shadow: 0 0 15px rgba(119, 185, 243, 0.2); position: relative; }
-    .pinned-badge { background: #77b9f3; color: #071321; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; width: fit-content; }
-   .schedule-item:hover { border-color: var(--accent); background: rgba(67, 132, 189, 0.1); }
+    .schedule-item.pinned-next { border: 2px solid #f59e0b !important; background: rgba(245, 158, 11, 0.1) !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.25); position: relative; }
+    .pinned-badge { background: #f59e0b; color: #000; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; width: fit-content; }
+   .schedule-item:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
     .schedule-item.completed { opacity: 0.7; border-color: #10b981; }
     
     .timeline-container { border-right: 2px solid var(--accent); padding-right: 18px; margin-right: 10px; margin-top: 15px; display: flex; flex-direction: column; gap: 20px; }
@@ -367,7 +369,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     .memory-date { font-size: 0.7rem; color: #10b981; font-weight: bold; margin-bottom: 4px; }
     
     .rating-stars i { color: #475569; cursor: pointer; transition: 0.2s; }
-    .rating-stars i:hover, .rating-stars i.active { color: #a0d2ff; transform: scale(1.2); text-shadow: 0 0 10px rgba(119, 185, 243, 0.35); }
+    .rating-stars i:hover, .rating-stars i.active { color: #f59e0b; transform: scale(1.2); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
     
     /* ملصقات الذكريات الملتصقة بالبطاقة (تم تخفيفها) */
     .memory-sticker { position: absolute; max-width: 50px; bottom: -10px; left: -10px; transform: rotate(-15deg); cursor: pointer; transition: 0.2s; }
@@ -381,7 +383,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     
     .sticker-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .tab-btn { padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: #fff; white-space: nowrap; cursor: pointer; transition: 0.2s; font-weight: bold; }
-    .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(67, 132, 189, 0.3); }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
     .tab-btn:hover { background: rgba(255,255,255,0.1); }
 
     /* 📱 إصلاح جذري لعناصر الإدخال والأزرار على الجوال */
@@ -430,23 +432,24 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
 
     :root {
       color-scheme: dark;
-      --bg-color-1: #090e17;
-      --bg-color-2: #101827;
-      --bg-color-3: #0c1420;
-      --bg-content: #111b29;
-      --bg-hover: #1a2737;
-      --text-main: #edf2fa;
-      --text-muted: #98a7ba;
-      --accent: #8b7cf6;
-      --accent-hover: #a397ff;
-      --glass-bg: #101a28;
-      --glass-border: rgba(190, 205, 225, 0.11);
-      --glass-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
-      --msg-mine-gradient: var(--accent);
-      --btn-gradient: var(--accent);
-      --surface-raised: #172333;
-      --surface-soft: rgba(255, 255, 255, 0.045);
+      --bg-color-1: #030712;
+      --bg-color-2: #071022;
+      --bg-color-3: #0c1933;
+      --bg-content: #091428;
+      --bg-hover: #112240;
+      --text-main: #f0f7ff;
+      --text-muted: #7fa2c9;
+      --accent: #0ea5e9;
+      --accent-hover: #38bdf8;
+      --glass-bg: rgba(7, 16, 34, 0.78);
+      --glass-border: rgba(56, 189, 248, 0.16);
+      --glass-shadow: 0 20px 50px rgba(2, 6, 23, 0.75);
+      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%);
+      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 50%, #0ea5e9 100%);
+      --surface-raised: #0d1b35;
+      --surface-soft: rgba(14, 165, 233, 0.06);
     }
+
 
     html,
     body {
@@ -1807,21 +1810,22 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       }
     }
 
-    /* طبقة التصميم الجديدة: مساحة مشاهدة مركزة ودردشة بكامل الارتفاع */
+    /* طبقة التصميم الجديدة: مساحة مشاهدة مركزة ودردشة بكامل الارتفاع — ثيم الأزرق الداكن الملكي */
     :root {
-      --bg-color-1: #070b14;
-      --bg-color-2: #0b1220;
-      --bg-color-3: #111a2b;
-      --text-main: #f2f5fb;
-      --text-muted: #8c9ab0;
-      --accent: #8b7cf6;
-      --accent-hover: #a79cff;
-      --glass-bg: #0b1220;
-      --glass-border: rgba(226, 232, 240, 0.1);
-      --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
-      --msg-mine-gradient: linear-gradient(135deg, #6457db, #8170f3);
-      --btn-gradient: linear-gradient(135deg, #6457db, #8170f3);
+      --bg-color-1: #030712;
+      --bg-color-2: #071022;
+      --bg-color-3: #0c1933;
+      --text-main: #f0f7ff;
+      --text-muted: #7fa2c9;
+      --accent: #0ea5e9;
+      --accent-hover: #38bdf8;
+      --glass-bg: rgba(7, 16, 34, 0.82);
+      --glass-border: rgba(56, 189, 248, 0.16);
+      --glass-shadow: 0 20px 50px rgba(2, 6, 23, 0.78);
+      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%);
+      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 50%, #0ea5e9 100%);
     }
+
 
     html,
     body {
@@ -3128,14 +3132,14 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       height: 5px;
       border: 0;
       border-radius: 999px;
-      background: linear-gradient(90deg, #5795c7, #3a6f9c);
+      background: linear-gradient(90deg, #8b5cf6, #d946ef);
     }
 
     #scrubTimelineRange::-moz-range-track {
       height: 5px;
       border: 0;
       border-radius: 999px;
-      background: linear-gradient(90deg, #5795c7, #3a6f9c);
+      background: linear-gradient(90deg, #8b5cf6, #d946ef);
     }
 
     #scrubTimelineRange::-webkit-slider-thumb {
@@ -3146,8 +3150,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       -webkit-appearance: none;
       border: 3px solid #fff;
       border-radius: 50%;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, 0.17);
+      background: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.24);
     }
 
     #scrubTimelineRange::-moz-range-thumb {
@@ -3155,8 +3159,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       height: 13px;
       border: 3px solid #fff;
       border-radius: 50%;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, 0.17);
+      background: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.24);
     }
 
     .scrub-offscreen-video {
@@ -3231,474 +3235,289 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <span style="color: #fff; margin-top: 12px; font-size: 0.85rem; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px;">انقر خارج الصورة للإغلاق | انقر على الصورة للزوم 🔍</span>
   </div>
 
-<!-- ستايلات Premium UI المخصصة للقوائم الجديدة -->
-  <style>
-    .premium-panel { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-    .premium-toolbar-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s ease; cursor: pointer; padding: 0; font-size: 0.9rem; }
-    .premium-toolbar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateY(-2px); }
-    .premium-toolbar-btn.active-state { background: rgba(119, 185, 243, 0.16); color: var(--accent); border-color: rgba(119, 185, 243, 0.35); }
-    .premium-toolbar-btn.danger-state:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
-    .premium-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; }
-    .premium-ghost-btn { background: rgba(255,255,255,0.05); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; font-size: 0.85rem; font-weight: 600; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-    .premium-ghost-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
-    .premium-danger-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 12px; font-size: 0.85rem; font-weight: 700; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-    .premium-danger-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); }
-    .premium-input { background: rgba(0,0,0,0.2) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 10px !important; color: #fff !important; }
-    .premium-input:focus { border-color: var(--accent) !important; background: rgba(0,0,0,0.4) !important; }
-    #stickerTabs .tab-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 6px 16px; color: #94a3b8; font-weight: 600; transition: 0.2s; }
-    #stickerTabs .tab-btn.active { background: rgba(95, 151, 199, 0.22); border-color: rgba(119, 185, 243, 0.42); color: #e5f3ff; box-shadow: inset 0 0 0 1px rgba(119, 185, 243, 0.08); }
-  </style>
-
-  <!-- Premium shared-room theme: one considered midnight-blue palette -->
+<!-- ستايلات Premium UI المخصصة للقوائم الجديدة — Royal Sapphire Dark Blue -->
   <style>
     :root {
-      color-scheme: dark;
-      --bg-color-1: #091321;
-      --bg-color-2: #0d1b2d;
-      --bg-color-3: #10243a;
-      --bg-content: #122238;
-      --bg-hover: #1a304b;
-      --text-main: #edf5ff;
-      --text-muted: #9aacc2;
-      --accent: #77b9f3;
-      --accent-hover: #a0d2ff;
-      --glass-bg: rgba(15, 29, 47, 0.94);
-      --glass-border: rgba(157, 192, 226, 0.14);
-      --glass-shadow: 0 18px 50px rgba(1, 8, 18, 0.32);
-      --msg-mine-gradient: linear-gradient(135deg, #34699c 0%, #417fb2 100%);
-      --btn-gradient: linear-gradient(135deg, #417fb2 0%, #5798ca 100%);
-      --surface-raised: #172b43;
-      --surface-soft: rgba(160, 196, 231, 0.055);
-      --blue-line: rgba(125, 182, 231, 0.24);
+      --bg-color-1: #030712 !important;
+      --bg-color-2: #071022 !important;
+      --bg-color-3: #0c1933 !important;
+      --bg-content: #091428 !important;
+      --bg-hover: #122444 !important;
+      --text-main: #f0f7ff !important;
+      --text-muted: #7fa2c9 !important;
+      --accent: #0ea5e9 !important;
+      --accent-hover: #38bdf8 !important;
+      --accent-royal: #2563eb !important;
+      --glass-bg: rgba(7, 16, 34, 0.78) !important;
+      --glass-border: rgba(56, 189, 248, 0.18) !important;
+      --glass-shadow: 0 22px 55px rgba(2, 6, 23, 0.82), inset 0 1px 0 rgba(186, 230, 253, 0.14) !important;
+      --msg-mine-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 52%, #0ea5e9 100%) !important;
+      --btn-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #0ea5e9 100%) !important;
     }
 
-    html, body {
-      background: var(--bg-color-1) !important;
-      color: var(--text-main);
-    }
-    body {
-      background-image:
-        radial-gradient(ellipse at 12% -18%, rgba(62, 116, 166, 0.16), transparent 42%),
-        radial-gradient(ellipse at 98% 110%, rgba(42, 87, 131, 0.12), transparent 38%);
-    }
-    body.theater-mode { background: #07101b !important; }
-    body.theater-mode .status-bar,
-    body.theater-mode .chat-container {
-      background: rgba(12, 25, 41, 0.96) !important;
-      border-color: rgba(157, 192, 226, 0.12) !important;
+    html, body, .app-shell, .content-area {
+      background: radial-gradient(circle at 15% 0%, rgba(29, 78, 216, 0.16) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 100%, rgba(14, 165, 233, 0.12) 0%, transparent 50%),
+                  #030712 !important;
+      color: var(--text-main) !important;
     }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: rgba(144, 177, 207, 0.28); border-radius: 20px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(119, 185, 243, 0.58); }
-    * { scrollbar-color: rgba(144, 177, 207, 0.28) transparent; }
-
-    button, input, select, summary, .history-item, .premium-toolbar-btn,
-    .premium-ghost-btn, .premium-danger-btn {
-      transition:
-        color 180ms ease,
-        background-color 180ms ease,
-        border-color 180ms ease,
-        box-shadow 180ms ease,
-        opacity 180ms ease,
-        transform 180ms cubic-bezier(.2,.75,.25,1);
-    }
-    button {
-      background: linear-gradient(145deg, #467eae, #376990);
-      border-color: rgba(169, 211, 246, 0.12);
-      color: #f3f8ff;
-      box-shadow: 0 7px 18px rgba(12, 43, 73, 0.24);
-    }
-    button:hover {
-      background: linear-gradient(145deg, #568fbd, #4279a4);
-      border-color: rgba(169, 211, 246, 0.27);
-      box-shadow: 0 9px 23px rgba(16, 53, 85, 0.35);
-      filter: none;
-    }
-    button:active { transform: translateY(0) scale(.975); }
-    button > i {
-      flex: 0 0 auto;
-      line-height: 1;
-      transition: transform 180ms cubic-bezier(.2,.75,.25,1), color 180ms ease;
-    }
-    button:hover > i { transform: scale(1.07); color: #e5f3ff; }
-    button:active > i { transform: scale(.94); }
-    button .fa-spin { transform: none; }
-    button.icon-btn, .premium-toolbar-btn {
-      background: rgba(146, 184, 220, 0.075);
-      color: #c3d7eb;
-      border-color: rgba(157, 192, 226, 0.14);
-    }
-    button.icon-btn:hover, .premium-toolbar-btn:hover {
-      background: rgba(119, 185, 243, 0.16);
-      border-color: rgba(119, 185, 243, 0.4);
-      color: #eff8ff;
-      box-shadow: 0 5px 16px rgba(26, 82, 129, 0.22);
-    }
-    .premium-toolbar-btn.active-state {
-      background: rgba(119, 185, 243, 0.16);
-      color: var(--accent-hover);
-      border-color: rgba(119, 185, 243, 0.35);
-    }
-    .premium-ghost-btn {
-      color: #d5e3f1;
-      border-color: rgba(157, 192, 226, 0.16);
-      background: rgba(150, 184, 216, 0.07);
-    }
-    .premium-ghost-btn:hover {
-      color: #f4f9ff;
-      border-color: rgba(119, 185, 243, 0.42);
-      background: rgba(119, 185, 243, 0.13);
-    }
-    .modal-card button:not(.premium-danger-btn):not(.premium-ghost-btn):not(.premium-toolbar-btn):not(.icon-btn):not(.danger-state) {
-      background: var(--btn-gradient) !important;
-      color: #f3f8ff !important;
-      border-color: rgba(169, 211, 246, 0.16) !important;
-      box-shadow: 0 7px 18px rgba(12, 43, 73, 0.24) !important;
-    }
-    .modal-card button:last-of-type:not(.premium-danger-btn):not(.premium-ghost-btn):not(.premium-toolbar-btn):not(.icon-btn):not(.danger-state) {
-      background: rgba(150, 184, 216, 0.075) !important;
-      color: #d5e3f1 !important;
-      border-color: rgba(157, 192, 226, 0.16) !important;
-      box-shadow: none !important;
-    }
-    .modal-card button.premium-ghost-btn:not(.premium-danger-btn) {
-      color: #d5e3f1 !important;
-      border-color: rgba(157, 192, 226, 0.16) !important;
-      background: rgba(150, 184, 216, 0.07) !important;
-      box-shadow: none !important;
-    }
-    .modal-card button.premium-ghost-btn:not(.premium-danger-btn):hover {
-      color: #f4f9ff !important;
-      border-color: rgba(119, 185, 243, 0.42) !important;
-      background: rgba(119, 185, 243, 0.13) !important;
-    }
-    .modal-card button.premium-danger-btn {
-      color: #f3a8ae !important;
-      border-color: rgba(217, 116, 127, 0.25) !important;
-      background: rgba(153, 58, 70, 0.12) !important;
-      box-shadow: none !important;
-    }
-    .premium-danger-btn {
-      color: #f3a8ae;
-      border-color: rgba(217, 116, 127, 0.25);
-      background: rgba(153, 58, 70, 0.12);
-    }
-    .premium-danger-btn:hover {
-      color: #ffd9dc;
-      border-color: rgba(217, 116, 127, 0.45);
-      background: rgba(153, 58, 70, 0.22);
-    }
-    :focus-visible {
-      outline: 2px solid var(--accent-hover) !important;
-      outline-offset: 3px;
-    }
-
-    .video-container {
-      background: #050b13;
-      box-shadow: 0 16px 42px rgba(1, 6, 14, 0.32);
-    }
-    .video-js .vjs-control-bar {
-      background: linear-gradient(180deg, rgba(9, 20, 34, .86), rgba(6, 14, 24, .98));
-      border-top-color: rgba(164, 202, 237, 0.15);
-    }
-    .video-js .vjs-play-progress,
-    .video-js .vjs-volume-level { background: #82c3f7; }
-    .video-js .vjs-slider { background-color: rgba(205, 224, 243, 0.22); }
-    .video-js .vjs-play-progress::before {
-      color: #d9efff;
-      text-shadow: 0 0 12px rgba(119, 185, 243, .48);
-    }
+    /* ✨ تصميم السلايدر الاحترافي والأنيميشن الانسيابي الجذاب */
     #resizerSlider {
-      background: rgba(119, 185, 243, 0.025) !important;
-      border-color: rgba(125, 182, 231, 0.17) !important;
+      position: relative !important;
+      z-index: 120 !important;
+      flex: 0 0 12px !important;
+      height: 12px !important;
+      min-height: 12px !important;
+      background: linear-gradient(90deg, rgba(3, 7, 18, 0.95) 0%, rgba(14, 165, 233, 0.14) 50%, rgba(3, 7, 18, 0.95) 100%) !important;
+      border-top: 1px solid rgba(56, 189, 248, 0.18) !important;
+      border-bottom: 1px solid rgba(29, 78, 216, 0.22) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      box-shadow: 0 4px 20px rgba(2, 6, 23, 0.7) !important;
     }
     #resizerSlider > div {
-      background: rgba(155, 192, 226, 0.43) !important;
-      border-radius: 99px;
-      transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      width: 54px !important;
+      height: 4px !important;
+      border-radius: 999px !important;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9, #60a5fa) !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.65), 0 0 24px rgba(37, 99, 235, 0.4) !important;
+      transition: all 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      position: relative !important;
     }
     #resizerSlider:hover, #resizerSlider:active {
-      background: rgba(119, 185, 243, 0.11) !important;
+      background: linear-gradient(90deg, rgba(7, 16, 34, 0.95) 0%, rgba(14, 165, 233, 0.32) 50%, rgba(7, 16, 34, 0.95) 100%) !important;
+      box-shadow: 0 0 25px rgba(14, 165, 233, 0.35), inset 0 0 12px rgba(56, 189, 248, 0.22) !important;
     }
     #resizerSlider:hover > div, #resizerSlider:active > div {
-      background: var(--accent) !important;
-      box-shadow: 0 0 14px rgba(119, 185, 243, .4);
+      width: 88px !important;
+      height: 5px !important;
+      background: linear-gradient(90deg, #7dd3fc, #38bdf8, #3b82f6) !important;
+      box-shadow: 0 0 18px #38bdf8, 0 0 34px rgba(14, 165, 233, 0.85) !important;
+      transform: scaleY(1.12) !important;
     }
 
-    .content-area { padding: 14px; gap: 12px; }
-    .status-bar, .chat-container, details, .modal-card, #stickersPanel {
-      border-color: var(--glass-border);
-      background: rgba(15, 29, 47, 0.9);
-      box-shadow: 0 12px 35px rgba(2, 9, 19, 0.24);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
+    /* ✨ سلايدر التقييم وسلايدر المعاينة الزمنية الفاخر */
+    .custom-slider, #scrubTimelineRange {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      width: 100% !important;
+      height: 8px !important;
+      border-radius: 999px !important;
+      background: linear-gradient(90deg, rgba(15, 32, 66, 0.95), rgba(14, 165, 233, 0.35)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.28) !important;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.65), 0 0 16px rgba(14, 165, 233, 0.18) !important;
+      outline: none !important;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
-    .status-bar {
-      min-height: 48px;
-      padding: 6px 11px;
-      background: linear-gradient(110deg, rgba(20, 39, 61, .94), rgba(13, 27, 44, .94));
+    .custom-slider::-webkit-slider-thumb, #scrubTimelineRange::-webkit-slider-thumb {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      width: 24px !important;
+      height: 24px !important;
+      border-radius: 50% !important;
+      background: radial-gradient(circle at 35% 35%, #e0f2fe 0%, #38bdf8 45%, #0284c7 100%) !important;
+      border: 2.5px solid #ffffff !important;
+      box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.25), 0 0 22px rgba(56, 189, 248, 0.9) !important;
+      cursor: pointer !important;
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease !important;
     }
-    #usersStatus > b { color: #b6c9dd; }
-    .user-badge {
-      border-color: rgba(157, 192, 226, 0.13);
-      background: rgba(151, 188, 222, 0.06);
+    .custom-slider::-webkit-slider-thumb:hover, #scrubTimelineRange::-webkit-slider-thumb:hover,
+    .custom-slider::-webkit-slider-thumb:active, #scrubTimelineRange::-webkit-slider-thumb:active {
+      transform: scale(1.24) !important;
+      box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.32), 0 0 30px #38bdf8 !important;
     }
-    .user-badge:hover {
-      border-color: rgba(119, 185, 243, 0.38);
-      background: rgba(119, 185, 243, 0.11);
+    #scrubTimelineRange::-webkit-slider-runnable-track, #scrubTimelineRange::-moz-range-track {
+      height: 7px !important;
+      border-radius: 999px !important;
+      background: linear-gradient(90deg, #1d4ed8 0%, #0ea5e9 55%, #38bdf8 100%) !important;
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.5) !important;
     }
-    .user-avatar { border-color: rgba(119, 185, 243, 0.78); }
+
+    /* ✨ تأثيرات الأزرار الاحترافية من الداخل والخارج (Hover / Active) */
+    button {
+      position: relative;
+      overflow: hidden;
+      background: var(--btn-gradient);
+      border: 1px solid rgba(125, 211, 252, 0.28) !important;
+      border-radius: 14px !important;
+      color: #f8fafc !important;
+      box-shadow: 0 8px 22px rgba(2, 132, 199, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }
+    button:hover {
+      transform: translateY(-2px) scale(1.02) !important;
+      border-color: rgba(125, 211, 252, 0.65) !important;
+      box-shadow: 0 12px 28px rgba(14, 165, 233, 0.42), 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 14px rgba(255, 255, 255, 0.22) !important;
+    }
+    button:active {
+      transform: translateY(1px) scale(0.95) !important;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25), inset 0 3px 8px rgba(0, 0, 0, 0.35) !important;
+    }
+    button i {
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease, filter 0.25s ease !important;
+    }
+    button:hover i {
+      transform: scale(1.16) rotate(-4deg);
+      filter: drop-shadow(0 0 8px rgba(186, 230, 253, 0.7));
+    }
+
+    /* ✨ الشريط العلوي، الدرج الجانبي، الشات، والنوافذ الزجاجية */
+    .control-bar {
+      background: linear-gradient(180deg, rgba(7, 16, 34, 0.94), rgba(5, 11, 24, 0.98)) !important;
+      border-top: 1px solid rgba(56, 189, 248, 0.16) !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.7), inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
+    }
+    .control-actions .app-menu-button,
+    .control-actions .visual-scrub-open,
+    .control-button.sync-control {
+      background: linear-gradient(145deg, rgba(13, 27, 56, 0.95), rgba(7, 16, 34, 0.95)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.26) !important;
+      color: #7dd3fc !important;
+      border-radius: 13px !important;
+      box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6), inset 0 1px 0 rgba(186, 230, 253, 0.16) !important;
+    }
+    .control-actions .app-menu-button:hover,
+    .control-actions .visual-scrub-open:hover,
+    .control-button.sync-control:hover {
+      background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important;
+      border-color: #7dd3fc !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 22px rgba(14, 165, 233, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    }
+
+    .app-drawer, .modal-card, #stickersPanel, .premium-panel {
+      background: linear-gradient(165deg, rgba(9, 20, 42, 0.92) 0%, rgba(4, 10, 24, 0.96) 100%) !important;
+      backdrop-filter: blur(24px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+      border: 1px solid rgba(56, 189, 248, 0.22) !important;
+      border-radius: 24px !important;
+      box-shadow: 0 25px 65px rgba(2, 6, 23, 0.88), 0 0 35px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(186, 230, 253, 0.18) !important;
+    }
+    .app-drawer {
+      border-radius: 26px 0 0 26px !important;
+      border-right: 0 !important;
+    }
+    .drawer-action {
+      background: rgba(13, 27, 54, 0.55) !important;
+      border: 1px solid rgba(56, 189, 248, 0.12) !important;
+      border-radius: 15px !important;
+      color: #e0f2fe !important;
+      box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.06) !important;
+    }
+    .drawer-action:hover {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.35), rgba(14, 165, 233, 0.25)) !important;
+      border-color: rgba(56, 189, 248, 0.48) !important;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.28), inset 0 0 12px rgba(56, 189, 248, 0.18) !important;
+    }
+    .drawer-action > i:first-child {
+      color: #38bdf8 !important;
+    }
+    .video-settings-btn {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.38), rgba(14, 165, 233, 0.28)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.45) !important;
+      color: #e0f2fe !important;
+    }
+    .history-item, .schedule-item, .memory-card, .source-item, #localVideosList > div {
+      background: linear-gradient(145deg, rgba(12, 25, 51, 0.65), rgba(6, 14, 30, 0.82)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.18) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
+    }
+    .history-item:hover, .schedule-item:hover, .source-item:hover {
+      border-color: rgba(56, 189, 248, 0.48) !important;
+      background: linear-gradient(145deg, rgba(17, 36, 72, 0.8), rgba(10, 22, 46, 0.9)) !important;
+    }
+
+    /* ✨ تحسين الشات وفقاعات الرسائل وشريط الإدخال */
     .chat-container {
-      background: linear-gradient(155deg, rgba(15, 30, 48, .97), rgba(11, 23, 38, .97));
-      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(5, 11, 24, 0.92) 0%, rgba(3, 7, 18, 0.98) 100%) !important;
     }
-    #messages { gap: 13px; }
-    .msg-content {
-      border-radius: 17px;
-      line-height: 1.65;
-      box-shadow: 0 5px 16px rgba(2, 8, 16, .2) !important;
+    .msg-item[style*="row-reverse"] .msg-content:not(.sticker-bg) {
+      background: linear-gradient(135deg, #1e40af 0%, #0284c7 55%, #0ea5e9 100%) !important;
+      border: 1px solid rgba(125, 211, 252, 0.38) !important;
+      border-radius: 20px 20px 6px 20px !important;
+      box-shadow: 0 10px 26px rgba(2, 132, 199, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+      color: #ffffff !important;
     }
-    .msg-item[style*="row-reverse"] .msg-content {
-      background: linear-gradient(145deg, #315f89, #3f78a8) !important;
-      border: 1px solid rgba(173, 218, 255, .15) !important;
-      border-bottom-right-radius: 5px;
-      box-shadow: 0 7px 20px rgba(14, 48, 78, .24) !important;
+    .msg-item[style*="row"]:not([style*="row-reverse"]) .msg-content:not(.sticker-bg) {
+      background: linear-gradient(145deg, rgba(13, 27, 54, 0.92), rgba(8, 18, 38, 0.95)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.18) !important;
+      border-radius: 20px 20px 20px 6px !important;
+      box-shadow: 0 10px 26px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(186, 230, 253, 0.1) !important;
+      color: #f0f7ff !important;
     }
-    .msg-item[style*="row"] .msg-content {
-      background: rgba(151, 187, 219, .075) !important;
-      border: 1px solid rgba(157, 192, 226, .12) !important;
-      border-bottom-left-radius: 5px;
+    .chat-bottom-bar .input-group {
+      background: linear-gradient(145deg, rgba(9, 20, 42, 0.95), rgba(6, 13, 28, 0.98)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.26) !important;
+      border-radius: 999px !important;
+      padding: 6px 8px !important;
+      box-shadow: 0 14px 34px rgba(2, 6, 23, 0.8), 0 0 20px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(186, 230, 253, 0.14) !important;
+      transition: all 0.3s ease !important;
     }
-    .msg-name { color: #a8c5df; opacity: .9; letter-spacing: 0; }
-    .reply-badge {
-      border-right-color: var(--accent);
-      color: #c4d6e7;
-      background: rgba(5, 14, 24, .36);
+    .chat-bottom-bar .input-group:focus-within {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 14px 36px rgba(2, 132, 199, 0.3), 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
     }
-    .reply-preview {
-      border-color: rgba(119, 185, 243, .36);
-      background: rgba(21, 42, 65, .98);
-      box-shadow: 0 -8px 22px rgba(2, 8, 16, .24);
+    .chat-bottom-bar .input-group .icon-btn {
+      background: rgba(14, 165, 233, 0.08) !important;
+      border: 1px solid rgba(56, 189, 248, 0.18) !important;
+      color: #7dd3fc !important;
+      border-radius: 50% !important;
     }
-    .reaction-menu {
-      border-color: rgba(119, 185, 243, .32);
-      background: rgba(15, 29, 47, .98);
-      box-shadow: 0 16px 38px rgba(1, 7, 15, .4);
+    .chat-bottom-bar .input-group .icon-btn:hover {
+      background: rgba(14, 165, 233, 0.24) !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.45) !important;
     }
-    .reaction-badge {
-      background: #172d46;
-      border-color: rgba(157, 192, 226, .17);
-    }
-    .msg-system {
-      color: #b6c9dd;
-      background: rgba(103, 143, 180, .13);
-      border-color: rgba(157, 192, 226, .1);
-    }
-    .input-group { gap: 9px; }
-    input[type="text"], select {
-      border-color: rgba(157, 192, 226, .18);
-      background: #0c1a2b;
-      color: var(--text-main);
-    }
-    input[type="text"]:focus, select:focus, .premium-input:focus {
-      border-color: rgba(119, 185, 243, .65) !important;
-      background: #102139 !important;
-      box-shadow: 0 0 0 3px rgba(119, 185, 243, .13) !important;
-    }
-    input[type="text"]::placeholder { color: #8ea4bb; }
-
-    .modal-overlay {
-      background: rgba(3, 9, 17, .76);
-      -webkit-backdrop-filter: blur(9px);
-      backdrop-filter: blur(9px);
-      animation-duration: 220ms;
-    }
-    .modal-card, .premium-panel {
-      border: 1px solid rgba(157, 192, 226, .19);
-      background: linear-gradient(150deg, rgba(21, 40, 62, .98), rgba(12, 25, 42, .99));
-      box-shadow: 0 28px 75px rgba(0, 5, 13, .55), inset 0 1px rgba(224, 240, 255, .035);
-    }
-    .modal-card::before {
-      background: radial-gradient(ellipse at top right, rgba(70, 131, 185, .13), transparent 56%);
-    }
-    body::before {
-      background: radial-gradient(circle, rgba(62, 116, 166, .13) 0%, transparent 70%);
-    }
-    body::after {
-      background: radial-gradient(circle, rgba(42, 87, 131, .12) 0%, transparent 70%);
-    }
-    .modal-card h2, .modal-card h3 { text-shadow: none; }
-    .premium-card {
-      border-color: rgba(157, 192, 226, .12);
-      background: rgba(155, 191, 224, .045);
-    }
-    .premium-input {
-      color: var(--text-main) !important;
-      background: rgba(5, 15, 26, .52) !important;
-      border-color: rgba(157, 192, 226, .17) !important;
-    }
-    #settingsModal .modal-card { gap: 15px; }
-    #settingsModal details {
-      border-color: rgba(157, 192, 226, .14) !important;
-      background: rgba(145, 180, 212, .035) !important;
-      box-shadow: none;
-    }
-    #settingsModal details > summary { color: #dce8f5 !important; }
-    #settingsModal details > summary:hover { background: rgba(119, 185, 243, .07) !important; }
-    #settingsModal .details-content {
-      border-top-color: rgba(157, 192, 226, .13) !important;
-      background: rgba(4, 13, 23, .26) !important;
-    }
-    .avatar-picker {
-      border-color: rgba(157, 192, 226, .12);
-      background: rgba(4, 13, 23, .28);
-      box-shadow: inset 0 3px 16px rgba(1, 8, 17, .2);
-    }
-    .avatar-opt.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(119, 185, 243, .12);
-      background: #376a95;
-    }
-    .history-item {
-      background: rgba(153, 188, 219, .055);
-      border-color: rgba(157, 192, 226, .08);
-    }
-    .history-item:hover {
-      border-color: rgba(119, 185, 243, .35);
-      background: rgba(119, 185, 243, .09);
-      transform: translateX(-2px);
-    }
-    .details-content { background: rgba(5, 14, 24, .32) !important; }
-
-    #scrubTimelineRange {
-      accent-color: #77b9f3;
-      border-radius: 99px;
-    }
-    #scrubTimelineRange::-webkit-slider-runnable-track {
-      height: 6px;
-      border: 1px solid rgba(202, 226, 247, .12);
-      border-radius: 99px;
-      background: linear-gradient(90deg, #5795c7, #3a6f9c);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .22);
-      transition: box-shadow 180ms ease, background-color 180ms ease;
-    }
-    #scrubTimelineRange::-moz-range-track {
-      height: 6px;
-      border: 1px solid rgba(202, 226, 247, .12);
-      border-radius: 99px;
-      background: linear-gradient(90deg, #5795c7, #3a6f9c);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .22);
-    }
-    #scrubTimelineRange::-webkit-slider-thumb {
-      width: 18px;
-      height: 18px;
-      margin-top: -7px;
-      border: 3px solid #d9efff;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, .17), 0 3px 8px rgba(0, 0, 0, .32);
-      transition: transform 180ms cubic-bezier(.2,.75,.25,1), box-shadow 180ms ease;
-    }
-    #scrubTimelineRange::-moz-range-thumb {
-      width: 13px;
-      height: 13px;
-      border: 3px solid #d9efff;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, .17);
-      transition: transform 180ms cubic-bezier(.2,.75,.25,1), box-shadow 180ms ease;
-    }
-    #scrubTimelineRange:hover::-webkit-slider-thumb,
-    #scrubTimelineRange:focus-visible::-webkit-slider-thumb {
-      transform: scale(1.12);
-      box-shadow: 0 0 0 6px rgba(95, 165, 220, .2), 0 3px 9px rgba(0, 0, 0, .34);
-    }
-    #scrubTimelineRange:disabled::-webkit-slider-thumb { transform: none; }
-
-    .custom-slider {
-      height: 5px;
-      border: 0;
-      border-radius: 99px;
-      background: linear-gradient(90deg, rgba(119, 185, 243, .56), rgba(160, 190, 219, .19));
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .24);
-      cursor: pointer;
-      touch-action: pan-y;
-    }
-    .custom-slider::-webkit-slider-thumb {
-      width: 18px;
-      height: 18px;
-      border: 3px solid #d9efff;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, .16), 0 3px 8px rgba(0, 0, 0, .32);
-    }
-    .custom-slider::-webkit-slider-thumb:hover { transform: scale(1.12); }
-    .custom-slider::-moz-range-thumb {
-      width: 13px;
-      height: 13px;
-      border: 3px solid #d9efff;
-      background: #5fa5dc;
-      box-shadow: 0 0 0 4px rgba(95, 165, 220, .16);
-    }
-    input[type="range"]:focus-visible { outline-offset: 7px; }
-    #stickerTabs .tab-btn {
-      border-color: rgba(157, 192, 226, .16);
-      color: #a9bfd4;
-    }
-    #stickerTabs .tab-btn.active {
-      background: rgba(95, 151, 199, .22);
-      border-color: rgba(119, 185, 243, .42);
-      color: #e5f3ff;
-      box-shadow: inset 0 0 0 1px rgba(119, 185, 243, .08);
-    }
-    .schedule-item, .memory-card {
-      background: rgba(151, 187, 219, .055);
-      border-color: rgba(157, 192, 226, .12);
-    }
-    .schedule-item:hover { border-color: rgba(119, 185, 243, .38); background: rgba(119, 185, 243, .08); }
-    .timeline-container { border-right-color: rgba(119, 185, 243, .56); }
-    .memory-card::before { background: #78b9ed; }
-    .rating-stars i:hover, .rating-stars i.active {
-      color: #f0c87c;
-      text-shadow: 0 0 9px rgba(240, 200, 124, .26);
+    .chat-bottom-bar .input-group > button:last-child {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%) !important;
+      border: 1px solid rgba(186, 230, 253, 0.45) !important;
+      border-radius: 50% !important;
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
     }
 
-    @media (max-width: 767px) {
-      .content-area { padding: 10px; gap: 9px; }
-      .status-bar { border-radius: 14px; }
-      .chat-container { border-radius: 16px; }
-      .modal-overlay { padding: 14px; }
-      .modal-card { max-height: calc(100dvh - 28px); overflow-y: auto; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
-      }
-    }
+    .premium-toolbar-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 12px !important; background: rgba(13, 27, 54, 0.85) !important; color: #7dd3fc !important; border: 1px solid rgba(56, 189, 248, 0.22) !important; transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1); cursor: pointer; padding: 0; font-size: 0.92rem; box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.12) !important; }
+    .premium-toolbar-btn:hover { background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important; color: #fff !important; border-color: #7dd3fc !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4) !important; }
+    .premium-toolbar-btn.active-state { background: rgba(14, 165, 233, 0.24) !important; color: var(--accent-hover) !important; border-color: rgba(56, 189, 248, 0.55) !important; }
+    .premium-toolbar-btn.danger-state:hover { background: linear-gradient(135deg, #dc2626, #ef4444) !important; color: #fff !important; border-color: #fca5a5 !important; }
+    .premium-card { background: linear-gradient(145deg, rgba(12, 25, 51, 0.72), rgba(7, 15, 32, 0.85)) !important; border: 1px solid rgba(56, 189, 248, 0.18) !important; border-radius: 18px !important; padding: 15px; box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.08), 0 10px 25px rgba(2, 6, 23, 0.45); }
+    .premium-ghost-btn { background: rgba(14, 165, 233, 0.1) !important; color: #e0f2fe !important; border: 1px solid rgba(56, 189, 248, 0.26) !important; border-radius: 13px !important; padding: 10px 14px; font-size: 0.85rem; font-weight: 700; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .premium-ghost-btn:hover { background: linear-gradient(135deg, rgba(29, 78, 216, 0.45), rgba(14, 165, 233, 0.35)) !important; border-color: #7dd3fc !important; color: #fff !important; box-shadow: 0 8px 22px rgba(14, 165, 233, 0.32) !important; }
+    .premium-danger-btn { background: rgba(239, 68, 68, 0.12) !important; color: #fca5a5 !important; border: 1px solid rgba(248, 113, 113, 0.32) !important; border-radius: 13px !important; padding: 12px; font-size: 0.85rem; font-weight: 700; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .premium-danger-btn:hover { background: linear-gradient(135deg, #dc2626, #ef4444) !important; border-color: #fca5a5 !important; color: #fff !important; box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important; }
+    .premium-input, input[type="text"], select { background: rgba(5, 11, 24, 0.88) !important; border: 1px solid rgba(56, 189, 248, 0.22) !important; border-radius: 14px !important; color: #f0f7ff !important; box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5) !important; }
+    .premium-input:focus, input[type="text"]:focus, select:focus { border-color: #38bdf8 !important; background: rgba(7, 16, 34, 0.98) !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.22), inset 0 2px 6px rgba(0, 0, 0, 0.5) !important; }
+    #stickerTabs .tab-btn { background: rgba(12, 25, 51, 0.75) !important; border: 1px solid rgba(56, 189, 248, 0.18) !important; border-radius: 99px !important; padding: 6px 16px; color: #93c5fd !important; font-weight: 700; transition: all 0.25s ease; }
+    #stickerTabs .tab-btn.active { background: var(--btn-gradient) !important; border-color: #7dd3fc !important; color: #fff !important; box-shadow: 0 6px 18px rgba(14, 165, 233, 0.42) !important; }
   </style>
 
   <!-- لوحة الملصقات المحفوظة والأقسام (Premium Redesign) -->
   <div id="stickersPanel" class="premium-panel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; z-index: 500; flex-direction: column; gap: 12px; padding: 16px;">
     
     <!-- شريط الأدوات العلوي النظيف -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.16); padding-bottom: 12px;">
       <div style="display: flex; align-items: center; gap: 8px;">
-      <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(119, 185, 243, 0.14); display: flex; align-items: center; justify-content: center; color: var(--accent);">
-          <i class="fa-solid fa-icons"></i>
+        <div style="width: 34px; height: 34px; border-radius: 12px; background: rgba(14, 165, 233, 0.18); border: 1px solid rgba(56, 189, 248, 0.32); display: flex; align-items: center; justify-content: center; color: var(--accent-hover);">
+          <i class="fa-solid fa-layer-group"></i>
         </div>
-        <b style="color: #f8fafc; font-size: 0.95rem; font-weight: 700;">الملصقات</b>
+        <b style="color: #f0f7ff; font-size: 0.95rem; font-weight: 700;">الملصقات</b>
       </div>
       
       <div style="display: flex; gap: 6px;">
-        <button id="editStickersBtn" onclick="toggleEditStickers()" class="premium-toolbar-btn" title="تعديل الملصقات"><i class="fa-solid fa-pen-to-square"></i></button>
-        <button onclick="addStickerCategory()" class="premium-toolbar-btn" title="إضافة قسم جديد"><i class="fa-solid fa-folder-plus"></i></button>
+        <button id="editStickersBtn" onclick="toggleEditStickers()" class="premium-toolbar-btn" title="تعديل الملصقات"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+        <button onclick="addStickerCategory()" class="premium-toolbar-btn" title="إضافة قسم جديد"><i class="fa-solid fa-folder-tree"></i></button>
         <input type="file" id="stickerUpload" accept="image/png, image/webp, image/gif" style="display:none;" onchange="uploadSticker(this)">
-        <button onclick="document.getElementById('stickerUpload').click()" class="premium-toolbar-btn" title="رفع ملصق جديد"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
-        <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
-        <button onclick="toggleStickers()" class="premium-toolbar-btn danger-state" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('stickerUpload').click()" class="premium-toolbar-btn" title="رفع ملصق جديد"><i class="fa-solid fa-cloud-arrow-up"></i></button>
+        <div style="width: 1px; background: rgba(56, 189, 248, 0.2); margin: 0 4px;"></div>
+        <button onclick="toggleStickers()" class="premium-toolbar-btn danger-state" title="إغلاق"><i class="fa-solid fa-circle-xmark"></i></button>
       </div>
     </div>
+
 
     <!-- شريط الأقسام (Tabs) -->
     <div id="stickerTabs" class="sticker-tabs" style="border: none; padding-bottom: 4px; gap: 8px;"></div>
@@ -3729,45 +3548,45 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <div class="modal-card premium-panel" style="max-width: 420px; width: 92%; gap: 16px; padding: 24px;" onclick="event.stopPropagation()">
       
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-        <div style="width: 36px; height: 36px; border-radius: 12px; background: rgba(119, 185, 243, 0.14); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem;">
+        <div style="width: 38px; height: 38px; border-radius: 13px; background: rgba(14, 165, 233, 0.16); border: 1px solid rgba(56, 189, 248, 0.32); display: flex; align-items: center; justify-content: center; color: var(--accent-hover); font-size: 1.1rem;">
           <i class="fa-solid fa-sliders"></i>
         </div>
-        <h3 style="color: #f8fafc; margin: 0; font-size: 1.2rem; font-weight: 800;">إعدادات المشاهدة</h3>
+        <h3 style="color: #f0f7ff; margin: 0; font-size: 1.2rem; font-weight: 800;">إعدادات المشاهدة</h3>
       </div>
       
       <!-- كارت تشغيل رابط جديد -->
       <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
-        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-link" style="margin-left: 4px;"></i> تشغيل رابط جديد</span>
+        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-satellite-dish" style="margin-left: 4px; color: var(--accent-hover);"></i> تشغيل رابط جديد</span>
         <div class="input-group" style="gap: 8px;">
-          <button onclick="openDrivePicker()" class="premium-ghost-btn" style="padding: 0 12px; height: 44px; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.1);" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
+          <button onclick="openDrivePicker()" class="premium-ghost-btn" style="padding: 0 12px; height: 44px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); background: rgba(14, 165, 233, 0.14);" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
           <input type="text" id="videoUrlInput" class="premium-input" placeholder="رابط MP4 مباشر..." style="height: 44px; padding: 0 14px;" />
-          <button onclick="changeVideoManual()" style="height: 44px; padding: 0 16px; border-radius: 10px; box-shadow: none;"><i class="fa-solid fa-circle-play"></i></button>
+          <button onclick="changeVideoManual()" style="height: 44px; padding: 0 16px; border-radius: 12px;"><i class="fa-solid fa-circle-play"></i></button>
         </div>
       </div>
 
       <!-- كارت سجل المشاهدة -->
       <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
-         <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 4px;"></i> سجل المشاهدة</span>
+         <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 4px; color: var(--accent-hover);"></i> سجل المشاهدة</span>
          <div id="historyList" style="max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">لا توجد مقاطع سابقة</div>
       </div>
 
       <!-- قسم الإعدادات المتقدمة (تصميم مدمج ونظيف) -->
-      <details style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; width: 100%;">
-        <summary style="padding: 14px 16px; font-size: 0.85rem; color: #e2e8f0; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: transparent;">
-          <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-server" style="color: var(--accent);"></i> الحلقات والتشغيل المحلي</span>
-          <i class="fa-solid fa-angle-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+      <details style="background: rgba(9, 20, 40, 0.65); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 16px; overflow: hidden; width: 100%;">
+        <summary style="padding: 14px 16px; font-size: 0.85rem; color: #e0f2fe; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: transparent;">
+          <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-hard-drive" style="color: var(--accent-hover);"></i> الحلقات والتشغيل المحلي</span>
+          <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
         </summary>
         
-        <div class="details-content" style="padding: 16px; gap: 16px; max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="details-content" style="padding: 16px; gap: 16px; max-height: 300px; overflow-y: auto; background: rgba(3, 7, 18, 0.45) !important; border-top: 1px solid rgba(56, 189, 248, 0.12);">
           
           <!-- زر التشغيل من الجهاز -->
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <input type="file" id="manualDeviceVideoInput" accept="video/*" style="display: none;" onchange="playFromDeviceFiles(this)">
-            <button onclick="document.getElementById('manualDeviceVideoInput').click()" class="premium-ghost-btn" style="width: 100%; border-color: rgba(119, 185, 243, 0.35); color: #d5eaff; background: rgba(119, 185, 243, 0.09);"><i class="fa-solid fa-file-video"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
+            <button onclick="document.getElementById('manualDeviceVideoInput').click()" class="premium-ghost-btn" style="width: 100%; border-color: rgba(56, 189, 248, 0.42); color: #7dd3fc; background: rgba(14, 165, 233, 0.14);"><i class="fa-solid fa-photo-film"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
             <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center; line-height: 1.4;">لتشغيل حلقة محملة مسبقاً على جهازك بدون استهلاك إنترنت وبالمزامنة الكاملة.</span>
           </div>
 
-          <div style="height: 1px; background: rgba(255,255,255,0.08); width: 100%;"></div>
+          <div style="height: 1px; background: rgba(56, 189, 248, 0.14); width: 100%;"></div>
 
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">الحلقات المرفوعة بالسيرفر:</span>
@@ -3779,20 +3598,21 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       </details>
 
       <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-        <button onclick="clearDatabase()" class="premium-danger-btn"><i class="fa-solid fa-trash-can"></i> مسح بيانات الشات والسجل</button>
-        <button onclick="document.getElementById('settingsModal').style.display='none'" class="premium-ghost-btn" style="border: none; background: rgba(255,255,255,0.03);"><i class="fa-solid fa-xmark"></i> إغلاق النافذة</button>
+        <button onclick="clearDatabase()" class="premium-danger-btn"><i class="fa-solid fa-broom"></i> مسح بيانات الشات والسجل</button>
+        <button onclick="document.getElementById('settingsModal').style.display='none'" class="premium-ghost-btn"><i class="fa-solid fa-circle-xmark"></i> إغلاق النافذة</button>
       </div>
     </div>
+
   </div>
 
   <!-- 🗂️ نافذة اختيار ملصق من "الكل" لإضافته للقسم الحالي -->
   <div id="categoryPickerModal" class="modal-overlay" style="display: none; z-index: 5000;" onclick="if(event.target===this) closeCategoryPicker()">
     <div class="modal-card" style="max-width: 90vw; max-height: 80vh; gap: 15px;" onclick="event.stopPropagation()">
-      <h3 style="color: var(--accent); text-align: center;"><i class="fa-solid fa-plus"></i> إضافة للقسم</h3>
+      <h3 style="color: var(--accent-hover); text-align: center;"><i class="fa-solid fa-folder-plus"></i> إضافة للقسم</h3>
       <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">اختر ملصقاً من قائمة "الكل" لنقله إلى هذا القسم:</p>
       <div id="pickerStickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; overflow-y: auto; max-height: 50vh; padding: 5px;">
       </div>
-      <button onclick="closeCategoryPicker()" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+      <button onclick="closeCategoryPicker()" class="premium-ghost-btn" style="margin-top: 5px;"><i class="fa-solid fa-circle-xmark"></i> إغلاق</button>
     </div>
   </div>
 
@@ -3800,11 +3620,11 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
   <div id="featuresModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; max-height: 80vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h3 style="color: var(--accent);"><i class="fa-solid fa-calendar-days"></i> جدولنا</h3>
-          <button onclick="openTreeMode()" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;"><i class="fa-solid fa-tree"></i> شجرة الذكريات</button>
+          <h3 style="color: var(--accent-hover);"><i class="fa-solid fa-calendar-check"></i> جدولنا</h3>
+          <button onclick="openTreeMode()" style="padding: 6px 14px; font-size: 0.8rem; background: linear-gradient(135deg, #0284c7, #0ea5e9);"><i class="fa-solid fa-seedling"></i> شجرة الذكريات</button>
       </div>
       
-      <div class="details-content" style="background: var(--bg-content); border-radius: 8px;">
+      <div class="details-content" style="background: var(--bg-content); border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.16);">
         <div class="input-group" style="margin-bottom: 15px;">
           <input type="text" id="newAnimeInput" placeholder="أدخل العمل المراد اضافته..." style="padding: 8px;" />
           <button onclick="addScheduleItem()" style="padding: 8px 15px;"><i class="fa-solid fa-circle-plus"></i></button>
@@ -3813,7 +3633,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
            <span style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">جاري التحميل...</span>
         </div>
       </div>
-      <button onclick="document.getElementById('featuresModal').style.display='none'" style="background: var(--bg-hover); margin-top: 5px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+      <button onclick="document.getElementById('featuresModal').style.display='none'" class="premium-ghost-btn" style="margin-top: 5px;"><i class="fa-solid fa-circle-xmark"></i> إغلاق</button>
     </div>
   </div>
 
@@ -3823,25 +3643,26 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
   <!-- 🌳 2. نافذة شجرة الذكريات -->
   <div id="treeModal" class="modal-overlay" style="display: none; z-index: 2001;" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-card" style="max-width: 90%; max-height: 85vh; overflow-y: auto; gap: 10px;" onclick="event.stopPropagation()">
-      <h3 style="color: #10b981; text-align: center;"><i class="fa-solid fa-seedling"></i> شجرة ذكرياتنا</h3>
+      <h3 style="color: #38bdf8; text-align: center;"><i class="fa-solid fa-seedling"></i> شجرة ذكرياتنا</h3>
       <div id="treeContainer" class="timeline-container">
       </div>
-      <button onclick="document.getElementById('treeModal').style.display='none'" style="background: var(--bg-hover); margin-top: 15px;"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+      <button onclick="document.getElementById('treeModal').style.display='none'" class="premium-ghost-btn" style="margin-top: 15px;"><i class="fa-solid fa-circle-xmark"></i> إغلاق</button>
     </div>
   </div>
 
   <!-- ⭐ 3. نافذة التقييم الجماعي الجديدة (سلايدر السحب) -->
   <div id="ratingModal" class="modal-overlay" style="display: none; z-index: 3000;">
     <div class="modal-card" style="max-width: 320px; text-align: center; gap: 10px;">
-      <h3 id="ratingTitle" style="color: #f59e0b; margin-bottom: 5px;">تقييم العمل</h3>
+      <h3 id="ratingTitle" style="color: #38bdf8; margin-bottom: 5px;">تقييم العمل</h3>
       <div style="margin: 10px 0;">
-          <span id="ratingValueDisplay" style="font-size: 3.5rem; font-weight: 800; color: #f59e0b; text-shadow: 0 0 20px rgba(245,158,11,0.4);">5.0</span>
+          <span id="ratingValueDisplay" style="font-size: 3.5rem; font-weight: 800; color: #38bdf8; text-shadow: 0 0 24px rgba(56, 189, 248, 0.55);">5.0</span>
           <span style="font-size: 1.2rem; color: var(--text-muted);">/5</span>
       </div>
       <input type="range" id="ratingSlider" min="0" max="5" step="0.1" value="5.0" oninput="document.getElementById('ratingValueDisplay').innerText = parseFloat(this.value).toFixed(1)" class="custom-slider">
-      <button onclick="submitSliderRating()" style="margin-top: 15px; width: 100%; padding: 12px; font-size: 1rem; background: #f59e0b; color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-star"></i> إرسال التقييم</button>
-      <button onclick="document.getElementById('ratingModal').style.display='none'" style="background: transparent; color: var(--text-muted); box-shadow: none; margin-top: -5px;">إلغاء</button>
+      <button onclick="submitSliderRating()" style="margin-top: 15px; width: 100%; padding: 12px; font-size: 1rem;"><i class="fa-solid fa-paper-plane"></i> إرسال التقييم</button>
+      <button onclick="document.getElementById('ratingModal').style.display='none'" class="premium-ghost-btn" style="margin-top: 4px;">إلغاء</button>
     </div>
+
   </div>
 
   <div class="app-shell">
@@ -3859,13 +3680,13 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <section class="control-bar" aria-label="التحكم بالمشاهدة">
       <div class="control-actions" aria-label="أدوات سريعة">
         <button id="appMenuBtn" class="app-menu-button" type="button" aria-label="فتح قائمة التحكم" aria-controls="appDrawer" aria-expanded="false" onclick="toggleAppDrawer()">
-          <i class="fa-solid fa-grip-lines" aria-hidden="true"></i>
+          <i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>
         </button>
         <button id="openScrubTimelineBtn" class="visual-scrub-open" type="button" title="فتح المعاينة الزمنية" aria-label="فتح شريط المعاينة الزمنية">
-          <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+          <i class="fa-solid fa-clapperboard" aria-hidden="true"></i>
         </button>
         <button class="control-button sync-control icon-only" type="button" onclick="forceSync()" title="مزامنة الآن" aria-label="مزامنة الآن">
-          <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+          <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
         </button>
       </div>
       <div id="syncStatus" class="control-sync-status" role="status"><b>التوقيت:</b> جاري التحميل...</div>
@@ -3880,7 +3701,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           <span>إعدادات الغرفة والتحكم</span>
         </div>
         <button class="drawer-close" type="button" aria-label="إغلاق القائمة" onclick="closeAppDrawer()">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>إغلاق</span>
+          <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span>إغلاق</span>
         </button>
       </div>
 
@@ -3902,7 +3723,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           </button>
 
           <button class="drawer-action force-stop-all-btn" type="button" onclick="forceStopAllVideos()" title="إيقاف الفيديو للجميع وجعل الشاشة سوداء">
-            <i class="fa-solid fa-circle-stop" aria-hidden="true"></i><span>إيقاف جميع الفيديوهات</span>
+            <i class="fa-solid fa-power-off" aria-hidden="true"></i><span>إيقاف جميع الفيديوهات</span>
           </button>
         </div>
       </section>
@@ -3912,7 +3733,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         <div class="drawer-jump">
           <input type="text" id="jumpTimeInput" placeholder="06:35" aria-label="الانتقال إلى وقت" onkeydown="if(event.key==='Enter') jumpToTime()">
           <button type="button" onclick="jumpToTime()" title="انتقال إلى الوقت" aria-label="تنفيذ الانتقال">
-            <i class="fa-solid fa-clock" aria-hidden="true"></i>
+            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
           </button>
         </div>
       </section>
@@ -3921,16 +3742,16 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         <span class="drawer-section-label">الغرفة</span>
         <nav class="drawer-nav" aria-label="إعدادات الغرفة">
 <button class="drawer-action" type="button" onclick="skipTime(85)" title="تخطي الشارة، 85 ثانية" aria-label="تخطي الشارة">
-            <i class="fa-solid fa-forward-step" aria-hidden="true"></i><span>تخطي الشارة</span>
+            <i class="fa-solid fa-angles-left" aria-hidden="true"></i><span>تخطي الشارة</span>
           </button>
           <button class="drawer-action" type="button" onclick="openProfileModal()" title="تغيير الملف الشخصي" aria-label="الملف الشخصي">
-            <i class="fa-solid fa-user-gear" aria-hidden="true"></i><span>الملف الشخصي</span>
+            <i class="fa-solid fa-id-badge" aria-hidden="true"></i><span>الملف الشخصي</span>
           </button>
           <button id="lockChatBtn" class="drawer-action" type="button" onclick="toggleChatLock()" title="قفل أو فتح الشات" aria-label="قفل أو فتح الشات">
-            <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+            <i class="fa-solid fa-unlock-keyhole" aria-hidden="true"></i>
           </button>
 <button id="theaterBtn" class="drawer-action" type="button" onclick="toggleTheaterMode()" title="وضع السينما" aria-label="وضع السينما">
-            <i class="fa-solid fa-display" aria-hidden="true"></i>
+            <i class="fa-solid fa-panorama" aria-hidden="true"></i>
           </button>
         </nav>
       </section>
@@ -3954,19 +3775,20 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         <div class="chat-bottom-bar">
           <div id="replyPreview" class="reply-preview">
             <div style="display:flex; flex-direction: column; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 85%;">
-              <b id="replyName" style="color: var(--accent); font-size: 0.75rem;"></b>
+              <b id="replyName" style="color: var(--accent-hover); font-size: 0.75rem;"></b>
               <span id="replyText" style="color: #cbd5e1; text-overflow: ellipsis; overflow: hidden; font-size: 0.72rem;"></span>
             </div>
-            <button type="button" onclick="cancelReply()" aria-label="إلغاء الرد" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" onclick="cancelReply()" aria-label="إلغاء الرد" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-circle-xmark"></i></button>
           </div>
           <div class="input-group">
             <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
-            <button type="button" onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة" aria-label="إرسال صورة"><i class="fa-solid fa-image"></i></button>
-            <button type="button" onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة" aria-label="فتح الملصقات"><i class="fa-solid fa-note-sticky"></i></button>
+            <button type="button" onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة" aria-label="إرسال صورة"><i class="fa-solid fa-images"></i></button>
+            <button type="button" onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة" aria-label="فتح الملصقات"><i class="fa-solid fa-face-grin-stars"></i></button>
             <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
             <button type="button" onclick="sendMessage()" aria-label="إرسال الرسالة"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
+
       </section>
     </main>
   </div>
@@ -4084,7 +3906,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         let userId = localStorage.getItem('app_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('app_user_id', userId);
     // ==========================================
-    // إدارة أوضاع الأجهزة (جوال / آيباد)
+    // إدارة الثيمات وأوضاع الأجهزة (جوال / آيباد)
     // ==========================================
     let currentDeviceMode = localStorage.getItem('app_device_mode') || (window.innerWidth < 768 ? 'mobile' : 'ipad');
 
@@ -4111,7 +3933,9 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       if (msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
     }
 
+    localStorage.removeItem('app_theme');
     applyDeviceMode();
+
 
     let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Alien";
     function selectAvatar(el) {
@@ -4233,7 +4057,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
                 <span class="user-dot" style="background: ${statusDotColor}; box-shadow: 0 0 6px ${statusDotColor};"></span>
                 <img src="${u.avatar}" class="user-avatar" />
                 <span>${u.name}</span>
-                <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-slash"></i></button>              
+                <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
               </div>
             `;
           }
@@ -4248,7 +4072,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
                        <span class="source-badge" style="font-size:0.65rem; padding:2px 6px; border-radius:6px; color:${sourceBadgeColor}; border:1px solid ${sourceBadgeColor}; background:rgba(0,0,0,0.4); white-space:nowrap;">${userSrc}</span>
                    </div>
                    <button class="source-kick-btn" onclick="kickIndividualVideo('${uid}')" title="إيقاف الفيديو لديه فقط (شاشة سوداء)">
-                       <i class="fa-solid fa-circle-stop"></i>
+                       <i class="fa-solid fa-xmark"></i>
                    </button>
                 </div>
               `;
@@ -4611,7 +4435,7 @@ let currentReplyContext = null;
         const el = document.getElementById(`msg-item-${key}`);
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.style.backgroundColor = 'rgba(67, 132, 189, 0.3)';
+            el.style.backgroundColor = 'rgba(139, 92, 246, 0.3)';
             el.style.borderRadius = '12px';
             setTimeout(() => { el.style.backgroundColor = 'transparent'; }, 1500);
         }
@@ -4890,7 +4714,7 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
 
             reactionsHtml = `<div class="reactions-badge-container" style="justify-content: ${isFemale ? 'flex-end' : 'flex-start'};">`;
             Object.keys(counts).forEach(emo => {
-              const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(67, 132, 189, 0.4);' : '';
+              const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(139, 92, 246, 0.4);' : '';
               reactionsHtml += `<div class="reaction-badge" style="${isMineClass}" onclick="addReaction('${msgKey}', '${emo}')">${emo} <span style="font-weight:bold; font-size:0.75rem; color:#fff;">${counts[emo]}</span></div>`;
             });
             reactionsHtml += `</div>`;
@@ -5049,19 +4873,18 @@ let lastSeenData = {};
       const msgDiv = document.getElementById('messages');
       
       if (window.isChatLocked) {
-          // حالة القفل: أيقونة مقفلة، لون أحمر تنبيهي، ومنع السكرول اليدوي (إخفاء الشريط)
           btn.innerHTML = '<i class="fa-solid fa-lock"></i>';
-          btn.style.color = '#ef4444';
-          btn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          btn.style.color = '#38bdf8';
+          btn.style.borderColor = 'rgba(56, 189, 248, 0.45)';
           msgDiv.style.overflowY = 'hidden'; 
-          msgDiv.scrollTop = msgDiv.scrollHeight; // إجبار النزول لآخر رسالة فوراً
+          msgDiv.scrollTop = msgDiv.scrollHeight;
       } else {
-          // حالة الفتح: أيقونة مفتوحة، لون طبيعي، وعودة السكرول اليدوي
-          btn.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
-          btn.style.color = '#fff';
-          btn.style.borderColor = 'rgba(255,255,255,0.05)';
+          btn.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i>';
+          btn.style.color = '#f0f7ff';
+          btn.style.borderColor = 'rgba(56, 189, 248, 0.14)';
           msgDiv.style.overflowY = 'auto';
       }
+
     }
 
     // مراقب صامت لحذف الرسائل القديمة في الخلفية (منعاً للتشويش)
@@ -5333,7 +5156,7 @@ async function renderAvailableVideosUI(items) {
             <!-- السطر العلوي: اسم الحلقة + زر التعديل + الحجم -->
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
               <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 0.7rem; cursor: pointer; flex-shrink: 0; box-shadow: none; transition: 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='#cbd5e1'; this.style.background='rgba(255,255,255,0.05)'" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 0.7rem; cursor: pointer; flex-shrink: 0; box-shadow: none; transition: 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='#cbd5e1'; this.style.background='rgba(255,255,255,0.05)'" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
                 <span style="font-size: 0.8rem; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${item.title}">${item.title}</span>
               </div>
               <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; font-family: monospace; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${displaySize}</span>
@@ -5357,16 +5180,17 @@ async function renderAvailableVideosUI(items) {
             <!-- أزرار الإجراءات (Premium Ghost Buttons) -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 6px; width: 100%; box-sizing: border-box;">
               ${isDownloaded ? `
-                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #34d399; border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.1);"><i class="fa-solid fa-circle-play"></i> تشغيل</button>
-                <button onclick="copyLocalUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;"><i class="fa-solid fa-link"></i> الرابط</button>
-                <button onclick="deleteSingleLocalVideo('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.2); background: rgba(248, 113, 113, 0.05);" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
+                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); background: rgba(14, 165, 233, 0.16);"><i class="fa-solid fa-circle-play"></i> تشغيل</button>
+                <button onclick="copyLocalUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;"><i class="fa-solid fa-clone"></i> الرابط</button>
+                <button onclick="deleteSingleLocalVideo('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.08);" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
               ` : `
-                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.1);"><i class="fa-solid fa-hard-drive"></i> كاش داخلي</button>
-                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-download"></i> عبر 1DM</button>
-                <button onclick="copyDirectVideoUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="نسخ رابط الفيديو المباشر"><i class="fa-solid fa-link"></i> نسخ</button>
-                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" class="premium-ghost-btn" style="display: none; padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1);"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); background: rgba(14, 165, 233, 0.14);"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
+                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-bolt"></i> عبر 1DM</button>
+                <button onclick="copyDirectVideoUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="نسخ رابط الفيديو المباشر"><i class="fa-solid fa-clone"></i> نسخ</button>
+                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" class="premium-ghost-btn" style="display: none; padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1);"><i class="fa-solid fa-circle-xmark"></i> إلغاء</button>
               `}
             </div>
+
           </div>
         `;
 
@@ -5713,16 +5537,17 @@ async function renderAvailableVideosUI(items) {
       panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
       if(panel.style.display === 'none') { 
           isEditingStickers = false; 
-          document.getElementById('editStickersBtn').style.background = '#f59e0b'; 
+          document.getElementById('editStickersBtn').style.background = ''; 
           renderStickers(); 
       }
     }
 
     function toggleEditStickers() {
       isEditingStickers = !isEditingStickers;
-      document.getElementById('editStickersBtn').style.background = isEditingStickers ? '#22c55e' : '#f59e0b';
+      document.getElementById('editStickersBtn').style.background = isEditingStickers ? 'linear-gradient(135deg, #0284c7, #0ea5e9)' : '';
       renderStickers();
     }
+
 
     // --- إدارة الأقسام ---
     db.ref('stickerCategories').on('value', snap => {
@@ -5891,12 +5716,13 @@ function sendSavedSticker(imgSrc) {
              html += `
              <div style="display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 14px; border:1px solid rgba(255,255,255,0.05);">
                 ${imgElement}
-                <span style="font-size:0.6rem; color:#10b981; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'بلا تاج'}</span>
+                <span style="font-size:0.6rem; color:#38bdf8; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'بلا تاج'}</span>
                 <div style="display:flex; width: 100%; gap: 4px; margin-top: 4px;">
-                  <button onclick="editStickerTag('${s.key}', '${s.tag || ''}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#3b82f6; border-radius:6px;" title="تعديل التاج"><i class="fa-solid fa-tag"></i></button>
-                  <button onclick="deleteSticker('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#ef4444; border-radius:6px;" title="${currentCategoryId === 'all' ? 'حذف نهائي' : 'إزالة من القسم'}"><i class="fa-solid ${currentCategoryId === 'all' ? 'fa-trash-can' : 'fa-folder-minus'}"></i></button>
+                  <button onclick="editStickerTag('${s.key}', '${s.tag || ''}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#0284c7; border-radius:8px;" title="تعديل التاج"><i class="fa-solid fa-tag"></i></button>
+                  <button onclick="deleteSticker('${s.key}')" style="flex:1; padding: 4px 0; font-size:0.75rem; background:#ef4444; border-radius:8px;" title="${currentCategoryId === 'all' ? 'حذف نهائي' : 'إزالة من القسم'}"><i class="fa-solid ${currentCategoryId === 'all' ? 'fa-trash-can' : 'fa-folder-minus'}"></i></button>
                 </div>
              </div>`;
+
          } else {
              html += imgElement;
          }
@@ -6058,22 +5884,20 @@ function sendSavedSticker(imgSrc) {
         
         const btn = document.getElementById('theaterBtn');
         if (body.classList.contains('theater-mode')) {
-            // تفعيل السينما
-            btn.innerHTML = '<i class="fa-solid fa-minimize"></i>';
-            btn.style.color = '#e7f4ff';
-            btn.style.borderColor = 'rgba(119, 185, 243, 0.4)';
-            btn.style.background = 'rgba(119, 185, 243, 0.2)';
+            btn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+            btn.style.color = '#38bdf8';
+            btn.style.borderColor = 'rgba(56, 189, 248, 0.45)';
+            btn.style.background = 'rgba(14, 165, 233, 0.18)';
             
-            // الدخول في وضع ملء الشاشة (Fullscreen) إن أمكن
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen().catch(err => console.log(err));
             }
         } else {
-            // الخروج من السينما
-            btn.innerHTML = '<i class="fa-solid fa-display"></i>';
-            btn.style.color = '#b7d0e6';
-            btn.style.borderColor = 'rgba(119, 185, 243, 0.24)';
-            btn.style.background = 'rgba(119, 185, 243, 0.08)';
+            btn.innerHTML = '<i class="fa-solid fa-panorama"></i>';
+            btn.style.color = '#7dd3fc';
+            btn.style.borderColor = 'rgba(56, 189, 248, 0.22)';
+            btn.style.background = 'rgba(14, 165, 233, 0.08)';
+
             
             if (document.fullscreenElement && document.exitFullscreen) {
                 document.exitFullscreen();
@@ -6159,9 +5983,9 @@ function sendSavedSticker(imgSrc) {
                     </div>
                     <div style="display:flex; gap:6px;">
                         <button onclick="togglePinSchedule('${item.key}', ${isPinned})" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid ${pinIconColor}; color: ${pinIconColor}; box-shadow:none;" title="${isPinned ? 'إلغاء التثبيت' : 'تثبيت كـ المشاهدة التالية'}"><i class="fa-solid fa-thumbtack"></i></button>
-                        <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;" title="إنهاء وإرسال للذكريات"><i class="fa-solid fa-circle-check"></i></button>
-                        <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="markCompleted('${item.key}')" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;" title="إنهاء وإرسال للذكريات"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="editScheduleTitle('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 6px 10px; font-size: 0.8rem; background: #f59e0b; box-shadow:none;" title="تعديل الاسم"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 6px 10px; font-size: 0.8rem; background: transparent; border: 1px solid #ef4444; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
                 <div style="display:flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
@@ -6181,7 +6005,7 @@ function sendSavedSticker(imgSrc) {
                 <span style="font-weight:bold; font-size:0.9rem; text-decoration: line-through;">${item.title}</span>
                 <div style="display:flex; gap:6px;">
                     <button onclick="triggerGlobalRating('${item.key}', '${item.title.replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; background: #f59e0b;"><i class="fa-solid fa-star"></i> تقييم</button>
-                    <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 4px 8px; font-size: 0.75rem; background: transparent; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="db.ref('schedule/${item.key}').remove()" style="padding: 4px 8px; font-size: 0.75rem; background: transparent; color: #ef4444; box-shadow:none;"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>`;
         });
@@ -6302,13 +6126,13 @@ function sendSavedSticker(imgSrc) {
                 <div style="display: flex; gap: 15px; margin-top: 10px; justify-content: center;">
                     <div style="display:flex; flex-direction: column; align-items: center;">
                         <b style="font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Doddy</b>
-                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(119, 185, 243, 0.35); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
+                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(139, 92, 246, 0.4); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
                             ${imgDoddy}
                         </div>
                     </div>
                     <div style="display:flex; flex-direction: column; align-items: center;">
-                        <b style="font-size: 0.85rem; color: #a0d2ff; margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Somy</b>
-                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(160, 210, 255, 0.35); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
+                        <b style="font-size: 0.85rem; color: #ec4899; margin-bottom: 6px; font-weight:800; letter-spacing:1px;">Somy</b>
+                        <div style="width: 90px; height: 110px; border: 2px dashed rgba(236, 72, 153, 0.4); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.3); transition: 0.3s;">
                             ${imgSomy}
                         </div>
                     </div>
