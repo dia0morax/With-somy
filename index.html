@@ -37,133 +37,438 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg-color-1: #030712; --bg-color-2: #071022; --bg-color-3: #0c1933;
-      --text-main: #f0f7ff; --text-muted: #7fa2c9; 
-      --accent: #0ea5e9; --accent-hover: #38bdf8;
-      --glass-bg: rgba(7, 16, 34, 0.78);
-      --glass-border: rgba(56, 189, 248, 0.16);
-      --glass-shadow: 0 20px 50px rgba(2, 6, 23, 0.75);
-      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%);
-      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 50%, #0ea5e9 100%);
+      --bg-color-1: #02050d;
+      --bg-color-2: #060e20;
+      --bg-color-3: #0b1936;
+      --bg-content: rgba(9, 19, 40, 0.78);
+      --bg-hover: rgba(20, 40, 80, 0.85);
+      --text-main: #f4f8ff;
+      --text-muted: #8aa8d0;
+      --accent: #0ea5e9;
+      --accent-hover: #38bdf8;
+      --accent-royal: #3b82f6;
+      --accent-glow: rgba(56, 189, 248, 0.45);
+      --glass-bg: rgba(7, 15, 34, 0.76);
+      --glass-border: rgba(125, 211, 252, 0.2);
+      --glass-highlight: rgba(255, 255, 255, 0.14);
+      --glass-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.88), 0 0 35px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(186, 230, 253, 0.16);
+      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 52%, #0ea5e9 100%);
+      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 48%, #0ea5e9 100%);
     }
-
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', system-ui, sans-serif; }
     
-    ::-webkit-scrollbar { width: 4px; height: 4px; } 
-    ::-webkit-scrollbar-track { background: transparent; } 
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    ::-webkit-scrollbar { width: 5px; height: 5px; } 
+    ::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.4); } 
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(56, 189, 248, 0.45), rgba(37, 99, 235, 0.45)); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-hover); }
 
-    /* تثبيت الشاشة بقوة لمنع الرمشة السوداء عند فتح الكيبورد */
-    html, body { background: var(--bg-color-1); color: var(--text-main); height: 100%; width: 100%; position: fixed; inset: 0; overflow: hidden; display: flex; flex-direction: column; z-index: 1; }
+    /* تثبيت الشاشة بقوة مع خلفية محيطية فاخرة متعدّدة الطبقات */
+    html, body {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(14, 165, 233, 0.16) 0%, transparent 50%),
+        linear-gradient(180deg, #02050d 0%, #050c1d 55%, #030712 100%);
+      color: var(--text-main);
+      height: 100%;
+      width: 100%;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
     
-/* زيادة السطوع (تم تخفيفها لتسريع الأجهزة الضعيفة وإلغاء الحركة المستمرة) */
-    body::before, body::after { content: ''; position: absolute; border-radius: 50%; z-index: -1; pointer-events: none; }
-    body::before { width: 75vw; height: 75vw; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); top: -10%; left: -10%; }
-    body::after { width: 65vw; height: 65vw; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%); bottom: -5%; right: -10%; }
+    /* إضاءة خلفية شعاعية ناعمة مدمجة بدون أي فلاتر Blur حية تستهلك الـ GPU */
+    body::before, body::after { content: ''; position: absolute; border-radius: 50%; z-index: -1; pointer-events: none; filter: none; }
+    body::before { width: 70vw; height: 70vw; background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, rgba(37, 99, 235, 0.05) 45%, transparent 72%); top: -18%; left: -12%; }
+    body::after { width: 65vw; height: 65vw; background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0.04) 45%, transparent 72%); bottom: -12%; right: -12%; }
 
-    /* حجم ثابت 240px يمنع الفيديو من التصاغر عند فتح الكيبورد */
-    .video-container { width: 100%; height: 240px; min-height: 240px; background: #000; z-index: 100; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
+    /* مسرح الفيديو السينمائي الفاخر */
+    .video-container {
+      width: 100%;
+      height: 240px;
+      min-height: 240px;
+      background: radial-gradient(circle at center, #081226 0%, #02040a 100%);
+      z-index: 100;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.24);
+      flex-shrink: 0;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.78);
+      position: relative;
+    }
     
     /* طبقة تفاعل ذكية لإجبار المتصفح على تشغيل أي فيديو (يوتيوب أو درايف) */
     .click-overlay { position: absolute; inset: 0; z-index: 102; cursor: pointer; display: none; }
     .require-interaction .click-overlay { display: block; }
-    .video-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--btn-gradient); z-index: 101; }
-.video-js { width: 100%; height: 100%; } 
-    .vjs-default-skin .vjs-control-bar { background: rgba(0,0,0,0.85); border-top: 1px solid rgba(255,255,255,0.1); } 
-    .video-js .vjs-play-progress { background: var(--btn-gradient); }
+    .video-container::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.85) 50%, transparent 100%);
+      z-index: 101;
+      pointer-events: none;
+    }
+
+    /* تخصيص مشغل Video.js بطابع منصات البث المدفوعة (بدون فلاتر ثقيلة) */
+    .video-js { width: 100%; height: 100%; font-family: 'Cairo', system-ui, sans-serif; }
+    .video-js .vjs-big-play-button {
+      width: 68px !important;
+      height: 68px !important;
+      line-height: 64px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(145deg, rgba(14, 165, 233, 0.94), rgba(29, 78, 216, 0.96)) !important;
+      border: 2px solid rgba(186, 230, 253, 0.75) !important;
+      box-shadow: 0 10px 26px rgba(2, 132, 199, 0.55) !important;
+      margin-top: -34px !important;
+      margin-left: -34px !important;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease !important;
+    }
+    .video-js:hover .vjs-big-play-button,
+    .video-js .vjs-big-play-button:focus {
+      transform: scale(1.08) !important;
+      border-color: #ffffff !important;
+    }
+    #videoBox .vjs-control-bar,
+    .vjs-default-skin .vjs-control-bar,
+    .video-js .vjs-control-bar {
+      height: 44px !important;
+      padding: 0 10px !important;
+      align-items: center !important;
+      background: linear-gradient(180deg, rgba(6, 14, 32, 0.88) 0%, rgba(2, 6, 16, 0.98) 100%) !important;
+      border-top: 1px solid rgba(125, 211, 252, 0.2) !important;
+      box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.55) !important;
+    }
+    .video-js .vjs-progress-holder {
+      height: 5px !important;
+      border-radius: 999px !important;
+      background: rgba(148, 163, 184, 0.25) !important;
+      transition: height 0.2s ease !important;
+    }
+    .video-js .vjs-progress-control:hover .vjs-progress-holder {
+      height: 8px !important;
+    }
+    .video-js .vjs-play-progress {
+      background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 55%, #38bdf8 100%) !important;
+      border-radius: 999px !important;
+    }
+    .video-js .vjs-play-progress::before {
+      color: #ffffff !important;
+      font-size: 1.05em !important;
+      top: -0.32em !important;
+    }
     
     /* إجبار المشغل على إظهار الدقيقة الحالية والوقت الكلي بدلاً من الوقت المتبقي */
-    .video-js .vjs-current-time, .video-js .vjs-time-divider, .video-js .vjs-duration { display: flex !important; align-items: center; justify-content: center; padding: 0 4px; }
+    .video-js .vjs-current-time, .video-js .vjs-time-divider, .video-js .vjs-duration { display: flex !important; align-items: center; justify-content: center; padding: 0 4px; font-weight: 700; color: #e0f2fe; }
     .video-js .vjs-remaining-time { display: none !important; }
-    .video-js .vjs-seek-five { width: 3.2em; cursor: pointer; }
+    .video-js .vjs-seek-five { width: 3.2em; cursor: pointer; color: #bae6fd; transition: transform 0.2s ease, color 0.2s ease; }
+    .video-js .vjs-seek-five:hover { color: #ffffff; transform: scale(1.1); }
     .video-js .vjs-seek-five-icon { position: relative; display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
     .video-js .vjs-seek-five-icon i { font-size: 1.25em; }
-    .video-js .vjs-seek-five-icon b { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.58em; line-height: 1; font-weight: 800; }
+    .video-js .vjs-seek-five-icon b { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.58em; line-height: 1; font-weight: 800; color: #ffffff; }
 
     .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
-.status-bar, .chat-container, details, .modal-card, #stickersPanel { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); border-radius: 18px; }
+    .status-bar, .chat-container, details, .modal-card, #stickersPanel { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); border-radius: 18px; }
 
     .status-bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; font-size: 0.85rem; overflow-x: auto; white-space: nowrap; }
     
-    .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s ease; }
     .user-badge:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); border-color: var(--accent); }
     .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); padding: 1px; }
-.user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
 
-    button { padding: 10px 20px; background: var(--btn-gradient); border: none; border-radius: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); filter: brightness(1.1); }
-    button:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    button { padding: 10px 20px; background: var(--btn-gradient); border: none; border-radius: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(1px); }
     button.icon-btn { padding: 12px; font-size: 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); box-shadow: none; border-radius: 14px; }
-    button.icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+    button.icon-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
 
-.input-group { display: flex; gap: 10px; width: 100%; align-items: center; }
-    input[type="text"], select { flex: 1; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10, 10, 15, 0.9); color: #fff; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.2s; }
-    input[type="text"]:focus, select:focus { border-color: var(--accent); background: #000; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3); }
+    .input-group { display: flex; gap: 10px; width: 100%; align-items: center; }
+    input[type="text"], select { flex: 1; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); background: rgba(10, 10, 15, 0.9); color: #fff; font-size: 0.95rem; font-weight: 600; outline: none; transition: border-color 0.2s ease; }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); background: #000; }
     input[type="text"]::placeholder { color: var(--text-muted); font-weight: 400; }
 
-    .chat-container { flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; position: relative; min-height: 250px; }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow: hidden;
+      position: relative;
+      min-height: 250px;
+      background: linear-gradient(180deg, rgba(4, 10, 24, 0.96) 0%, rgba(2, 6, 15, 0.99) 100%);
+    }
     
-/* وهج إضافي داخل صندوق الشات نفسه (تم تثبيته بدون فلتر لتخفيف التعليق) */
-    .chat-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%); z-index: 0; pointer-events: none; }
+    /* إضاءة محيطية ناعمة داخل خلفية الشات لراحة العين */
+    .chat-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(14, 165, 233, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 15% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
+      z-index: 0;
+      pointer-events: none;
+    }
 
-    #messages { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
+    #messages {
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 8px 4px 16px;
+      scroll-behavior: smooth;
+      z-index: 2;
+      position: relative;
+      contain: content;
+    }
     
-    /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; direction: ltr; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; touch-action: pan-y; will-change: transform; }
+    /* أنيميشن الرسائل والملصقات الموحد بدون will-change دائم لتوفير الرام والـ GPU */
+    .msg-item {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      font-size: 0.94rem;
+      direction: ltr;
+      animation: popIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      transform-origin: bottom center;
+      touch-action: pan-y;
+    }
     .msg-item.is-mine { justify-content: flex-end; }
     .msg-item.is-other { justify-content: flex-start; }
-    @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes popIn {
+      0% { opacity: 0; transform: translate3d(0, 10px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
   
-.msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; align-self: flex-end; }
+    .msg-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(125, 211, 252, 0.25);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
-    .swipe-reply-indicator { position: absolute; top: 50%; left: 10px; margin-top: -16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.85rem; opacity: 0; transform: scale(0.5); pointer-events: none; z-index: 1; transition: border-color 0.15s, background-color 0.15s, color 0.15s, transform 0.1s; }
-    .swipe-reply-indicator.from-right { left: auto; right: 10px; }
-    .swipe-reply-indicator.ready { border-color: var(--accent); background: var(--accent); color: #fff; transform: scale(1.2) !important; box-shadow: 0 0 12px var(--accent); }
-    .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
-    .reply-badge { background: rgba(0,0,0,0.35); border-right: 3px solid var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: #cbd5e1; cursor: pointer; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: right; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    .reply-badge:hover { filter: brightness(1.2); }
-    .chat-bottom-bar { display: flex; flex-direction: column; width: 100%; margin-top: 6px; z-index: 100; position: relative; }
-    .reply-preview { width: 100%; background: rgba(15, 23, 42, 0.98); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--accent); display: none; justify-content: space-between; align-items: center; font-size: 0.8rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); margin-bottom: 6px; box-sizing: border-box; }
-    .reply-preview.active { display: flex !important; animation: popIn 0.3s ease-out; }
+    .swipe-reply-indicator {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      margin-top: -18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(12, 28, 58, 0.92);
+      border: 1.5px solid rgba(125, 211, 252, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bae6fd;
+      font-size: 0.88rem;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+      z-index: 1;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+    }
+    .swipe-reply-indicator.from-right { left: auto; right: 12px; }
+    .swipe-reply-indicator.ready {
+      border-color: #7dd3fc;
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      color: #ffffff;
+      transform: scale(1.18) !important;
+    }
+    .msg-content {
+      padding: 11px 16px;
+      border-radius: 22px;
+      line-height: 1.6;
+      position: relative;
+      font-weight: 600;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      white-space: normal !important;
+      width: fit-content;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      direction: rtl !important;
+      unicode-bidi: isolate !important;
+      text-align: right !important;
+    }
+    .reply-badge {
+      background: linear-gradient(90deg, rgba(7, 16, 34, 0.92), rgba(14, 42, 78, 0.85));
+      border: 1px solid rgba(125, 211, 252, 0.2);
+      border-right: 3.5px solid #38bdf8;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.74rem;
+      color: #e0f2fe;
+      cursor: pointer;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      text-align: right;
+    }
+    .reply-badge:hover {
+      border-color: rgba(125, 211, 252, 0.45);
+    }
+    .chat-bottom-bar { display: flex; flex-direction: column; width: 100%; margin-top: 8px; z-index: 100; position: relative; }
+    .reply-preview {
+      width: 100%;
+      background: linear-gradient(145deg, rgba(10, 22, 46, 0.98), rgba(6, 14, 30, 0.99));
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      border-right: 4px solid #38bdf8;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.45);
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+    .reply-preview.active { display: flex !important; animation: popIn 0.22s ease-out; }
 
+    .msg-item.is-mine .msg-avatar {
+      border-color: #38bdf8;
+    }
+    .msg-item.is-mine .msg-content {
+      background: var(--msg-mine-gradient) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(186, 230, 253, 0.35) !important;
+      border-bottom-right-radius: 6px;
+      box-shadow: 0 6px 16px rgba(2, 6, 23, 0.45) !important;
+    }
+    .msg-item.is-other .msg-content {
+      background: linear-gradient(145deg, rgba(15, 30, 60, 0.95) 0%, rgba(8, 18, 38, 0.98) 100%) !important;
+      border: 1px solid rgba(125, 211, 252, 0.18) !important;
+      border-bottom-left-radius: 6px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+    }
 
-
+    .msg-name { font-weight: 800; font-size: 0.73rem; margin-bottom: 4px; opacity: 0.92; letter-spacing: 0.2px; }
     
-    .msg-item.is-mine .msg-avatar { border-color: var(--accent); }
-    .msg-item.is-mine .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
-    .msg-item.is-other .msg-content { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; }
+    .chat-img {
+      max-width: 195px;
+      border-radius: 16px;
+      margin-top: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(186, 230, 253, 0.22);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    }
 
-    .msg-name { font-weight: 800; font-size: 0.75rem; margin-bottom: 6px; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; }
+    /* 🌟 تكبير ملصق الشات بدون فلتر drop-shadow المكلف على المعالج */
+    .chat-sticker {
+      width: 120px !important;
+      height: 120px !important;
+      object-fit: cover !important;
+      border-radius: 18px;
+      margin-top: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .chat-sticker:hover { transform: scale(1.05); }
+
+    /* نظام التفاعلات السريعة المنبثقة (Reactions Menu) بتسريع عتادي خفيف */
+    .reaction-menu {
+      position: fixed;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(145deg, rgba(10, 22, 48, 0.98) 0%, rgba(4, 10, 24, 0.99) 100%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.75);
+      z-index: 9999;
+      transform: translate3d(0, 10px, 0) scale(0.85);
+      opacity: 0;
+      will-change: transform, opacity;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
+      pointer-events: none;
+      transform-origin: bottom center;
+    }
+    .reaction-menu.show {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .reaction-menu span {
+      font-size: 1.42rem;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+    }
+    .reaction-menu span:hover,
+    .reaction-menu span:active {
+      transform: translate3d(0, -6px, 0) scale(1.32);
+    }
+    .reaction-menu .more-btn {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.45), rgba(14, 165, 233, 0.3));
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.95rem;
+      color: #e0f2fe;
+      margin-right: 4px;
+      text-shadow: none;
+    }
+    .reaction-menu .more-btn:hover {
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      color: #ffffff;
+      border-color: #ffffff;
+    }
     
-    .chat-img { max-width: 180px; border-radius: 14px; margin-top: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    .chat-img:hover { transform: scale(1.03); }
-/* 🌟 تكبير ملصق الشات وإجباره على الشكل المربع المتناسق */
-    .chat-sticker { width: 135px !important; height: 135px !important; object-fit: cover !important; border-radius: 16px; margin-top: 4px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.4); transition: transform 0.2s ease; }
-    .chat-sticker:hover { transform: scale(1.1) rotate(4deg); }
-/* نظام التفاعلات السريعة (Reactions) */
-    .reaction-menu { position: fixed; display: flex; gap: 8px; background: rgba(15, 23, 42, 0.98); padding: 10px 16px; border-radius: 30px; border: 1px solid var(--accent); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 9999; transform: scale(0); opacity: 0; transition: 0.2s ease-out; pointer-events: none; transform-origin: bottom center; }
-    .reaction-menu.show { transform: scale(1); opacity: 1; pointer-events: auto; }
-.reaction-menu span { font-size: 1.4rem; cursor: pointer; transition: 0.2s; display: inline-block; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-    .reaction-menu span:hover { transform: scale(1.35) translateY(-5px); }
-    .reaction-menu .more-btn { background: rgba(255,255,255,0.15); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1rem; color: #fff; margin-right: 4px; text-shadow: none; }
-    
-    .reactions-badge-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: -8px; z-index: 3; position: relative; padding: 0 10px; }
-    .reaction-badge { background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 2px 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.4); animation: popBadge 0.3s ease-out; cursor: pointer; transition: 0.2s; }
-    .reaction-badge:hover { transform: scale(1.1); border-color: var(--accent); }
-    @keyframes popBadge { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-/* جعل الرسائل والملصقات بلوك جامد لمنع تحديد النص وقوائم حفظ الصور بالموبايل */
+    .reactions-badge-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: -7px; z-index: 3; position: relative; padding: 0 10px; }
+    .reaction-badge {
+      background: linear-gradient(145deg, rgba(14, 29, 58, 0.96), rgba(7, 16, 34, 0.99));
+      border: 1px solid rgba(125, 211, 252, 0.24);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .reaction-badge:hover {
+      transform: translateY(-2px);
+      border-color: #38bdf8;
+    }
+
+    /* جعل الرسائل والملصقات بلوك جامد لمنع تحديد النص وقوائم حفظ الصور بالموبايل */
     .msg-content, .chat-img, .chat-sticker, .msg-item img {
         -webkit-user-select: none !important;
         user-select: none !important;
-        -webkit-touch-callout: none !important; /* تمنع ظهور قائمة "حفظ الصورة" في الموبايل */
+        -webkit-touch-callout: none !important;
         -webkit-user-drag: none !important;
-        -webkit-tap-highlight-color: transparent !important; /* يمنع المربع الأزرق المزعج عند الضغط المطول */
+        -webkit-tap-highlight-color: transparent !important;
     }
     
- /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
+    /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
     .msg-item.is-mine .msg-content.sticker-bg, 
     .msg-item.is-other .msg-content.sticker-bg { 
         background: transparent !important; 
@@ -174,12 +479,33 @@
         -webkit-backdrop-filter: none !important; 
     }
 
-.msg-system { text-align: center; font-size: 0.75rem; color: #fff; background: rgba(50, 50, 60, 0.85); padding: 6px 16px; border-radius: 20px; margin: 8px auto; width: fit-content; border: 1px solid rgba(255,255,255,0.05); font-weight: 600; letter-spacing: 0.5px; }
+    .msg-system {
+      text-align: center;
+      font-size: 0.74rem;
+      color: #bae6fd;
+      background: linear-gradient(90deg, rgba(9, 20, 42, 0.92), rgba(14, 30, 62, 0.95), rgba(9, 20, 42, 0.92));
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin: 6px auto;
+      width: fit-content;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
     
-    /* نقاط الكتابة (Bouncing Dots) iOS Style */
-    .typing-indicator { min-height: 25px; margin-top: 5px; margin-bottom: -5px; padding-left: 5px; z-index: 2; position: relative; }
-    .typing-dot { width: 6px; height: 6px; background-color: var(--accent-hover); border-radius: 50%; animation: bounceDot 1.4s infinite ease-in-out both; box-shadow: 0 0 5px var(--accent); }
-    @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+    /* نقاط الكتابة (Bouncing Dots) بتوهج سماوي أنيق */
+    .typing-indicator { min-height: 24px; margin-top: 4px; margin-bottom: -2px; padding: 0 8px; z-index: 2; position: relative; }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, #7dd3fc, #0ea5e9);
+      border-radius: 50%;
+      animation: bounceDot 1.4s infinite ease-in-out both;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.75);
+    }
+    @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); opacity: 0.45; } 40% { transform: scale(1.15); opacity: 1; } }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -3357,65 +3683,107 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
 <!-- ستايلات Premium UI المخصصة للقوائم الجديدة — Royal Sapphire Dark Blue -->
   <style>
     :root {
-      --bg-color-1: #030712 !important;
-      --bg-color-2: #071022 !important;
-      --bg-color-3: #0c1933 !important;
-      --bg-content: #091428 !important;
-      --bg-hover: #122444 !important;
-      --text-main: #f0f7ff !important;
-      --text-muted: #7fa2c9 !important;
+      --bg-color-1: #02050d !important;
+      --bg-color-2: #060e20 !important;
+      --bg-color-3: #0b1936 !important;
+      --bg-content: rgba(9, 19, 40, 0.78) !important;
+      --bg-hover: rgba(20, 40, 80, 0.85) !important;
+      --text-main: #f4f8ff !important;
+      --text-muted: #8aa8d0 !important;
       --accent: #0ea5e9 !important;
       --accent-hover: #38bdf8 !important;
-      --accent-royal: #2563eb !important;
-      --glass-bg: rgba(7, 16, 34, 0.78) !important;
-      --glass-border: rgba(56, 189, 248, 0.18) !important;
-      --glass-shadow: 0 22px 55px rgba(2, 6, 23, 0.82), inset 0 1px 0 rgba(186, 230, 253, 0.14) !important;
-      --msg-mine-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 52%, #0ea5e9 100%) !important;
-      --btn-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #0ea5e9 100%) !important;
+      --accent-royal: #3b82f6 !important;
+      --accent-glow: rgba(56, 189, 248, 0.45) !important;
+      --glass-bg: rgba(7, 15, 34, 0.76) !important;
+      --glass-border: rgba(125, 211, 252, 0.2) !important;
+      --glass-highlight: rgba(255, 255, 255, 0.14) !important;
+      --glass-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.88), 0 0 35px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(186, 230, 253, 0.16) !important;
+      --msg-mine-gradient: linear-gradient(135deg, #1d4ed8 0%, #0284c7 52%, #0ea5e9 100%) !important;
+      --btn-gradient: linear-gradient(135deg, #1e40af 0%, #0284c7 48%, #0ea5e9 100%) !important;
     }
 
     html, body, .app-shell, .content-area {
-      background: radial-gradient(circle at 15% 0%, rgba(29, 78, 216, 0.16) 0%, transparent 45%),
-                  radial-gradient(circle at 85% 100%, rgba(14, 165, 233, 0.12) 0%, transparent 50%),
-                  #030712 !important;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.22) 0%, transparent 44%),
+        radial-gradient(circle at 88% 100%, rgba(14, 165, 233, 0.15) 0%, transparent 48%),
+        radial-gradient(circle at 50% 35%, rgba(15, 32, 68, 0.35) 0%, transparent 65%),
+        #02050d !important;
       color: var(--text-main) !important;
     }
 
-    /* ✨ تصميم السلايدر الاحترافي والأنيميشن الانسيابي الجذاب */
+    /* 🎬 مسرح العرض ومنطقة مشغل الفيديو الفاخرة (watch-stage & video-container) */
+    .watch-stage {
+      position: relative !important;
+      background: radial-gradient(circle at 50% 20%, #09152b 0%, #02040a 100%) !important;
+      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.85) !important;
+      z-index: 25 !important;
+    }
+    #videoBox.video-container {
+      background: radial-gradient(circle at center, #071022 0%, #010307 100%) !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.22) !important;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.75), 0 12px 35px rgba(2, 6, 23, 0.85) !important;
+    }
+    #videoBox.video-container::after {
+      display: block !important;
+      content: '' !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 10% !important;
+      right: 10% !important;
+      height: 1px !important;
+      background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.75), transparent) !important;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.65) !important;
+      z-index: 105 !important;
+      pointer-events: none !important;
+    }
+
+    /* ✨ تصميم شريط السحب الاحترافي (resizerSlider) بتأثير كبسولة مضيئة وملمس زجاجي */
     #resizerSlider {
       position: relative !important;
       z-index: 120 !important;
-      flex: 0 0 12px !important;
-      height: 12px !important;
-      min-height: 12px !important;
-      background: linear-gradient(90deg, rgba(3, 7, 18, 0.95) 0%, rgba(14, 165, 233, 0.14) 50%, rgba(3, 7, 18, 0.95) 100%) !important;
-      border-top: 1px solid rgba(56, 189, 248, 0.18) !important;
-      border-bottom: 1px solid rgba(29, 78, 216, 0.22) !important;
+      flex: 0 0 14px !important;
+      height: 14px !important;
+      min-height: 14px !important;
+      background: linear-gradient(90deg, rgba(2, 5, 13, 0.96) 0%, rgba(12, 28, 58, 0.88) 50%, rgba(2, 5, 13, 0.96) 100%) !important;
+      border-top: 1px solid rgba(125, 211, 252, 0.18) !important;
+      border-bottom: 1px solid rgba(37, 99, 235, 0.24) !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
-      box-shadow: 0 4px 20px rgba(2, 6, 23, 0.7) !important;
+      transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      box-shadow: 0 6px 22px rgba(2, 6, 23, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+      touch-action: none !important;
+    }
+    #resizerSlider::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.18) 0%, transparent 65%);
+      opacity: 0.75;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }
     #resizerSlider > div {
-      width: 54px !important;
+      width: 58px !important;
       height: 4px !important;
       border-radius: 999px !important;
-      background: linear-gradient(90deg, #38bdf8, #0ea5e9, #60a5fa) !important;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.65), 0 0 24px rgba(37, 99, 235, 0.4) !important;
-      transition: all 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.55) 0%, #e0f2fe 50%, rgba(59, 130, 246, 0.55) 100%) !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.75), 0 0 28px rgba(37, 99, 235, 0.45) !important;
+      transition: all 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
       position: relative !important;
     }
     #resizerSlider:hover, #resizerSlider:active {
-      background: linear-gradient(90deg, rgba(7, 16, 34, 0.95) 0%, rgba(14, 165, 233, 0.32) 50%, rgba(7, 16, 34, 0.95) 100%) !important;
-      box-shadow: 0 0 25px rgba(14, 165, 233, 0.35), inset 0 0 12px rgba(56, 189, 248, 0.22) !important;
+      background: linear-gradient(90deg, rgba(6, 14, 32, 0.98) 0%, rgba(14, 165, 233, 0.32) 50%, rgba(6, 14, 32, 0.98) 100%) !important;
+      border-top-color: rgba(125, 211, 252, 0.42) !important;
+      border-bottom-color: rgba(56, 189, 248, 0.42) !important;
+      box-shadow: 0 0 28px rgba(14, 165, 233, 0.38), inset 0 0 14px rgba(56, 189, 248, 0.22) !important;
     }
     #resizerSlider:hover > div, #resizerSlider:active > div {
-      width: 88px !important;
+      width: 96px !important;
       height: 5px !important;
-      background: linear-gradient(90deg, #7dd3fc, #38bdf8, #3b82f6) !important;
-      box-shadow: 0 0 18px #38bdf8, 0 0 34px rgba(14, 165, 233, 0.85) !important;
-      transform: scaleY(1.12) !important;
+      background: linear-gradient(90deg, #38bdf8 0%, #ffffff 50%, #38bdf8 100%) !important;
+      box-shadow: 0 0 20px #38bdf8, 0 0 38px rgba(14, 165, 233, 0.9) !important;
+      transform: scaleY(1.14) !important;
     }
 
     /* ✨ سلايدر التقييم وسلايدر المعاينة الزمنية الفاخر */
@@ -3455,7 +3823,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: 0 0 14px rgba(14, 165, 233, 0.5) !important;
     }
 
-    /* ✨ تأثيرات الأزرار الاحترافية من الداخل والخارج (Hover / Active) */
+    /* ✨ تأثيرات الأزرار الاحترافية عالية الأداء (60FPS) بدون فلاتر ثقيلة */
     button {
       position: relative;
       overflow: hidden;
@@ -3463,123 +3831,521 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       border: 1px solid rgba(125, 211, 252, 0.28) !important;
       border-radius: 14px !important;
       color: #f8fafc !important;
-      box-shadow: 0 8px 22px rgba(2, 132, 199, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
-      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.24) !important;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, background-color 0.2s ease !important;
     }
     button:hover {
-      transform: translateY(-2px) scale(1.02) !important;
+      transform: translateY(-2px) !important;
       border-color: rgba(125, 211, 252, 0.65) !important;
-      box-shadow: 0 12px 28px rgba(14, 165, 233, 0.42), 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 14px rgba(255, 255, 255, 0.22) !important;
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.34) !important;
     }
     button:active {
-      transform: translateY(1px) scale(0.95) !important;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25), inset 0 3px 8px rgba(0, 0, 0, 0.35) !important;
+      transform: translateY(1px) scale(0.96) !important;
     }
     button i {
-      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease, filter 0.25s ease !important;
+      transition: transform 0.2s ease !important;
     }
     button:hover i {
-      transform: scale(1.16) rotate(-4deg);
-      filter: drop-shadow(0 0 8px rgba(186, 230, 253, 0.7));
+      transform: scale(1.12);
     }
 
-    /* ✨ الشريط العلوي، الدرج الجانبي، الشات، والنوافذ الزجاجية */
+    /* ✨ شريط التحكم الفاخر (control-bar) بتدرج زجاجي ذكي خفيف على المعالج */
     .control-bar {
-      background: linear-gradient(180deg, rgba(7, 16, 34, 0.94), rgba(5, 11, 24, 0.98)) !important;
-      border-top: 1px solid rgba(56, 189, 248, 0.16) !important;
+      position: relative !important;
+      z-index: 30 !important;
+      min-height: 62px !important;
+      padding: 8px 12px !important;
+      gap: 12px !important;
+      background: linear-gradient(180deg, rgba(9, 20, 44, 0.96) 0%, rgba(4, 10, 24, 0.99) 100%) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border-top: 1px solid rgba(125, 211, 252, 0.22) !important;
       border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
-      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.7), inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.65) !important;
+    }
+    .control-actions {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 4px !important;
+      border-radius: 16px !important;
+      background: rgba(3, 8, 20, 0.78) !important;
+      border: 1px solid rgba(56, 189, 248, 0.16) !important;
     }
     .control-actions .app-menu-button,
     .control-actions .visual-scrub-open,
     .control-button.sync-control {
-      background: linear-gradient(145deg, rgba(13, 27, 56, 0.95), rgba(7, 16, 34, 0.95)) !important;
-      border: 1px solid rgba(56, 189, 248, 0.26) !important;
-      color: #7dd3fc !important;
-      border-radius: 13px !important;
-      box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6), inset 0 1px 0 rgba(186, 230, 253, 0.16) !important;
+      width: 40px !important;
+      min-width: 40px !important;
+      height: 40px !important;
+      min-height: 40px !important;
+      background: linear-gradient(145deg, rgba(16, 34, 68, 0.96), rgba(8, 18, 38, 0.99)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.28) !important;
+      color: #bae6fd !important;
+      border-radius: 12px !important;
+      font-size: 0.96rem !important;
+      box-shadow: 0 4px 12px rgba(2, 6, 23, 0.55) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
+    }
+    .control-button.sync-control {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.5), rgba(14, 165, 233, 0.36)) !important;
+      border-color: rgba(56, 189, 248, 0.45) !important;
+      color: #ffffff !important;
     }
     .control-actions .app-menu-button:hover,
     .control-actions .visual-scrub-open:hover,
     .control-button.sync-control:hover {
-      background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important;
-      border-color: #7dd3fc !important;
+      background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 55%, #38bdf8 100%) !important;
+      border-color: #e0f2fe !important;
       color: #ffffff !important;
-      box-shadow: 0 0 22px rgba(14, 165, 233, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+      transform: translateY(-2px) !important;
+    }
+    .control-actions .app-menu-button:active,
+    .control-actions .visual-scrub-open:active,
+    .control-button.sync-control:active {
+      transform: scale(0.95) !important;
+    }
+    /* كبسولة حالة المزامنة وتوقيت المشاهدين */
+    #syncStatus.control-sync-status {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      min-height: 42px !important;
+      padding: 6px 14px !important;
+      border-radius: 14px !important;
+      background: linear-gradient(90deg, rgba(4, 10, 24, 0.9) 0%, rgba(10, 22, 46, 0.82) 100%) !important;
+      border: 1px solid rgba(56, 189, 248, 0.2) !important;
+      color: #e2e8f0 !important;
+      font-size: 0.76rem !important;
+      font-weight: 700 !important;
+    }
+    #syncStatus.control-sync-status > b {
+      color: #38bdf8 !important;
+      font-weight: 800 !important;
+      margin-left: 6px !important;
+      flex-shrink: 0 !important;
+    }
+    #syncStatus.control-sync-status > span {
+      background: rgba(14, 165, 233, 0.12) !important;
+      border: 1px solid rgba(56, 189, 248, 0.22) !important;
+      padding: 3px 10px !important;
+      border-radius: 999px !important;
+      margin-left: 6px !important;
+      flex-shrink: 0 !important;
     }
 
-    .app-drawer, .modal-card, #stickersPanel, .premium-panel {
-      background: linear-gradient(165deg, rgba(9, 20, 42, 0.92) 0%, rgba(4, 10, 24, 0.96) 100%) !important;
-      backdrop-filter: blur(24px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-      border: 1px solid rgba(56, 189, 248, 0.22) !important;
-      border-radius: 24px !important;
-      box-shadow: 0 25px 65px rgba(2, 6, 23, 0.88), 0 0 35px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(186, 230, 253, 0.18) !important;
+    /* 📱💻 ضبط التوافق التام لشاشات الآيباد والوضع الأفقي (Landscape) */
+    @media (orientation: landscape) and (min-width: 700px) {
+      .app-shell {
+        grid-template-columns: minmax(40vw, min(var(--custom-video-width, 70vw), calc(100vw - 332px))) 12px minmax(320px, 1fr) !important;
+      }
+      #resizerSlider {
+        width: 12px !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+        border-left: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-right: 1px solid rgba(37, 99, 235, 0.22) !important;
+        background: linear-gradient(180deg, rgba(2, 5, 13, 0.96) 0%, rgba(12, 28, 58, 0.88) 50%, rgba(2, 5, 13, 0.96) 100%) !important;
+      }
+      #resizerSlider > div,
+      #resizerSlider:hover > div,
+      #resizerSlider:active > div {
+        width: 4px !important;
+        height: 64px !important;
+        transform: none !important;
+      }
     }
+    @media (max-width: 480px) {
+      .control-bar {
+        min-height: 56px !important;
+        padding: 6px 8px !important;
+        gap: 8px !important;
+      }
+      .control-actions {
+        gap: 6px !important;
+        padding: 3px !important;
+      }
+      .control-actions .app-menu-button,
+      .control-actions .visual-scrub-open,
+      .control-button.sync-control {
+        width: 36px !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border-radius: 10px !important;
+      }
+      #syncStatus.control-sync-status {
+        min-height: 38px !important;
+        padding: 4px 10px !important;
+        font-size: 0.72rem !important;
+      }
+    }
+
+    /* ✨ الخلفية للنوافذ والدرج الجانبي (بدون backdrop-filter ثقيل) */
+    .drawer-scrim,
+    .modal-overlay {
+      background: rgba(2, 6, 18, 0.84) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* ✨ الحاويات الزجاجية الفاخرة بتدرجات لونية ذكية فائقة الخفة (60FPS) */
+    .app-drawer, .modal-card, #stickersPanel, .premium-panel {
+      background:
+        radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 85% 100%, rgba(14, 165, 233, 0.14) 0%, transparent 55%),
+        linear-gradient(165deg, rgba(9, 20, 44, 0.98) 0%, rgba(3, 8, 20, 0.99) 100%) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(125, 211, 252, 0.25) !important;
+      border-radius: 26px !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(224, 242, 254, 0.18) !important;
+    }
+
+    /* ✨ القائمة الجانبية الفاخرة (app-drawer) وأزرارها (drawer-action) مع will-change للحركة فقط */
     .app-drawer {
-      border-radius: 26px 0 0 26px !important;
+      width: min(82vw, 330px) !important;
+      padding: max(20px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom)) !important;
+      border-radius: 28px 0 0 28px !important;
       border-right: 0 !important;
+      border-left: 1px solid rgba(125, 211, 252, 0.28) !important;
+      box-shadow: -16px 0 42px rgba(0, 0, 0, 0.8) !important;
+      will-change: transform;
+      contain: layout paint style;
+    }
+    .drawer-header {
+      padding-bottom: 16px !important;
+      margin-bottom: 6px !important;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.16) !important;
+    }
+    .drawer-title strong {
+      font-size: 1.06rem !important;
+      color: #f8fafc !important;
+      letter-spacing: 0.2px !important;
+    }
+    .drawer-title span {
+      font-size: 0.75rem !important;
+      color: #7fa2c9 !important;
+    }
+    .drawer-close {
+      background: rgba(15, 32, 64, 0.78) !important;
+      border: 1px solid rgba(125, 211, 252, 0.25) !important;
+      color: #bae6fd !important;
+      border-radius: 999px !important;
+      padding: 0 14px !important;
+      height: 36px !important;
+    }
+    .drawer-close:hover {
+      background: rgba(239, 68, 68, 0.22) !important;
+      border-color: rgba(248, 113, 113, 0.55) !important;
+      color: #fecaca !important;
+    }
+    .drawer-section {
+      padding: 16px 0 !important;
+      gap: 10px !important;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.12) !important;
+    }
+    .drawer-section-label {
+      color: #7dd3fc !important;
+      font-size: 0.78rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.3px !important;
+      padding-right: 4px !important;
+    }
+    .drawer-nav {
+      gap: 9px !important;
     }
     .drawer-action {
-      background: rgba(13, 27, 54, 0.55) !important;
-      border: 1px solid rgba(56, 189, 248, 0.12) !important;
-      border-radius: 15px !important;
-      color: #e0f2fe !important;
-      box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.06) !important;
+      min-height: 48px !important;
+      padding: 0 14px !important;
+      gap: 12px !important;
+      background: linear-gradient(145deg, rgba(13, 28, 56, 0.8), rgba(7, 16, 34, 0.92)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.16) !important;
+      border-radius: 16px !important;
+      color: #f0f7ff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease !important;
     }
-    .drawer-action:hover {
-      background: linear-gradient(135deg, rgba(29, 78, 216, 0.35), rgba(14, 165, 233, 0.25)) !important;
-      border-color: rgba(56, 189, 248, 0.48) !important;
-      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.28), inset 0 0 12px rgba(56, 189, 248, 0.18) !important;
+    .drawer-action:hover,
+    .drawer-action:focus-visible {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.44), rgba(14, 165, 233, 0.32)) !important;
+      border-color: rgba(125, 211, 252, 0.55) !important;
+      transform: translateX(-3px) !important;
     }
     .drawer-action > i:first-child {
+      width: 32px !important;
+      height: 32px !important;
+      flex: 0 0 32px !important;
+      border-radius: 10px !important;
+      background: rgba(14, 165, 233, 0.14) !important;
+      border: 1px solid rgba(56, 189, 248, 0.28) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
       color: #38bdf8 !important;
+      font-size: 0.92rem !important;
     }
     .video-settings-btn {
-      background: linear-gradient(135deg, rgba(29, 78, 216, 0.38), rgba(14, 165, 233, 0.28)) !important;
-      border: 1px solid rgba(56, 189, 248, 0.45) !important;
-      color: #e0f2fe !important;
+      background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 52%, #0ea5e9 100%) !important;
+      border: 1px solid rgba(186, 230, 253, 0.5) !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.32) !important;
     }
-    .history-item, .schedule-item, .memory-card, .source-item, #localVideosList > div {
-      background: linear-gradient(145deg, rgba(12, 25, 51, 0.65), rgba(6, 14, 30, 0.82)) !important;
-      border: 1px solid rgba(56, 189, 248, 0.18) !important;
-      border-radius: 16px !important;
-      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
-    }
-    .history-item:hover, .schedule-item:hover, .source-item:hover {
-      border-color: rgba(56, 189, 248, 0.48) !important;
-      background: linear-gradient(145deg, rgba(17, 36, 72, 0.8), rgba(10, 22, 46, 0.9)) !important;
-    }
-
-    /* ✨ تحسين الشات وفقاعات الرسائل وشريط الإدخال */
-    .chat-container {
-      background: linear-gradient(180deg, rgba(5, 11, 24, 0.92) 0%, rgba(3, 7, 18, 0.98) 100%) !important;
-    }
-    .msg-item.is-mine .msg-content:not(.sticker-bg) {
-      background: linear-gradient(135deg, #1e40af 0%, #0284c7 55%, #0ea5e9 100%) !important;
-      border: 1px solid rgba(125, 211, 252, 0.38) !important;
-      border-radius: 20px 20px 6px 20px !important;
-      box-shadow: 0 10px 26px rgba(2, 132, 199, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    .video-settings-btn > i:first-child {
+      background: rgba(255, 255, 255, 0.18) !important;
+      border-color: rgba(255, 255, 255, 0.35) !important;
       color: #ffffff !important;
     }
+    .force-stop-all-btn {
+      background: linear-gradient(145deg, rgba(127, 29, 29, 0.38), rgba(69, 10, 10, 0.55)) !important;
+      border: 1px solid rgba(248, 113, 113, 0.38) !important;
+      color: #fecaca !important;
+      border-radius: 16px !important;
+    }
+    .force-stop-all-btn > i:first-child {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: rgba(248, 113, 113, 0.35) !important;
+      color: #f87171 !important;
+    }
+    .drawer-jump {
+      background: linear-gradient(145deg, rgba(10, 22, 46, 0.85), rgba(5, 12, 26, 0.95)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.2) !important;
+      border-radius: 16px !important;
+      padding: 8px !important;
+    }
+    .drawer-jump #jumpTimeInput {
+      background: rgba(2, 6, 16, 0.9) !important;
+      border: 1px solid rgba(56, 189, 248, 0.22) !important;
+      border-radius: 12px !important;
+      font-weight: 800 !important;
+      letter-spacing: 1px !important;
+    }
+    .drawer-jump button {
+      background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important;
+      border: 1px solid rgba(186, 230, 253, 0.45) !important;
+      border-radius: 12px !important;
+      color: #ffffff !important;
+    }
+
+    /* ✨ بطاقات المتصلين، السجل، جدولنا، وشجرة الذكريات */
+    .history-item, .schedule-item, .memory-card, .source-item, #localVideosList > div {
+      background: linear-gradient(145deg, rgba(13, 28, 58, 0.82), rgba(6, 14, 32, 0.94)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.2) !important;
+      border-radius: 18px !important;
+      padding: 13px 15px !important;
+      box-shadow: 0 6px 18px rgba(2, 6, 23, 0.45) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
+    }
+    .source-item {
+      padding: 9px 12px !important;
+      border-radius: 15px !important;
+      margin-bottom: 8px !important;
+    }
+    .history-item:hover, .schedule-item:hover, .source-item:hover {
+      border-color: rgba(56, 189, 248, 0.52) !important;
+      background: linear-gradient(145deg, rgba(18, 38, 76, 0.9), rgba(9, 20, 44, 0.96)) !important;
+      transform: translateY(-2px) !important;
+    }
+    .schedule-item.pinned-next {
+      background: linear-gradient(145deg, rgba(45, 32, 10, 0.82), rgba(20, 16, 10, 0.94)) !important;
+      border: 1.5px solid rgba(251, 191, 36, 0.65) !important;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.18) !important;
+    }
+    .pinned-badge {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24) !important;
+      color: #020617 !important;
+      padding: 3px 10px !important;
+      border-radius: 999px !important;
+      font-size: 0.68rem !important;
+    }
+    .timeline-container {
+      border-right: 2.5px solid rgba(56, 189, 248, 0.55) !important;
+      padding-right: 22px !important;
+      margin-right: 12px !important;
+      gap: 18px !important;
+    }
+    .memory-card {
+      padding: 18px !important;
+      border-radius: 22px !important;
+    }
+    .memory-card::before {
+      right: -30px !important;
+      top: 22px !important;
+      width: 14px !important;
+      height: 14px !important;
+      background: linear-gradient(135deg, #38bdf8, #2563eb) !important;
+      border: 2.5px solid #040a18 !important;
+    }
+    .memory-date {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      background: rgba(16, 185, 129, 0.14) !important;
+      border: 1px solid rgba(16, 185, 129, 0.32) !important;
+      color: #34d399 !important;
+      padding: 3px 10px !important;
+      border-radius: 999px !important;
+      font-size: 0.72rem !important;
+    }
+
+    /* ✨ إعادة تصميم منطقة الدردشة وفقاعات الرسائل وشريط الإدخال بأداء 60FPS */
+    .chat-container {
+      background:
+        radial-gradient(circle at 85% 12%, rgba(14, 165, 233, 0.08) 0%, transparent 42%),
+        radial-gradient(circle at 12% 85%, rgba(37, 99, 235, 0.08) 0%, transparent 46%),
+        linear-gradient(180deg, rgba(4, 10, 24, 0.96) 0%, rgba(2, 5, 14, 0.99) 100%) !important;
+      padding: 14px 14px max(10px, env(safe-area-inset-bottom)) !important;
+      box-shadow: none !important;
+    }
+    .chat-container::before {
+      display: none !important;
+    }
+    #messages {
+      gap: 14px !important;
+      padding: 8px 4px 14px !important;
+    }
+
+    /* ✨ صورة البروفايل بجانب الرسائل */
+    .msg-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      border: 1.5px solid rgba(125, 211, 252, 0.28) !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45) !important;
+    }
+    .msg-item.is-mine .msg-avatar {
+      border-color: #38bdf8 !important;
+    }
+
+    /* ✨ فقاعات رسائلي (is-mine) — تدرج ياقوتي وسماوي ملكي بظل واحد نظيف */
+    .msg-row-wrapper > .msg-item.is-mine > .msg-avatar + div > .msg-content:not(.sticker-bg),
+    .msg-item.is-mine .msg-content:not(.sticker-bg) {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 48%, #0ea5e9 100%) !important;
+      border: 1px solid rgba(186, 230, 253, 0.42) !important;
+      border-radius: 22px 22px 6px 22px !important;
+      padding: 10px 15px !important;
+      box-shadow: 0 6px 16px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+      color: #ffffff !important;
+    }
+
+    /* ✨ فقاعات رسائل الطرف الآخر (is-other) — بدون backdrop-filter لتجنب أي تقطيع أثناء التمرير */
+    .msg-row-wrapper > .msg-item.is-other > .msg-avatar + div > .msg-content:not(.sticker-bg),
     .msg-item.is-other .msg-content:not(.sticker-bg) {
-      background: linear-gradient(145deg, rgba(13, 27, 54, 0.92), rgba(8, 18, 38, 0.95)) !important;
-      border: 1px solid rgba(56, 189, 248, 0.18) !important;
-      border-radius: 20px 20px 20px 6px !important;
-      box-shadow: 0 10px 26px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(186, 230, 253, 0.1) !important;
-      color: #f0f7ff !important;
+      background: linear-gradient(145deg, rgba(16, 33, 66, 0.96) 0%, rgba(8, 17, 36, 0.99) 100%) !important;
+      border: 1px solid rgba(125, 211, 252, 0.22) !important;
+      border-radius: 22px 22px 22px 6px !important;
+      padding: 10px 15px !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(186, 230, 253, 0.12) !important;
+      color: #f4f8ff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* ✨ تنسيق اسم المرسل وزر حذف الرسالة واقتباس الرد */
+    .msg-name {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      margin-bottom: 4px !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.2px !important;
+    }
+    .delete-btn-msg {
+      color: rgba(254, 202, 202, 0.75) !important;
+      font-size: 0.72rem !important;
+      padding: 2px 5px !important;
+      border-radius: 6px !important;
+      transition: transform 0.18s ease, background-color 0.18s ease !important;
+    }
+    .delete-btn-msg:hover {
+      color: #ffffff !important;
+      background: rgba(239, 68, 68, 0.35) !important;
+      transform: scale(1.1) !important;
+    }
+    .reply-badge {
+      background: linear-gradient(90deg, rgba(4, 10, 24, 0.88), rgba(14, 42, 78, 0.8)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.2) !important;
+      border-right: 3.5px solid #38bdf8 !important;
+      border-radius: 12px !important;
+      padding: 5px 11px !important;
+      margin-bottom: 5px !important;
+      box-shadow: none !important;
+    }
+
+    /* ✨ قائمة التفاعلات المنبثقة (reaction-menu) بتسريع عتادي خفيف */
+    .reaction-menu {
+      gap: 8px !important;
+      padding: 9px 14px !important;
+      border-radius: 999px !important;
+      background: linear-gradient(145deg, rgba(10, 22, 48, 0.98) 0%, rgba(4, 10, 24, 0.99) 100%) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(125, 211, 252, 0.38) !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8) !important;
+      transform: translate3d(0, 10px, 0) scale(0.85);
+      opacity: 0;
+      will-change: transform, opacity;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease !important;
+    }
+    .reaction-menu.show {
+      transform: translate3d(0, 0, 0) scale(1) !important;
+      opacity: 1 !important;
+    }
+    .reaction-menu span {
+      font-size: 1.38rem !important;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .reaction-menu span:hover,
+    .reaction-menu span:active {
+      transform: translate3d(0, -6px, 0) scale(1.32) !important;
+    }
+    .reaction-badge {
+      background: linear-gradient(145deg, rgba(13, 27, 54, 0.96), rgba(6, 14, 30, 0.99)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.24) !important;
+      border-radius: 999px !important;
+      padding: 3px 10px !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+    }
+    .reaction-badge:hover {
+      transform: translateY(-2px) !important;
+      border-color: #38bdf8 !important;
+    }
+
+    /* ✨ شريط الإدخال السفلي الفاخر (chat-bottom-bar & input-group) بدون Blur مكلف */
+    .chat-bottom-bar {
+      margin-top: 8px !important;
+      padding-top: 10px !important;
+      border-top: 1px solid rgba(125, 211, 252, 0.14) !important;
+    }
+    .reply-preview {
+      background: linear-gradient(145deg, rgba(10, 22, 46, 0.98), rgba(5, 12, 26, 0.99)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.32) !important;
+      border-right: 4px solid #38bdf8 !important;
+      border-radius: 16px !important;
+      padding: 9px 14px !important;
+      margin-bottom: 8px !important;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
     }
     .chat-bottom-bar .input-group {
-      background: linear-gradient(145deg, rgba(9, 20, 42, 0.95), rgba(6, 13, 28, 0.98)) !important;
-      border: 1px solid rgba(56, 189, 248, 0.26) !important;
+      background: linear-gradient(145deg, rgba(11, 24, 50, 0.98), rgba(5, 11, 24, 0.99)) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(125, 211, 252, 0.26) !important;
       border-radius: 999px !important;
       padding: 6px 8px !important;
-      box-shadow: 0 14px 34px rgba(2, 6, 23, 0.8), 0 0 20px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(186, 230, 253, 0.14) !important;
-      transition: all 0.3s ease !important;
+      gap: 7px !important;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(224, 242, 254, 0.14) !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
     }
     .chat-bottom-bar .input-group:focus-within {
       border-color: #38bdf8 !important;
-      box-shadow: 0 14px 36px rgba(2, 132, 199, 0.35), 0 0 25px rgba(14, 165, 233, 0.45) !important;
+      background: linear-gradient(145deg, rgba(13, 28, 58, 0.99), rgba(6, 14, 30, 1)) !important;
+      box-shadow: 0 10px 28px rgba(2, 132, 199, 0.3), 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
     }
     .chat-bottom-bar .input-group input[type="text"],
     .chat-bottom-bar .input-group input[type="text"]:focus {
@@ -3588,58 +4354,241 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       background: transparent !important;
       box-shadow: none !important;
       -webkit-appearance: none !important;
+      color: #f8fafc !important;
+      font-weight: 600 !important;
+      padding: 8px 12px !important;
     }
-
-
+    .chat-bottom-bar .input-group input[type="text"]::placeholder {
+      color: #7fa2c9 !important;
+      font-weight: 500 !important;
+    }
     .chat-bottom-bar .input-group .icon-btn {
-      background: rgba(14, 165, 233, 0.08) !important;
-      border: 1px solid rgba(56, 189, 248, 0.18) !important;
+      width: 40px !important;
+      min-width: 40px !important;
+      height: 40px !important;
+      min-height: 40px !important;
+      background: linear-gradient(145deg, rgba(16, 34, 68, 0.9), rgba(9, 20, 42, 0.96)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.22) !important;
       color: #7dd3fc !important;
       border-radius: 50% !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
     }
     .chat-bottom-bar .input-group .icon-btn:hover {
-      background: rgba(14, 165, 233, 0.24) !important;
-      border-color: #38bdf8 !important;
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.55), rgba(14, 165, 233, 0.4)) !important;
+      border-color: #7dd3fc !important;
       color: #ffffff !important;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.45) !important;
+      transform: translateY(-2px) !important;
     }
     .chat-bottom-bar .input-group > button:last-child {
-      background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%) !important;
-      border: 1px solid rgba(186, 230, 253, 0.45) !important;
+      width: 42px !important;
+      min-width: 42px !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 50%, #0ea5e9 100%) !important;
+      border: 1px solid rgba(186, 230, 253, 0.55) !important;
       border-radius: 50% !important;
-      box-shadow: 0 4px 12px rgba(2, 6, 23, 0.6) !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4) !important;
       outline: none !important;
-      transition: all 0.5s ease !important;
+      transition: transform 0.22s ease, border-color 0.22s ease !important;
+    }
+    .chat-bottom-bar .input-group > button:last-child:hover {
+      transform: translateY(-2px) !important;
+      border-color: #ffffff !important;
     }
     .chat-bottom-bar .input-group > button:last-child.send-glow {
-      box-shadow: 0 8px 30px rgba(14, 165, 233, 0.95), 0 0 24px rgba(56, 189, 248, 0.85) !important;
-      filter: brightness(1.2) !important;
-      transform: scale(1.08) !important;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.85) !important;
+      transform: scale(1.06) !important;
     }
     .chat-bottom-bar .input-group > button:last-child:focus {
       outline: none !important;
     }
 
-
-
-
-    .premium-toolbar-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 12px !important; background: rgba(13, 27, 54, 0.85) !important; color: #7dd3fc !important; border: 1px solid rgba(56, 189, 248, 0.22) !important; transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1); cursor: pointer; padding: 0; font-size: 0.92rem; box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.12) !important; }
-    .premium-toolbar-btn:hover { background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important; color: #fff !important; border-color: #7dd3fc !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4) !important; }
-    .premium-toolbar-btn.active-state { background: rgba(14, 165, 233, 0.24) !important; color: var(--accent-hover) !important; border-color: rgba(56, 189, 248, 0.55) !important; }
-    .premium-toolbar-btn.danger-state:hover { background: linear-gradient(135deg, #dc2626, #ef4444) !important; color: #fff !important; border-color: #fca5a5 !important; }
-    .premium-card { background: linear-gradient(145deg, rgba(12, 25, 51, 0.72), rgba(7, 15, 32, 0.85)) !important; border: 1px solid rgba(56, 189, 248, 0.18) !important; border-radius: 18px !important; padding: 15px; box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.08), 0 10px 25px rgba(2, 6, 23, 0.45); }
-    .premium-ghost-btn { background: rgba(14, 165, 233, 0.1) !important; color: #e0f2fe !important; border: 1px solid rgba(56, 189, 248, 0.26) !important; border-radius: 13px !important; padding: 10px 14px; font-size: 0.85rem; font-weight: 700; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-    .premium-ghost-btn:hover { background: linear-gradient(135deg, rgba(29, 78, 216, 0.45), rgba(14, 165, 233, 0.35)) !important; border-color: #7dd3fc !important; color: #fff !important; box-shadow: 0 8px 22px rgba(14, 165, 233, 0.32) !important; }
-    .premium-danger-btn { background: rgba(239, 68, 68, 0.12) !important; color: #fca5a5 !important; border: 1px solid rgba(248, 113, 113, 0.32) !important; border-radius: 13px !important; padding: 12px; font-size: 0.85rem; font-weight: 700; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-    .premium-danger-btn:hover { background: linear-gradient(135deg, #dc2626, #ef4444) !important; border-color: #fca5a5 !important; color: #fff !important; box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4) !important; }
-    .premium-input, input[type="text"], select { background: rgba(5, 11, 24, 0.88) !important; border: 1px solid rgba(56, 189, 248, 0.22) !important; border-radius: 14px !important; color: #f0f7ff !important; box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5) !important; }
-    .premium-input:focus, input[type="text"]:focus, select:focus { border-color: #38bdf8 !important; background: rgba(7, 16, 34, 0.98) !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.22), inset 0 2px 6px rgba(0, 0, 0, 0.5) !important; }
-    #stickerTabs .tab-btn { background: rgba(12, 25, 51, 0.75) !important; border: 1px solid rgba(56, 189, 248, 0.18) !important; border-radius: 99px !important; padding: 6px 16px; color: #93c5fd !important; font-weight: 700; transition: all 0.25s ease; }
-    #stickerTabs .tab-btn.active { background: var(--btn-gradient) !important; border-color: #7dd3fc !important; color: #fff !important; box-shadow: 0 6px 18px rgba(14, 165, 233, 0.42) !important; }
+    /* ✨ لوحة الملصقات الفاخرة (stickersPanel) بالتسريع العتادي الكامل (Hardware Acceleration) بدون Reflow */
+    #stickersPanel {
+      display: flex !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translate3d(0, 18px, 0) scale(0.98) !important;
+      will-change: transform, opacity;
+      contain: layout paint style;
+      animation: none !important;
+      transition:
+        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.16s ease,
+        visibility 0s linear 0.2s !important;
+      width: min(96vw, 540px) !important;
+      padding: 16px !important;
+      gap: 12px !important;
+      border-radius: 26px !important;
+      border: 1px solid rgba(125, 211, 252, 0.28) !important;
+      box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(224, 242, 254, 0.18) !important;
+    }
+    #stickersPanel.is-open {
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translate3d(0, 0, 0) scale(1) !important;
+      transition:
+        transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.16s ease,
+        visibility 0s linear 0s !important;
+    }
+    .premium-toolbar-btn {
+      width: 38px !important;
+      min-width: 38px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 12px !important;
+      background: linear-gradient(145deg, rgba(15, 32, 64, 0.92), rgba(8, 18, 38, 0.98)) !important;
+      color: #7dd3fc !important;
+      border: 1px solid rgba(125, 211, 252, 0.24) !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
+      cursor: pointer;
+      padding: 0 !important;
+      font-size: 0.92rem !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.38) !important;
+    }
+    .premium-toolbar-btn:hover {
+      background: linear-gradient(135deg, #2563eb, #0ea5e9) !important;
+      color: #ffffff !important;
+      border-color: #bae6fd !important;
+      transform: translateY(-2px) !important;
+    }
+    .premium-toolbar-btn.active-state {
+      background: rgba(14, 165, 233, 0.26) !important;
+      color: var(--accent-hover) !important;
+      border-color: rgba(56, 189, 248, 0.6) !important;
+    }
+    .premium-toolbar-btn.danger-state:hover {
+      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+      color: #ffffff !important;
+      border-color: #fca5a5 !important;
+    }
+    .premium-card {
+      background: linear-gradient(145deg, rgba(12, 26, 54, 0.82), rgba(6, 14, 30, 0.94)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.2) !important;
+      border-radius: 20px !important;
+      padding: 16px !important;
+      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.45) !important;
+    }
+    .premium-ghost-btn {
+      background: linear-gradient(145deg, rgba(14, 30, 60, 0.8), rgba(8, 18, 38, 0.92)) !important;
+      color: #e0f2fe !important;
+      border: 1px solid rgba(125, 211, 252, 0.28) !important;
+      border-radius: 15px !important;
+      padding: 11px 16px !important;
+      font-size: 0.86rem !important;
+      font-weight: 800 !important;
+      transition: transform 0.2s ease, border-color 0.2s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    }
+    .premium-ghost-btn:hover {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.48), rgba(14, 165, 233, 0.36)) !important;
+      border-color: #7dd3fc !important;
+      color: #ffffff !important;
+      transform: translateY(-2px) !important;
+    }
+    .premium-danger-btn {
+      background: rgba(239, 68, 68, 0.14) !important;
+      color: #fca5a5 !important;
+      border: 1px solid rgba(248, 113, 113, 0.34) !important;
+      border-radius: 15px !important;
+      padding: 12px !important;
+      font-size: 0.85rem !important;
+      font-weight: 700 !important;
+      transition: background-color 0.2s ease, border-color 0.2s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      cursor: pointer;
+    }
+    .premium-danger-btn:hover {
+      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+      border-color: #fca5a5 !important;
+      color: #ffffff !important;
+    }
+    .premium-input, input[type="text"], select {
+      background: rgba(4, 10, 24, 0.92) !important;
+      border: 1px solid rgba(125, 211, 252, 0.24) !important;
+      border-radius: 14px !important;
+      color: #f4f8ff !important;
+      box-shadow: none !important;
+    }
+    .premium-input:focus, input[type="text"]:focus, select:focus {
+      border-color: #38bdf8 !important;
+      background: rgba(7, 16, 36, 0.98) !important;
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.22) !important;
+    }
+    #stickerTabs {
+      padding: 4px 2px 10px !important;
+      gap: 8px !important;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.14) !important;
+    }
+    #stickerTabs .tab-btn {
+      background: linear-gradient(145deg, rgba(13, 28, 56, 0.86), rgba(7, 16, 34, 0.95)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.2) !important;
+      border-radius: 999px !important;
+      padding: 6px 16px !important;
+      min-height: 36px !important;
+      color: #bae6fd !important;
+      font-size: 0.78rem !important;
+      font-weight: 800 !important;
+      box-shadow: none !important;
+      transition: transform 0.18s ease, border-color 0.18s ease !important;
+    }
+    #stickerTabs .tab-btn:hover {
+      border-color: rgba(125, 211, 252, 0.48) !important;
+      color: #ffffff !important;
+      transform: translateY(-1px) !important;
+    }
+    #stickerTabs .tab-btn.active {
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 52%, #0ea5e9 100%) !important;
+      border-color: #bae6fd !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35) !important;
+    }
+    .recent-stickers-section {
+      background: linear-gradient(145deg, rgba(8, 18, 38, 0.82), rgba(4, 10, 24, 0.92)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.18) !important;
+      border-radius: 16px !important;
+      padding: 9px 11px !important;
+      box-shadow: none !important;
+    }
+    #stickersPanel #stickersGrid {
+      contain: content;
+    }
+    #stickersPanel #stickersGrid > img,
+    #stickersPanel #stickersGrid > div {
+      border-radius: 16px !important;
+      border: 1px solid rgba(125, 211, 252, 0.18) !important;
+      background: rgba(12, 26, 52, 0.85) !important;
+      box-shadow: none !important;
+      content-visibility: auto;
+      contain-intrinsic-size: 72px 72px;
+      transition: transform 0.18s ease, border-color 0.18s ease !important;
+    }
+    #stickersPanel #stickersGrid > img:hover,
+    #stickersPanel #stickersGrid > div:hover {
+      border-color: #38bdf8 !important;
+      transform: translateY(-2px) !important;
+    }
   </style>
 
-  <!-- لوحة الملصقات المحفوظة والأقسام (Premium Redesign) -->
-  <div id="stickersPanel" class="premium-panel" style="display: none; position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; z-index: 500; flex-direction: column; gap: 12px; padding: 16px;">
+  <!-- لوحة الملصقات المحفوظة والأقسام (Hardware Accelerated 60FPS) -->
+  <div id="stickersPanel" class="premium-panel" style="position: fixed; bottom: 80px; left: 12px; right: 12px; top: 40vh; z-index: 500; flex-direction: column; gap: 12px; padding: 16px;">
+
     
     <!-- شريط الأدوات العلوي النظيف -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.16); padding-bottom: 12px;">
@@ -3695,23 +4644,59 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
 
   <!-- ستايلات مركز البث والميديا الفاخر (Ultra-Premium Media Hub) -->
   <style>
-    #settingsModal .hub-modal-card {
-      max-width: 450px !important;
+    /* ✨ تصميم موحد وفاخر وخفيف (60FPS) لجميع النوافذ المنبثقة بدون فلاتر Blur مكلفة */
+    .modal-card,
+    #settingsModal .hub-modal-card,
+    #featuresModal .modal-card,
+    #treeModal .modal-card,
+    #profileModal .modal-card,
+    #ratingModal .modal-card,
+    #categoryPickerModal .modal-card {
+      max-width: 470px !important;
       width: 94% !important;
-      padding: 20px !important;
-      gap: 14px !important;
-      background: linear-gradient(165deg, rgba(8, 18, 38, 0.96) 0%, rgba(3, 8, 20, 0.99) 100%) !important;
-      border: 1px solid rgba(56, 189, 248, 0.25) !important;
-      border-radius: 26px !important;
-      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(14, 165, 233, 0.14), inset 0 1px 0 rgba(186, 230, 253, 0.2) !important;
+      padding: 22px !important;
+      gap: 15px !important;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.2) 0%, transparent 48%),
+        radial-gradient(circle at 88% 100%, rgba(14, 165, 233, 0.15) 0%, transparent 52%),
+        linear-gradient(165deg, rgba(9, 21, 46, 0.98) 0%, rgba(3, 8, 20, 0.99) 100%) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(125, 211, 252, 0.28) !important;
+      border-radius: 28px !important;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(224, 242, 254, 0.2) !important;
+      contain: layout paint;
+    }
+
+    #featuresModal .details-content {
+      background: linear-gradient(145deg, rgba(10, 22, 46, 0.72), rgba(5, 11, 24, 0.88)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.18) !important;
+      border-radius: 20px !important;
+      padding: 16px !important;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.45) !important;
+    }
+    #scheduleContainer {
+      gap: 10px !important;
+      padding: 4px 2px !important;
+    }
+    .avatar-picker {
+      background: linear-gradient(145deg, rgba(8, 18, 38, 0.82), rgba(4, 9, 22, 0.92)) !important;
+      border: 1px solid rgba(125, 211, 252, 0.18) !important;
+      border-radius: 20px !important;
+      padding: 16px !important;
+      box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    }
+    .avatar-opt.selected {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 20px rgba(14, 165, 233, 0.6) !important;
     }
 
     .hub-top-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(56, 189, 248, 0.14);
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.16);
     }
 
     .hub-brand {
@@ -3721,54 +4706,55 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     .hub-brand-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, rgba(29, 78, 216, 0.35), rgba(14, 165, 233, 0.22));
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.42), rgba(14, 165, 233, 0.26));
+      border: 1px solid rgba(125, 211, 252, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #38bdf8;
-      font-size: 1.15rem;
-      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      color: #7dd3fc;
+      font-size: 1.18rem;
+      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     .hub-brand-text h3 {
       color: #f8fafc;
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.12rem;
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     .hub-brand-text span {
-      color: #7fa2c9;
-      font-size: 0.72rem;
+      color: #8aa8d0;
+      font-size: 0.74rem;
       font-weight: 600;
     }
 
     .hub-close-circle {
-      width: 36px !important;
-      min-width: 36px !important;
-      height: 36px !important;
-      min-height: 36px !important;
+      width: 38px !important;
+      min-width: 38px !important;
+      height: 38px !important;
+      min-height: 38px !important;
       border-radius: 50% !important;
       padding: 0 !important;
-      background: rgba(15, 30, 58, 0.8) !important;
-      border: 1px solid rgba(56, 189, 248, 0.2) !important;
-      color: #94a3b8 !important;
+      background: rgba(15, 32, 64, 0.85) !important;
+      border: 1px solid rgba(125, 211, 252, 0.24) !important;
+      color: #bae6fd !important;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.95rem !important;
-      box-shadow: none !important;
+      font-size: 0.96rem !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
     }
 
     .hub-close-circle:hover {
-      background: rgba(239, 68, 68, 0.18) !important;
-      border-color: rgba(248, 113, 113, 0.5) !important;
-      color: #fca5a5 !important;
+      background: rgba(239, 68, 68, 0.22) !important;
+      border-color: rgba(248, 113, 113, 0.55) !important;
+      color: #fecaca !important;
+      transform: rotate(90deg) scale(1.06) !important;
     }
 
     /* نظام التبويبات المدمج (Segmented Control) */
@@ -3777,27 +4763,27 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       grid-template-columns: 1fr 1fr;
       gap: 6px;
       padding: 5px;
-      background: rgba(3, 7, 18, 0.75);
-      border: 1px solid rgba(56, 189, 248, 0.16);
-      border-radius: 16px;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+      background: rgba(2, 6, 16, 0.82);
+      border: 1px solid rgba(125, 211, 252, 0.18);
+      border-radius: 18px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.65);
     }
 
     .hub-seg-btn {
-      min-height: 40px !important;
-      padding: 8px 10px !important;
-      border-radius: 12px !important;
+      min-height: 42px !important;
+      padding: 8px 12px !important;
+      border-radius: 14px !important;
       background: transparent !important;
       border: 1px solid transparent !important;
-      color: #7fa2c9 !important;
-      font-size: 0.8rem !important;
-      font-weight: 700 !important;
+      color: #8aa8d0 !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 8px;
       box-shadow: none !important;
-      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
 
     .hub-seg-btn:hover {
@@ -3806,17 +4792,17 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     .hub-seg-btn.active {
-      background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%) !important;
-      border-color: rgba(125, 211, 252, 0.45) !important;
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 52%, #0ea5e9 100%) !important;
+      border-color: rgba(186, 230, 253, 0.5) !important;
       color: #ffffff !important;
-      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
     }
 
     .hub-tab-panel {
       display: none;
       flex-direction: column;
       gap: 14px;
-      animation: hubFadeIn 0.22s ease-out;
+      animation: hubFadeIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .hub-tab-panel.active {
@@ -3824,20 +4810,20 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     @keyframes hubFadeIn {
-      from { opacity: 0; transform: translateY(5px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     /* كبسولة إدخال وتشغيل الرابط الموحدة */
     .hub-command-box {
-      background: linear-gradient(145deg, rgba(12, 25, 51, 0.72), rgba(6, 14, 30, 0.88));
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 18px;
-      padding: 13px;
+      background: linear-gradient(145deg, rgba(13, 28, 58, 0.76), rgba(6, 14, 32, 0.9));
+      border: 1px solid rgba(125, 211, 252, 0.22);
+      border-radius: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.08);
+      gap: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(186, 230, 253, 0.1);
     }
 
     .hub-label-row {
@@ -7057,11 +8043,13 @@ async function renderAvailableVideosUI(items) {
 
     function toggleStickers() {
       const panel = document.getElementById('stickersPanel');
-      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-      if(panel.style.display === 'none') { 
-          isEditingStickers = false; 
-          document.getElementById('editStickersBtn').style.background = ''; 
-          renderStickers(); 
+      if (!panel) return;
+      const isOpen = panel.classList.toggle('is-open');
+      if (!isOpen && isEditingStickers) {
+          isEditingStickers = false;
+          const editBtn = document.getElementById('editStickersBtn');
+          if (editBtn) editBtn.style.background = '';
+          renderStickers();
       }
     }
 
@@ -7148,7 +8136,7 @@ async function renderAvailableVideosUI(items) {
             availableStickers.forEach(s => {
                 html += `
                 <div style="position: relative; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='transparent'" onclick="assignStickerToCategory('${s.key}')">
-                    <img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;">
+                    <img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;">
                     <span style="font-size:0.6rem; color:#10b981; margin-top:4px; font-weight:bold; max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.tag ? '#'+s.tag : 'إضافة'}</span>
                 </div>`;
             });
@@ -7170,10 +8158,11 @@ async function renderAvailableVideosUI(items) {
         }
     }
 
-function sendSavedSticker(imgSrc) {
+    function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
       rememberRecentSticker(imgSrc);
-      document.getElementById('stickersPanel').style.display = 'none'; // إغلاق سريع
+      const panel = document.getElementById('stickersPanel');
+      if (panel) panel.classList.remove('is-open'); // إغلاق فوري بالتسريع العتادي بدون Reflow
       requestAnimationFrame(() => {
           setTimeout(() => {
               db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
@@ -7236,7 +8225,7 @@ function sendSavedSticker(imgSrc) {
       }
       
       filteredStickers.forEach((s) => {
-         const imgElement = `<img src="${s.img}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" onclick="sendSavedSticker('${s.img}')">`;
+         const imgElement = `<img src="${s.img}" loading="lazy" decoding="async" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer;" onclick="sendSavedSticker('${s.img}')">`;
 
          if(isEditingStickers) {
              html += `
@@ -7255,6 +8244,7 @@ function sendSavedSticker(imgSrc) {
       });
       container.innerHTML = html;
     }
+
 
     // ==========================================
     // 10. حماية من الخروج بالخطأ (تشمل سهم الرجوع)
