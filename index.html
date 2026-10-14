@@ -4773,6 +4773,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
              window.currentLoadedUrl = "";
              window.currentUserSource = 'متوقف';
              localStorage.setItem('last_active_source', 'متوقف');
+             resetDrivePlaybackState();
              player.pause();
              player.src({ type: 'video/mp4', src: '' }); 
              player.reset();
@@ -5062,6 +5063,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       // --- نظام إيقاف جميع الفيديوهات (Stop All) ---
       if (st.action === 'stop_all') {
           window.currentLoadedUrl = "";
+          resetDrivePlaybackState();
           player.pause();
           player.src({ type: 'video/mp4', src: '' }); 
           player.reset(); // جعل الشاشة سوداء
@@ -5069,11 +5071,50 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           return;
       }
 
-      // 1. تحميل مقطع جديد مع حماية التشغيل المحلي من الاستبدال القسري وتحديث المصدر تلقائياً
-      if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
+      // 1. Google Drive: كل مشاهد يجلب الملف بحسابه، ثم تطبق عليه نفس حالة التشغيل المشتركة.
+      const driveFileId = extractDriveFileId(st);
+      if (driveFileId && window.currentLoadedUrl !== st.src) {
+        resetDrivePlaybackState();
         window.currentLoadedUrl = st.src;
         isSystemAction = true;
-        
+        window.isLocalPlaybackActive = false;
+        window.currentUserSource = 'Google Drive';
+        window.driveCurrentPlayback = {
+          id: driveFileId,
+          name: st.driveFileName || 'فيديو Google Drive',
+          mimeType: st.driveMimeType || st.type || 'video/mp4',
+          resourceKey: st.driveResourceKey || ''
+        };
+        window.drivePendingState = st;
+        player.pause();
+        showDriveOverlayMessage(
+          getCachedDriveAccessToken()
+            ? 'جارٍ تحميل فيديو Google Drive…'
+            : 'اضغط هنا للسماح لحساب Google الخاص بك بفتح الفيديو ومزامنته.'
+        );
+        const driveToken = getCachedDriveAccessToken();
+        if (driveToken) loadDriveVideo(st, driveToken).catch(() => {});
+        localStorage.setItem('last_active_source', window.currentUserSource);
+        if (currentUser) {
+          db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
+        }
+
+        setTimeout(() => { isSystemAction = false; }, 500);
+        return;
+      }
+
+      // احتفظ بأحدث أمر أثناء التفويض والتنزيل؛ سيُطبّق عند اكتمال تجهيز الفيديو.
+      if (driveFileId && window.driveCurrentPlayback && window.driveCurrentPlayback.id === driveFileId && !window.driveMediaReady) {
+        window.drivePendingState = st;
+        return;
+      }
+
+      // 2. تحميل المصادر الأخرى: يبقى مسارها الأصلي كما هو.
+      if (st.action === 'load' && window.currentLoadedUrl !== st.src) {
+        if (window.driveCurrentPlayback) resetDrivePlaybackState();
+        window.currentLoadedUrl = st.src;
+        isSystemAction = true;
+
         // تحديد المصدر الحقيقي للطرف المستمع تلقائياً
         if (window.isLocalPlaybackActive) {
           window.currentUserSource = 'كاش داخلي';
@@ -5096,14 +5137,14 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       }
 
 
-      // 2. حساب التأخير الزمني للإنترنت
+      // 3. حساب التأخير الزمني للإنترنت
 
       const now = Date.now();
       const delayInSeconds = st.timestamp ? (now - st.timestamp) / 1000 : 0;
       let expectedTime = st.time;
       if (st.action === 'play') { expectedTime += delayInSeconds; }
 
-      // 3. المزامنة المتسامحة (منع التقطيع والـ Buffering المستمر)
+      // 4. المزامنة المتسامحة (منع التقطيع والـ Buffering المستمر)
       const timeDifference = player.currentTime() - expectedTime;
 
       // لن نتدخل أبداً إذا كان الفارق أقل من ثانية (1.0) لترك المتصفح يحمل بسلاسة
@@ -5122,7 +5163,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           player.playbackRate(1.0);
       }
 
-      // 4. مزامنة حالة التشغيل والإيقاف مع تثبيت مصدر المشاهدة
+      // 5. مزامنة حالة التشغيل والإيقاف مع تثبيت مصدر المشاهدة
       if (st.action === 'play' && player.paused()) {
         isSystemAction = true;
         let activeSrc = window.currentUserSource;
@@ -5897,16 +5938,27 @@ let lastSeenData = {};
         return;
       }
 
+      window.driveHistoryMetadata = Object.create(null);
       items.forEach(item => {
         const rawUrl = item.url || '';
-        const safeUrl = rawUrl.replace(/'/g, "\\'");
+        const historyTitle = item.title || rawUrl;
+        const safeUrl = rawUrl.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeHistoryTitle = String(historyTitle).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const historyDriveId = item.driveFileId || extractDriveFileId(rawUrl);
+        if (historyDriveId) {
+          window.driveHistoryMetadata[historyDriveId] = {
+            title: historyTitle,
+            mimeType: item.driveMimeType || 'video/mp4',
+            resourceKey: item.driveResourceKey || ''
+          };
+        }
         let badgeText = 'MP4';
         let iconClass = 'fa-solid fa-play';
 
         if (rawUrl.includes('youtu.be') || rawUrl.includes('youtube.com')) {
           badgeText = 'YouTube';
           iconClass = 'fa-brands fa-youtube';
-        } else if (rawUrl.includes('Drive') || rawUrl.includes('drive.google')) {
+        } else if (rawUrl.startsWith('gdrive:') || item.driveFileId || rawUrl.includes('Drive') || rawUrl.includes('drive.google') || rawUrl.includes('allorigins.win')) {
           badgeText = 'Drive';
           iconClass = 'fa-brands fa-google-drive';
         } else if (rawUrl.includes('Local') || rawUrl.includes('ملفات الجهاز')) {
@@ -5914,15 +5966,16 @@ let lastSeenData = {};
           iconClass = 'fa-solid fa-hard-drive';
         }
 
-        const cleanLabel = rawUrl.replace(/^https?:\/\/(www\.)?/, '');
+        const cleanLabel = String(historyTitle).replace(/^https?:\/\/(www\.)?/, '');
         const shortUrl = cleanLabel.length > 34 ? cleanLabel.substring(0, 34) + '...' : cleanLabel;
+        const safeShortUrl = shortUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
         box.innerHTML += `
-          <div class="hub-history-row" title="${rawUrl}" onclick="playFromHistory('${safeUrl}')">
+          <div class="hub-history-row" title="${safeHistoryTitle}" onclick="playFromHistory('${safeUrl}')">
             <div class="hub-history-left">
               <div class="hub-history-play"><i class="${iconClass}"></i></div>
               <div class="hub-history-info">
-                <div class="hub-history-url">${shortUrl}</div>
+                <div class="hub-history-url">${safeShortUrl}</div>
                 <div class="hub-history-sub">
                   <span class="hub-type-pill">${badgeText}</span>
                   <span class="hub-sender-tag">بواسطة ${item.sender || 'مجهول'}</span>
@@ -5937,7 +5990,25 @@ let lastSeenData = {};
 
 
     function playFromHistory(url) {
-      db.ref('videoState').set({src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name});
+      const driveFileId = extractDriveFileId(url);
+      const historyMetadata = driveFileId && window.driveHistoryMetadata
+        ? window.driveHistoryMetadata[driveFileId]
+        : null;
+      const videoState = driveFileId
+        ? {
+            src: `gdrive:${driveFileId}`,
+            type: 'video/mp4',
+            driveFileId: driveFileId,
+            driveFileName: (historyMetadata && historyMetadata.title) || 'فيديو Google Drive',
+            driveMimeType: (historyMetadata && historyMetadata.mimeType) || 'video/mp4',
+            driveResourceKey: (historyMetadata && historyMetadata.resourceKey) || '',
+            action: 'load',
+            time: 0,
+            timestamp: Date.now(),
+            sender: currentUser.name
+          }
+        : {src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name};
+      db.ref('videoState').set(videoState);
       sendSystemMessage(`${currentUser.name} قام بتشغيل مقطع من السجل 🎬`);
     }
 
@@ -6360,22 +6431,243 @@ async function renderAvailableVideosUI(items) {
     window.addEventListener('DOMContentLoaded', initIndexedDB);
 
 
-    // Google Drive Picker (تم ترك كودك هنا مع ملاحظة هامة)
+    // Google Drive: جلب الملف بصلاحية OAuth محلية لكل مشاهد، ثم تشغيل Blob محلي.
+    // لا يُرسل رمز OAuth إلى Firebase؛ تتم مزامنة معرّف الملف وحالة التشغيل فقط.
     const CLIENT_ID = '925753610772-ih6q5ghbeg6g2imqtnefv9dqdsnjd1sv.apps.googleusercontent.com';
+    const DRIVE_READ_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
     let accessToken = null;
+    let accessTokenExpiresAt = 0;
 
-    function openDrivePicker() {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/drive.readonly',
-        callback: (res) => {
-          if (res.access_token) {
-            accessToken = res.access_token;
-            gapi.load('picker', createPicker);
+    function extractDriveFileId(sourceOrState) {
+      if (sourceOrState && typeof sourceOrState === 'object') {
+        if (sourceOrState.driveFileId) return String(sourceOrState.driveFileId);
+        sourceOrState = sourceOrState.src || sourceOrState.url || '';
+      }
+
+      const source = String(sourceOrState || '');
+      const customScheme = source.match(/^gdrive:([a-zA-Z0-9_-]+)/);
+      if (customScheme) return customScheme[1];
+
+      try {
+        let parsed = new URL(source, window.location.href);
+        if (parsed.hostname === 'api.allorigins.win') {
+          const originalUrl = parsed.searchParams.get('url');
+          if (originalUrl) parsed = new URL(originalUrl);
+        }
+        if (parsed.hostname !== 'drive.google.com' && parsed.hostname !== 'docs.google.com') return '';
+        const pathMatch = parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        return pathMatch ? pathMatch[1] : (parsed.searchParams.get('id') || '');
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function getCachedDriveAccessToken() {
+      return accessToken && Date.now() < accessTokenExpiresAt - 60000 ? accessToken : '';
+    }
+
+    function requestDriveAccessToken() {
+      const cachedToken = getCachedDriveAccessToken();
+      if (cachedToken) return Promise.resolve(cachedToken);
+      if (!window.google || !google.accounts || !google.accounts.oauth2) {
+        return Promise.reject(new Error('تعذّر تحميل تسجيل الدخول إلى Google. أعد تحميل الصفحة ثم حاول مرة أخرى.'));
+      }
+
+      return new Promise((resolve, reject) => {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: DRIVE_READ_SCOPE,
+          callback: (response) => {
+            if (response && response.access_token) {
+              accessToken = response.access_token;
+              accessTokenExpiresAt = Date.now() + (Number(response.expires_in) || 3600) * 1000;
+              resolve(accessToken);
+            } else {
+              reject(new Error((response && response.error_description) || 'لم يمنح Google صلاحية قراءة الفيديو.'));
+            }
+          },
+          error_callback: (error) => {
+            reject(new Error((error && error.message) || 'أُغلق تسجيل الدخول أو تعذّر إكماله.'));
           }
-        },
+        });
+        tokenClient.requestAccessToken();
       });
-      client.requestAccessToken();
+    }
+
+    function showDriveOverlayMessage(message) {
+      const videoBox = document.getElementById('videoBox');
+      const overlay = videoBox && videoBox.querySelector('.click-overlay');
+      if (!videoBox || !overlay) return;
+      overlay.replaceChildren();
+      const messageBox = document.createElement('div');
+      messageBox.textContent = message;
+      messageBox.style.cssText = 'position:absolute;inset:18px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;border:1px solid rgba(56,189,248,.45);border-radius:16px;background:rgba(2,6,23,.88);color:#e0f2fe;font:700 14px/1.8 Cairo,sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.45);';
+      overlay.appendChild(messageBox);
+      videoBox.classList.add('require-interaction');
+    }
+
+    function hideDriveOverlayMessage() {
+      const videoBox = document.getElementById('videoBox');
+      const overlay = videoBox && videoBox.querySelector('.click-overlay');
+      if (overlay) overlay.replaceChildren();
+      if (videoBox) videoBox.classList.remove('require-interaction');
+    }
+
+    function resetDrivePlaybackState() {
+      window.driveLoadGeneration = (window.driveLoadGeneration || 0) + 1;
+      window.driveCurrentPlayback = null;
+      window.drivePendingState = null;
+      window.driveLoadedFileId = '';
+      window.driveMediaReady = false;
+      window.driveLoadingFileId = '';
+      window.driveLoadingPromise = null;
+      if (window.driveCurrentObjectUrl) {
+        URL.revokeObjectURL(window.driveCurrentObjectUrl);
+        window.driveCurrentObjectUrl = null;
+      }
+      hideDriveOverlayMessage();
+    }
+
+    function applyDrivePlaybackState(state) {
+      if (!state || !window.driveMediaReady || !window.driveCurrentPlayback) return;
+      const duration = Number(player.duration());
+      let expectedTime = Math.max(0, Number(state.time) || 0);
+      if (state.action === 'play' && state.timestamp) {
+        expectedTime += Math.max(0, (Date.now() - Number(state.timestamp)) / 1000);
+      }
+      if (Number.isFinite(duration) && duration > 0) expectedTime = Math.min(expectedTime, duration);
+
+      isSystemAction = true;
+      if (Math.abs((Number(player.currentTime()) || 0) - expectedTime) > 0.5) {
+        player.currentTime(expectedTime);
+      }
+      player.playbackRate(1.0);
+
+      if (state.action === 'play') {
+        const playAttempt = player.play();
+        if (playAttempt && typeof playAttempt.then === 'function') {
+          playAttempt.then(() => {
+            hideDriveOverlayMessage();
+          }).catch(() => {
+            showDriveOverlayMessage('تم تحميل فيديو Drive. اضغط هنا لبدء التشغيل المتزامن.');
+          });
+        } else {
+          hideDriveOverlayMessage();
+        }
+      } else {
+        if (!player.paused()) player.pause();
+        hideDriveOverlayMessage();
+      }
+      setTimeout(() => { isSystemAction = false; }, 500);
+    }
+
+    async function loadDriveVideo(state, token) {
+      const fileId = extractDriveFileId(state);
+      if (!fileId || !token) throw new Error('تعذّر تحديد فيديو Drive أو صلاحية الوصول إليه.');
+      if (window.driveCurrentPlayback && window.driveCurrentPlayback.id !== fileId) return;
+      if (window.driveMediaReady && window.driveLoadedFileId === fileId) return;
+      if (window.driveLoadedFileId === fileId && window.driveCurrentObjectUrl) return;
+      if (window.driveLoadingFileId === fileId && window.driveLoadingPromise) {
+        return window.driveLoadingPromise;
+      }
+
+      const generation = window.driveLoadGeneration || 0;
+      window.driveLoadingFileId = fileId;
+      showDriveOverlayMessage('جارٍ تحميل الفيديو من Google Drive… قد يستغرق ذلك بعض الوقت.');
+      const loadPromise = (async () => {
+        const headers = { Authorization: `Bearer ${token}` };
+        const resourceKey = state.driveResourceKey || (window.driveCurrentPlayback && window.driveCurrentPlayback.resourceKey);
+        if (resourceKey) headers['X-Goog-Drive-Resource-Keys'] = `${fileId}/${resourceKey}`;
+
+        let response;
+        try {
+          response = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`, {
+            method: 'GET',
+            headers: headers
+          });
+        } catch (error) {
+          throw new Error('تعذّر الاتصال بـ Google Drive. تحقق من الاتصال بالإنترنت ثم أعد المحاولة.');
+        }
+
+        if (!response.ok) {
+          let detail = '';
+          try {
+            const errorData = await response.json();
+            detail = errorData && errorData.error && errorData.error.message ? ` (${errorData.error.message})` : '';
+          } catch (error) {}
+          if (response.status === 401) throw new Error('انتهت صلاحية التفويض. اضغط على الفيديو وسجّل الدخول إلى Google مجدداً.');
+          if (response.status === 403) throw new Error(`حساب Google الحالي لا يملك صلاحية تنزيل هذا الملف، أو أن Drive API غير مفعّل${detail}.`);
+          if (response.status === 404) throw new Error('لم يتم العثور على الملف. تأكد من أن الملف ما زال موجوداً ومتاحاً لهذا الحساب.');
+          throw new Error(`فشل تحميل ملف Drive (HTTP ${response.status})${detail}.`);
+        }
+
+        const videoBlob = await response.blob();
+        if (!videoBlob.size) throw new Error('أعاد Google Drive ملفاً فارغاً بدلاً من الفيديو.');
+        if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
+
+        const mimeType = state.driveMimeType || (window.driveCurrentPlayback && window.driveCurrentPlayback.mimeType) || videoBlob.type || 'video/mp4';
+        const objectUrl = URL.createObjectURL(videoBlob);
+        if (window.driveCurrentObjectUrl) URL.revokeObjectURL(window.driveCurrentObjectUrl);
+        window.driveCurrentObjectUrl = objectUrl;
+        window.driveLoadedFileId = fileId;
+        window.driveMediaReady = false;
+
+        player.one('loadedmetadata', () => {
+          if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
+          window.driveMediaReady = true;
+          applyDrivePlaybackState(window.drivePendingState || state);
+        });
+        player.one('error', () => {
+          if (generation === window.driveLoadGeneration) {
+            showDriveOverlayMessage('تعذّر تشغيل صيغة هذا الفيديو في المتصفح. جرّب ملف MP4 بترميز H.264 أو WebM.');
+          }
+        });
+        player.src({ src: objectUrl, type: mimeType });
+      })();
+
+      window.driveLoadingPromise = loadPromise;
+      try {
+        return await loadPromise;
+      } catch (error) {
+        if (generation === window.driveLoadGeneration) {
+          showDriveOverlayMessage((error && error.message) || 'تعذّر تحميل فيديو Google Drive.');
+        }
+        throw error;
+      } finally {
+        if (generation === window.driveLoadGeneration && window.driveLoadingPromise === loadPromise) {
+          window.driveLoadingPromise = null;
+          window.driveLoadingFileId = '';
+        }
+      }
+    }
+
+    function loadGooglePicker() {
+      return new Promise((resolve, reject) => {
+        if (!window.gapi || typeof gapi.load !== 'function') {
+          reject(new Error('تعذّر تحميل Google Picker. أعد تحميل الصفحة وحاول مجدداً.'));
+          return;
+        }
+        if (window.google && google.picker) {
+          resolve();
+          return;
+        }
+        gapi.load('picker', {
+          callback: resolve,
+          onerror: () => reject(new Error('فشل تحميل نافذة اختيار الملفات من Google Drive.')),
+          ontimeout: () => reject(new Error('استغرق تحميل نافذة Google Drive وقتاً أطول من اللازم.')),
+          timeout: 10000
+        });
+      });
+    }
+
+    async function openDrivePicker() {
+      try {
+        await requestDriveAccessToken();
+        await loadGooglePicker();
+        createPicker();
+      } catch (error) {
+        alert((error && error.message) || 'تعذّر فتح Google Drive.');
+      }
     }
 
     function createPicker() {
@@ -6390,18 +6682,38 @@ async function renderAvailableVideosUI(items) {
     }
 
     function pickerCallback(data) {
-      if (data.action === google.picker.Action.PICKED) {
+      if (data.action === google.picker.Action.PICKED && data.docs && data.docs[0]) {
         const file = data.docs[0];
-        
-// استخدام خدمة Worker/Proxy مفتوحة المصدر لتجاوز قيود درايف
-        // هذا الرابط يأخذ الـ ID الخاص بالفيديو ويعيد دفق MP4 حقيقي
-        const streamUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://drive.google.com/uc?export=download&id=' + file.id)}`;
-        
-        db.ref('videoState').set({ src: streamUrl, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name });
-        db.ref('history').push({ url: file.name + ' (Drive)', time: Date.now(), sender: currentUser.name });
-        window.currentUserSource = 'رابط أونلاين';
+        const driveState = {
+          src: `gdrive:${file.id}`,
+          type: file.mimeType || 'video/mp4',
+          driveFileId: file.id,
+          driveFileName: file.name || 'فيديو Google Drive',
+          driveMimeType: file.mimeType || 'video/mp4',
+          driveResourceKey: file.resourceKey || '',
+          action: 'load',
+          time: 0,
+          timestamp: Date.now(),
+          sender: currentUser.name
+        };
+
+        window.isLocalPlaybackActive = false;
+        db.ref('videoState').set(driveState);
+        db.ref('history').push({
+          url: driveState.src,
+          title: driveState.driveFileName,
+          driveFileId: driveState.driveFileId,
+          driveMimeType: driveState.driveMimeType,
+          driveResourceKey: driveState.driveResourceKey,
+          time: Date.now(),
+          sender: currentUser.name
+        });
+        window.currentUserSource = 'Google Drive';
+        localStorage.setItem('last_active_source', window.currentUserSource);
         db.ref('onlineUsers/' + userId).update({ source: window.currentUserSource });
         sendSystemMessage(`${currentUser.name} أضاف مقطعاً من Google Drive 📁`);
+      } else if (data.action === google.picker.Action.ERROR) {
+        alert('حدث خطأ أثناء اختيار ملف Google Drive. تحقق من صلاحية الحساب وتفعيل Drive API.');
       }
     }
 
@@ -6670,6 +6982,41 @@ function sendSavedSticker(imgSrc) {
     // دالة سحرية لتجاوز حظر المتصفحات لجميع الفيديوهات (درايف ويوتيوب)
     // ==========================================
     function triggerSmartPlay() {
+      const drive = window.driveCurrentPlayback;
+      if (drive && extractDriveFileId(window.currentLoadedUrl) === drive.id) {
+        if (!window.driveMediaReady) {
+          if (window.driveLoadedFileId === drive.id && window.driveCurrentObjectUrl) {
+            showDriveOverlayMessage('اكتمل التنزيل؛ جارٍ تجهيز الفيديو للتشغيل…');
+            return;
+          }
+          if (window.driveLoadingFileId === drive.id && window.driveLoadingPromise) {
+            showDriveOverlayMessage('جارٍ تحميل الفيديو من Google Drive…');
+            return;
+          }
+          const pendingState = window.drivePendingState || {
+            src: `gdrive:${drive.id}`,
+            driveFileId: drive.id,
+            driveFileName: drive.name,
+            driveMimeType: drive.mimeType,
+            driveResourceKey: drive.resourceKey,
+            action: 'load',
+            time: 0
+          };
+          showDriveOverlayMessage('جارٍ طلب صلاحية Google Drive…');
+          requestDriveAccessToken()
+            .then(token => loadDriveVideo(pendingState, token))
+            .catch(error => showDriveOverlayMessage((error && error.message) || 'تعذّر فتح Google Drive.'));
+          return;
+        }
+        hideDriveOverlayMessage();
+        if (player.paused()) {
+          player.play();
+        } else {
+          player.pause();
+        }
+        return;
+      }
+
       const videoBox = document.getElementById('videoBox');
       if (videoBox) videoBox.classList.remove('require-interaction'); // إخفاء الطبقة الشفافة
       if (player.paused()) {
