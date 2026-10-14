@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
   <title>Anime Watch Together - Pro Max</title>
   
   <!-- إعدادات تطبيق الويب (PWA) -->
@@ -63,7 +63,7 @@
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(56, 189, 248, 0.45), rgba(37, 99, 235, 0.45)); border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent-hover); }
 
-    /* تثبيت الشاشة بقوة مع خلفية محيطية فاخرة متعدّدة الطبقات */
+/* تثبيت الشاشة بقوة مع خلفية محيطية فاخرة متعدّدة الطبقات وتوافق تام مع الكيبورد */
     html, body {
       background:
         radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.22) 0%, transparent 45%),
@@ -71,6 +71,8 @@
         linear-gradient(180deg, #02050d 0%, #050c1d 55%, #030712 100%);
       color: var(--text-main);
       height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
       width: 100%;
       position: fixed;
       inset: 0;
@@ -325,7 +327,7 @@
     .reply-badge:hover {
       border-color: rgba(125, 211, 252, 0.45);
     }
-    .chat-bottom-bar { display: flex; flex-direction: column; width: 100%; margin-top: 8px; z-index: 100; position: relative; }
+.chat-bottom-bar { display: flex; flex-direction: column; width: 100%; margin-top: auto; padding-bottom: 0 !important; margin-bottom: 0 !important; z-index: 100; position: relative; }
     .reply-preview {
       width: 100%;
       background: linear-gradient(145deg, rgba(10, 22, 46, 0.98), rgba(6, 14, 30, 0.99));
@@ -2263,14 +2265,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
 
-    html,
+html,
     body {
       width: 100%;
       height: 100%;
       height: 100dvh;
+      max-height: 100dvh;
       min-height: 0;
       overflow: hidden;
-      background: #070b14;
+      background: #02050d !important;
     }
 
     body {
@@ -2290,10 +2293,12 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       flex-direction: column;
       width: 100%;
       height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
       min-width: 0;
       min-height: 0;
       overflow: hidden;
-      background: #070b14;
+      background: #02050d !important;
     }
 
     .watch-stage {
@@ -2361,7 +2366,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       padding: 0 !important;
       gap: 0 !important;
       overflow: hidden !important;
-      background: #070b14 !important;
+      background: #02050d !important;
     }
 
     .chat-container {
@@ -2372,7 +2377,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       width: 100%;
       min-width: 0 !important;
       min-height: 0 !important;
-      padding: 12px 14px max(10px, env(safe-area-inset-bottom)) !important;
+      padding: 10px 12px 6px !important;
       overflow: hidden !important;
       border: 0 !important;
       border-radius: 0 !important;
@@ -4191,13 +4196,13 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       font-size: 0.72rem !important;
     }
 
-    /* ✨ إعادة تصميم منطقة الدردشة وفقاعات الرسائل وشريط الإدخال بأداء 60FPS */
+/* ✨ إعادة تصميم منطقة الدردشة وفقاعات الرسائل وشريط الإدخال بأداء 60FPS ومنع الفراغ فوق الكيبورد */
     .chat-container {
       background:
         radial-gradient(circle at 85% 12%, rgba(14, 165, 233, 0.08) 0%, transparent 42%),
         radial-gradient(circle at 12% 85%, rgba(37, 99, 235, 0.08) 0%, transparent 46%),
         linear-gradient(180deg, rgba(4, 10, 24, 0.96) 0%, rgba(2, 5, 14, 0.99) 100%) !important;
-      padding: 14px 14px max(10px, env(safe-area-inset-bottom)) !important;
+      padding: 10px 12px 6px !important;
       box-shadow: none !important;
     }
     .chat-container::before {
@@ -4347,8 +4352,9 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       background: linear-gradient(145deg, rgba(13, 28, 58, 0.99), rgba(6, 14, 30, 1)) !important;
       box-shadow: 0 10px 28px rgba(2, 132, 199, 0.3), 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
     }
-    .chat-bottom-bar .input-group input[type="text"],
-    .chat-bottom-bar .input-group input[type="text"]:focus {
+.chat-bottom-bar .input-group input[type="text"],
+    .chat-bottom-bar .input-group input[type="text"]:focus,
+    .chat-bottom-bar .input-group .chat-editable-input {
       outline: none !important;
       border: none !important;
       background: transparent !important;
@@ -4357,6 +4363,25 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       color: #f8fafc !important;
       font-weight: 600 !important;
       padding: 8px 12px !important;
+      flex: 1 1 auto;
+      width: 0;
+      min-width: 0;
+      min-height: 42px;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      text-align: right;
+      direction: rtl;
+      word-break: break-word;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .chat-editable-input:empty::before {
+      content: attr(data-placeholder);
+      color: #7fa2c9;
+      font-weight: 500;
+      pointer-events: none;
     }
     .chat-bottom-bar .input-group input[type="text"]::placeholder {
       color: #7fa2c9 !important;
@@ -5537,11 +5562,11 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
             </div>
             <button type="button" onclick="cancelReply()" aria-label="إلغاء الرد" style="background:transparent; color:#ef4444; padding: 4px; box-shadow:none; border:none; cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-circle-xmark"></i></button>
           </div>
-          <div class="input-group">
+<div class="input-group">
             <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/webp" style="display:none;" onchange="sendImage(this)" />
             <button type="button" onclick="document.getElementById('imageUpload').click()" class="icon-btn" title="إرسال صورة" aria-label="إرسال صورة"><i class="fa-solid fa-images"></i></button>
             <button type="button" onclick="toggleStickers()" class="icon-btn" title="الملصقات المحفوظة" aria-label="فتح الملصقات"><i class="fa-solid fa-face-grin-stars"></i></button>
-            <input type="text" id="messageInput" placeholder="اكتب رسالة..." oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendMessage()" />
+            <div id="messageInput" class="chat-editable-input" contenteditable="plaintext-only" role="textbox" aria-multiline="false" data-placeholder="اكتب رسالة..." enterkeyhint="send" oninput="handleTyping()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></div>
             <button type="button" onclick="sendMessage()" aria-label="إرسال الرسالة"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
@@ -6401,7 +6426,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
 
 
 
-    function sendMessage() {
+function sendMessage() {
       if (!currentUser) return;
       const sendBtn = document.querySelector('.chat-bottom-bar .input-group > button:last-child');
       if (sendBtn) {
@@ -6412,10 +6437,11 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
         }, 1000);
       }
       const input = document.getElementById('messageInput');
-      const text = input.value.trim();
+      const text = (input.value !== undefined ? input.value : input.innerText || "").trim();
       if (text) {
         db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
-        input.value = "";
+        if (input.value !== undefined) input.value = "";
+        else input.innerText = "";
         input.blur();
         db.ref(`typing/${userId}`).remove();
         cancelReply();
@@ -6756,11 +6782,11 @@ let lastSeenData = {};
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => { typeRef.remove(); }, 1500);
 
-      // 2. تشغيل الاقتراحات الذكية للملصقات (للكلمة المفردة فقط وبدون مسافات)
+// 2. تشغيل الاقتراحات الذكية للملصقات (للكلمة المفردة فقط وبدون مسافات)
       const input = document.getElementById('messageInput');
       if (!input) return;
       
-      const rawText = input.value; // النص الأصلي لمعرفة وجود المساحات
+      const rawText = input.value !== undefined ? input.value : (input.innerText || ""); // النص الأصلي لمعرفة وجود المساحات
       const suggestBox = document.getElementById('stickerSuggestions');
       if (!suggestBox) return;
 
@@ -6855,7 +6881,7 @@ let lastSeenData = {};
 
     renderRecentStickers();
 
-    function sendSuggestedSticker(imgUrl) {
+function sendSuggestedSticker(imgUrl) {
         rememberRecentSticker(imgUrl);
         db.ref('chat').push({ 
             name: currentUser.name, 
@@ -6869,7 +6895,8 @@ let lastSeenData = {};
         });
         const input = document.getElementById('messageInput');
         if (input) {
-            input.value = "";
+            if (input.value !== undefined) input.value = "";
+            else input.innerText = "";
             input.focus();
         }
         const suggestBox = document.getElementById('stickerSuggestions');
