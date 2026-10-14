@@ -4482,15 +4482,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         </button>
       </div>
 
-<section class="drawer-section" aria-label="المتصلون">
-        <span class="drawer-section-label">المتصلون الآن</span>
-        <div class="status-bar">
-          <div id="usersStatus"><b>المتصلون:</b> جاري التحميل...</div>
-        </div>
-      </section>
-
-<section class="drawer-section" aria-label="مصادر التشغيل">
-        <span class="drawer-section-label">مصدر التشغيل الحالي</span>
+<section class="drawer-section" aria-label="المتصلون ومصدر التشغيل">
+        <span class="drawer-section-label">المتصلون ومصدر التشغيل</span>
         <div style="display: flex; flex-direction: column; width: 100%;">
           <div id="playbackSourcesList" style="display: flex; flex-direction: column; width: 100%;">
              <!-- سيتم إضافة المتصلين ومصادرهم هنا برمجياً -->
@@ -4504,6 +4497,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           </button>
         </div>
       </section>
+
 
       <section class="drawer-section" aria-label="الانتقال إلى وقت محدد">
         <span class="drawer-section-label">الانتقال إلى وقت</span>
@@ -4804,16 +4798,13 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
          }
       });
 
-      // تحديث لحظي لقائمتي المتصلين ومصادر التشغيل فور حدوث أي حركة بالخادم
+      // تحديث لحظي لقائمة المتصلين ومصادر التشغيل فور حدوث أي حركة بالخادم
       db.ref('onlineUsers').on('value', (snap) => {
-        const bar = document.getElementById('usersStatus');
         const sourceList = document.getElementById('playbackSourcesList'); 
         
-        if (bar) bar.innerHTML = "<b>المتصلون:</b> ";
         if (sourceList) sourceList.innerHTML = ""; 
         
         if (!snap.exists()) {
-          if (bar) bar.innerHTML += "<span>لا يوجد أحد</span>";
           if (sourceList) sourceList.innerHTML = "<span style='font-size:0.75rem; color:var(--text-muted); text-align:center; padding:8px;'>لا يوجد متصلون</span>";
           return;
         }
@@ -4827,26 +4818,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
           const isUserPlaying = userSrc !== 'متوقف';
           const statusDotColor = isUserPlaying ? '#10b981' : '#f59e0b';
           const sourceBadgeColor = isUserPlaying ? '#10b981' : '#94a3b8';
-          
-          // 1. شريط المتصلين
-          if (bar) {
-            bar.innerHTML += `
-              <div class="user-badge" title="${u.name}">
-                <span class="user-dot" style="background: ${statusDotColor}; box-shadow: 0 0 6px ${statusDotColor};"></span>
-                <img src="${u.avatar}" class="user-avatar" />
-                <span>${u.name}</span>
-                <button class="kick-btn" onclick="kickUser('${uid}')" title="طرد"><i class="fa-solid fa-user-xmark"></i></button>              
-              </div>
-            `;
-          }
 
-          // 2. قائمة مصادر التشغيل
+          // قائمة المتصلين ومصدر التشغيل مدمجة
           if (sourceList) {
               sourceList.innerHTML += `
                 <div class="source-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; margin-bottom:6px; border:1px solid rgba(226,232,240,0.08); border-radius:12px; background:rgba(255,255,255,0.035);">
                    <div class="source-info" style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-                       <img src="${u.avatar}" class="user-avatar" style="width:22px; height:22px; border-radius:50%;" />
-                       <span class="source-name" style="font-size:0.85rem; font-weight:700; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90px;" title="${u.name}">${u.name}</span>
+                       <span class="user-dot" style="width:7px; height:7px; border-radius:50%; background: ${statusDotColor}; box-shadow: 0 0 6px ${statusDotColor}; flex-shrink:0;"></span>
+                       <img src="${u.avatar}" class="user-avatar" style="width:24px; height:24px; border-radius:50%; flex-shrink:0;" />
+                       <span class="source-name" style="font-size:0.85rem; font-weight:700; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:95px;" title="${u.name}">${u.name}</span>
                        <span class="source-badge" style="font-size:0.65rem; padding:2px 6px; border-radius:6px; color:${sourceBadgeColor}; border:1px solid ${sourceBadgeColor}; background:rgba(0,0,0,0.4); white-space:nowrap;">${userSrc}</span>
                    </div>
                    <button class="source-kick-btn" onclick="kickIndividualVideo('${uid}')" title="إيقاف الفيديو لديه فقط (شاشة سوداء)">
@@ -4856,8 +4836,9 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
               `;
           }
         });
-        if (count === 0 && bar) bar.innerHTML += "<span>لا يوجد أحد</span>";
+        if (count === 0 && sourceList) sourceList.innerHTML = "<span style='font-size:0.75rem; color:var(--text-muted); text-align:center; padding:8px;'>لا يوجد متصلون</span>";
       });
+
     }
 
 
