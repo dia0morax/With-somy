@@ -112,7 +112,9 @@
     #messages { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
     
     /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; touch-action: pan-y; will-change: transform; }
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; direction: ltr; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; touch-action: pan-y; will-change: transform; }
+    .msg-item.is-mine { justify-content: flex-end; }
+    .msg-item.is-other { justify-content: flex-start; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
 .msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; align-self: flex-end; }
@@ -130,9 +132,9 @@
 
 
     
-    .msg-item[style*="row-reverse"] .msg-avatar { border-color: var(--accent); }
-    .msg-item[style*="row-reverse"] .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
-    .msg-item[style*="row"] .msg-content { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; }
+    .msg-item.is-mine .msg-avatar { border-color: var(--accent); }
+    .msg-item.is-mine .msg-content { background: var(--msg-mine-gradient) !important; color: #fff !important; border: none !important; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important; }
+    .msg-item.is-other .msg-content { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; }
 
     .msg-name { font-weight: 800; font-size: 0.75rem; margin-bottom: 6px; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; }
     
@@ -162,8 +164,8 @@
     }
     
  /* إزالة أي خلفيات، حواف، أو ضبابية (Blur) خلف الملصقات بقوة */
-    .msg-item[style*="row"] .msg-content.sticker-bg, 
-    .msg-item[style*="row-reverse"] .msg-content.sticker-bg { 
+    .msg-item.is-mine .msg-content.sticker-bg, 
+    .msg-item.is-other .msg-content.sticker-bg { 
         background: transparent !important; 
         border: none !important; 
         box-shadow: none !important; 
@@ -262,7 +264,7 @@
             z-index: 600 !important;
             padding: 8px !important;
         }
-        #stickersContainer {
+        #stickersGrid {
             grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)) !important;
             gap: 6px !important;
             overflow-y: auto !important;
@@ -732,7 +734,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: none;
     }
 
-    .msg-item[style*="row-reverse"] .msg-avatar {
+    .msg-item.is-mine .msg-avatar {
       border-color: var(--accent);
     }
 
@@ -812,7 +814,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       text-align: right !important;
     }
 
-    .msg-item[style*="row-reverse"] .msg-content {
+    .msg-item.is-mine .msg-content {
       border: 1px solid rgba(255, 255, 255, 0.07) !important;
       border-bottom-right-radius: 5px;
       background: var(--accent) !important;
@@ -820,7 +822,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: none !important;
     }
 
-    .msg-item[style*="row"]:not([style*="row-reverse"]) .msg-content {
+    .msg-item.is-other .msg-content {
       border: 1px solid rgba(255, 255, 255, 0.075) !important;
       border-bottom-left-radius: 5px;
       background: #172231 !important;
@@ -828,8 +830,8 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: none !important;
     }
 
-    .msg-item[style*="row"] .msg-content.sticker-bg,
-    .msg-item[style*="row-reverse"] .msg-content.sticker-bg {
+    .msg-item.is-mine .msg-content.sticker-bg,
+    .msg-item.is-other .msg-content.sticker-bg {
       padding: 0 !important;
       border: 0 !important;
       background: transparent !important;
@@ -1206,8 +1208,18 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       color: #fff;
     }
 
-    /* شبكة الملصقات: تتمدد داخل اللوحة وتحتفظ بالتمرير */
+    /* حاوية الملصقات تضم شريطاً ثابتاً للأحدث وشبكة مستقلة قابلة للتمرير */
     #stickersPanel #stickersContainer {
+      display: flex !important;
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #stickersPanel #stickersGrid {
       flex: 1 1 auto;
       min-width: 0;
       min-height: 0;
@@ -1222,8 +1234,81 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       scrollbar-color: rgba(160, 175, 195, 0.25) transparent;
     }
 
+    .recent-stickers-section {
+      flex: 0 0 auto;
+      min-width: 0;
+      padding: 7px 8px 8px;
+      border: 1px solid rgba(56, 189, 248, 0.14);
+      border-radius: 13px;
+      background: rgba(7, 16, 34, 0.55);
+    }
+
+    .recent-stickers-heading {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      color: #cbd5e1;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .recent-stickers-heading i {
+      color: var(--accent-hover);
+      font-size: 0.7rem;
+    }
+
+    .recent-stickers-row {
+      display: flex;
+      flex-direction: row;
+      direction: ltr;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 7px;
+      min-width: 0;
+      min-height: 48px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 175, 195, 0.25) transparent;
+    }
+
+    .recent-stickers-row > img {
+      flex: 0 0 clamp(42px, 10vw, 54px);
+      width: clamp(42px, 10vw, 54px) !important;
+      height: clamp(42px, 10vw, 54px) !important;
+      max-width: none !important;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      background: #172333;
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease;
+    }
+
+    .recent-stickers-row > img:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .recent-stickers-empty {
+      display: flex;
+      flex: 1 0 100%;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      opacity: 0.78;
+      text-align: center;
+    }
+
     /* شكل الملصق عند العرض العادي */
-    #stickersPanel #stickersContainer > img {
+    #stickersPanel #stickersGrid > img {
       display: block;
       width: 100% !important;
       max-width: 100% !important;
@@ -1237,13 +1322,13 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       transition: border-color 150ms ease, transform 150ms ease;
     }
 
-    #stickersPanel #stickersContainer > img:hover {
+    #stickersPanel #stickersGrid > img:hover {
       border-color: var(--accent);
       transform: translateY(-2px);
     }
 
     /* بطاقات الملصقات وأزرار تعديل التاج والحذف */
-    #stickersPanel #stickersContainer > div {
+    #stickersPanel #stickersGrid > div {
       min-width: 0;
       padding: 7px !important;
       gap: 5px;
@@ -1253,7 +1338,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: none;
     }
 
-    #stickersPanel #stickersContainer > div img {
+    #stickersPanel #stickersGrid > div img {
       display: block;
       width: 100% !important;
       max-width: 100% !important;
@@ -1265,13 +1350,13 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-shadow: none !important;
     }
 
-    #stickersPanel #stickersContainer > div > span {
+    #stickersPanel #stickersGrid > div > span {
       max-width: 100% !important;
       color: var(--text-muted) !important;
       font-size: 0.68rem !important;
     }
 
-    #stickersPanel #stickersContainer > div button {
+    #stickersPanel #stickersGrid > div button {
       min-width: 0;
       min-height: 34px !important;
       height: 34px;
@@ -1281,15 +1366,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     /* بطاقة إضافة ملصق إلى قسم */
-    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] {
+    #stickersPanel #stickersGrid > div[onclick*="openCategoryPicker"] {
       min-height: 88px;
       border: 1px dashed var(--accent) !important;
       border-radius: 13px !important;
       background: rgba(139, 124, 246, 0.08) !important;
     }
 
-    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] i,
-    #stickersPanel #stickersContainer > div[onclick*="openCategoryPicker"] span {
+    #stickersPanel #stickersGrid > div[onclick*="openCategoryPicker"] i,
+    #stickersPanel #stickersGrid > div[onclick*="openCategoryPicker"] span {
       color: var(--accent-hover) !important;
     }
 
@@ -1345,7 +1430,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         justify-content: flex-start;
       }
 
-      #stickersPanel #stickersContainer {
+      #stickersPanel #stickersGrid {
         grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)) !important;
         gap: 7px !important;
       }
@@ -1621,7 +1706,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         padding: 8px !important;
       }
 
-      #stickersContainer {
+      #stickersGrid {
         grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)) !important;
         gap: 6px !important;
       }
@@ -1982,12 +2067,12 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       line-height: 1.55;
     }
 
-    .msg-item[style*="row-reverse"] .msg-content {
+    .msg-item.is-mine .msg-content {
       border-bottom-right-radius: 5px;
       box-shadow: none !important;
     }
 
-    .msg-item[style*="row"] .msg-content {
+    .msg-item.is-other .msg-content {
       border-bottom-left-radius: 5px;
       box-shadow: none !important;
     }
@@ -2371,15 +2456,15 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       color: #d8d2ff;
     }
 
-    #stickersPanel #stickersContainer {
+    #stickersPanel #stickersGrid {
       grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)) !important;
       gap: 9px !important;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
     }
 
-    #stickersPanel #stickersContainer > img,
-    #stickersPanel #stickersContainer > div img {
+    #stickersPanel #stickersGrid > img,
+    #stickersPanel #stickersGrid > div img {
       aspect-ratio: 1;
       border-radius: 13px !important;
       box-shadow: none !important;
@@ -3436,14 +3521,14 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     .chat-container {
       background: linear-gradient(180deg, rgba(5, 11, 24, 0.92) 0%, rgba(3, 7, 18, 0.98) 100%) !important;
     }
-    .msg-item[style*="row-reverse"] .msg-content:not(.sticker-bg) {
+    .msg-item.is-mine .msg-content:not(.sticker-bg) {
       background: linear-gradient(135deg, #1e40af 0%, #0284c7 55%, #0ea5e9 100%) !important;
       border: 1px solid rgba(125, 211, 252, 0.38) !important;
       border-radius: 20px 20px 6px 20px !important;
       box-shadow: 0 10px 26px rgba(2, 132, 199, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
       color: #ffffff !important;
     }
-    .msg-item[style*="row"]:not([style*="row-reverse"]) .msg-content:not(.sticker-bg) {
+    .msg-item.is-other .msg-content:not(.sticker-bg) {
       background: linear-gradient(145deg, rgba(13, 27, 54, 0.92), rgba(8, 18, 38, 0.95)) !important;
       border: 1px solid rgba(56, 189, 248, 0.18) !important;
       border-radius: 20px 20px 20px 6px !important;
@@ -3545,9 +3630,17 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <!-- شريط الأقسام (Tabs) -->
     <div id="stickerTabs" class="sticker-tabs" style="border: none; padding-bottom: 4px; gap: 8px;"></div>
     
-    <!-- حاوية الملصقات (Grid محسّن) -->
-    <div id="stickersContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 10px; align-items: start; align-content: start; flex: 1;">
-       <span style="font-size: 0.85rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top: 20px;">جاري تحميل الملصقات...</span>
+    <!-- أحدث الملصقات تبقى ثابتة، والتمرير محصور في شبكة الملصقات -->
+    <div id="stickersContainer">
+      <section id="recentStickersSection" class="recent-stickers-section" aria-label="أحدث الملصقات المستخدمة">
+        <div class="recent-stickers-heading"><i class="fa-solid fa-clock-rotate-left"></i><span>أحدث الملصقات</span></div>
+        <div id="recentStickersRow" class="recent-stickers-row">
+          <span class="recent-stickers-empty">الملصقات الأخيرة ستظهر هنا</span>
+        </div>
+      </section>
+      <div id="stickersGrid" class="stickers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 12px; overflow-y: auto; overflow-x: hidden; padding: 5px 2px 10px; align-items: start; align-content: start; flex: 1; min-height: 0;">
+        <span style="font-size: 0.85rem; color: var(--text-muted); grid-column: 1 / -1; text-align: center; margin-top: 20px;">جاري تحميل الملصقات...</span>
+      </div>
     </div>
   </div>
 
@@ -4729,12 +4822,11 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
           }
 
           const isStickerMsg = m.img && m.isSticker;
-          const isFemale = m.gender ? m.gender === 'female' : isMine;
-          const flexDir = isFemale ? 'row-reverse' : 'row';
-          const floatDir = isFemale ? 'left' : 'right';
-          const textAlign = isFemale ? 'right' : 'left';
+          const floatDir = isMine ? 'left' : 'right';
+          const textAlign = 'right';
 
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}')" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
+          const deleteBtn = `<span onclick="deleteMessage('${msgKey}', event)" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer; position: relative; z-index: 10;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
+
 
           let reactionsHtml = '';
           if (m.reactions) {
@@ -4746,7 +4838,7 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
               if (uid === userId) iReactedWith = emo;
             });
 
-            reactionsHtml = `<div class="reactions-badge-container" style="justify-content: ${isFemale ? 'flex-end' : 'flex-start'};">`;
+            reactionsHtml = `<div class="reactions-badge-container" style="direction:ltr; justify-content: ${isMine ? 'flex-end' : 'flex-start'};">`;
             Object.keys(counts).forEach(emo => {
               const isMineClass = (emo === iReactedWith) ? 'border-color: var(--accent); background: rgba(139, 92, 246, 0.4);' : '';
               reactionsHtml += `<div class="reaction-badge" style="${isMineClass}" onclick="addReaction('${msgKey}', '${emo}')">${emo} <span style="font-weight:bold; font-size:0.75rem; color:#fff;">${counts[emo]}</span></div>`;
@@ -4763,7 +4855,7 @@ htmlBuilder += `
               <div id="swipe-indicator-${msgKey}" class="swipe-reply-indicator">
                 <i class="fa-solid fa-reply"></i>
               </div>
-              <div id="msg-item-${msgKey}" class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="width: 100%; min-width: 0; flex-direction: ${flexDir};"
+              <div id="msg-item-${msgKey}" class="msg-item ${isMine ? 'is-mine' : 'is-other'} ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="width: 100%; min-width: 0;"
                    ontouchstart="handleSwipeStart(event, '${msgKey}')"
                    ontouchmove="handleSwipeMove(event, '${msgKey}')"
                    ontouchend="handleSwipeEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
@@ -4773,7 +4865,7 @@ htmlBuilder += `
                    onpointerup="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
                    onpointercancel="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
                 <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
-                <div style="display:flex; flex:0 1 auto; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
+                <div style="display:flex; flex:0 1 auto; flex-direction:column; direction:ltr; align-items: ${isMine ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
                     ${replyHtml}
                     <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
                          style="width: fit-content; max-width: 100%; min-width: 0; background: ${isMine ? 'var(--accent)' : 'var(--bg-content)'}; border-color: ${isMine ? 'var(--accent-hover)' : 'var(--bg-hover)'}; cursor: pointer;"
@@ -4784,7 +4876,7 @@ htmlBuilder += `
                          ontouchstart="startLongPress(event, '${msgKey}')" 
                          ontouchend="cancelLongPress()"
                          oncontextmenu="event.preventDefault(); showReactionMenu(event, '${msgKey}');">
-                      <span class="msg-name" style="display: block; color: ${isMine ? '#ffffff' : (isFemale ? '#7dd3fc' : '#93c5fd')}; text-shadow: 0 1px 3px rgba(0,0,0,0.6); font-weight: 800; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                      <span class="msg-name" style="display: block; color: ${isMine ? '#ffffff' : '#93c5fd'}; text-shadow: 0 1px 3px rgba(0,0,0,0.6); font-weight: 800; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
 
                       <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
                     </div>
@@ -5023,7 +5115,69 @@ let lastSeenData = {};
       }
     }
 
+    const RECENT_STICKERS_STORAGE_KEY = 'recent_used_stickers';
+    const MAX_RECENT_STICKERS = 8;
+
+    function getRecentStickerUrls() {
+        try {
+            const recent = JSON.parse(localStorage.getItem(RECENT_STICKERS_STORAGE_KEY) || '[]');
+            return Array.isArray(recent)
+                ? recent.filter(img => typeof img === 'string' && img).slice(0, MAX_RECENT_STICKERS)
+                : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function renderRecentStickers(recent = getRecentStickerUrls()) {
+        const recentRow = document.getElementById('recentStickersRow');
+        if (!recentRow) return;
+        recentRow.replaceChildren();
+
+        if (!recent.length) {
+            const emptyMessage = document.createElement('span');
+            emptyMessage.className = 'recent-stickers-empty';
+            emptyMessage.textContent = 'الملصقات الأخيرة ستظهر هنا';
+            recentRow.appendChild(emptyMessage);
+            return;
+        }
+
+        recent.forEach(imgUrl => {
+            const stickerImage = document.createElement('img');
+            stickerImage.src = imgUrl;
+            stickerImage.alt = 'ملصق مستخدم حديثاً';
+            stickerImage.title = 'إرسال هذا الملصق مجدداً';
+            stickerImage.loading = 'lazy';
+            stickerImage.addEventListener('click', () => sendSavedSticker(imgUrl));
+            recentRow.appendChild(stickerImage);
+        });
+        recentRow.scrollLeft = 0;
+    }
+
+    function rememberRecentSticker(imgUrl) {
+        if (typeof imgUrl !== 'string' || !imgUrl) return;
+        const recent = [imgUrl, ...getRecentStickerUrls().filter(item => item !== imgUrl)]
+            .slice(0, MAX_RECENT_STICKERS);
+
+        try {
+            localStorage.setItem(RECENT_STICKERS_STORAGE_KEY, JSON.stringify(recent));
+        } catch (error) {
+            // إذا امتلأت مساحة التخزين، احتفظ بأحدث عدد ممكن من الملصقات.
+            for (let count = recent.length - 1; count > 0; count--) {
+                try {
+                    localStorage.setItem(RECENT_STICKERS_STORAGE_KEY, JSON.stringify(recent.slice(0, count)));
+                    recent.splice(count);
+                    break;
+                } catch (storageError) {}
+            }
+        }
+        renderRecentStickers(recent);
+    }
+
+    renderRecentStickers();
+
     function sendSuggestedSticker(imgUrl) {
+        rememberRecentSticker(imgUrl);
         db.ref('chat').push({ 
             name: currentUser.name, 
             senderId: userId,
@@ -5547,9 +5701,13 @@ async function renderAvailableVideosUI(items) {
       document.getElementById('imageModal').style.display = 'flex';
     }
 
-    function deleteMessage(msgKey) {
+    function deleteMessage(msgKey, e) {
+      if (e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.preventDefault) e.preventDefault();
+      }
       if (!currentUser) return;
-      if(confirm("هل أنت متأكد من مسح الرسالة؟ 👀")) {
+      if (confirm("هل أنت متأكد من مسح الرسالة؟ 👀")) {
         db.ref('chat/' + msgKey).update({ 
           // نص مميز، شفاف قليلاً، مائل، مع أيقونة X احترافية وحمراء
           text: "<span style='opacity: 0.6; font-style: italic; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;'><i class='fa-solid fa-ban' style='color: #ef4444;'></i> تم حذف رسالة</span>", 
@@ -5558,6 +5716,7 @@ async function renderAvailableVideosUI(items) {
         });
       }
     }
+
 
     // ==========================================
     // 🎨 نظام الملصقات الذكي (أقسام + تاجات + اقتراحات)
@@ -5683,6 +5842,7 @@ async function renderAvailableVideosUI(items) {
 
 function sendSavedSticker(imgSrc) {
       if(isEditingStickers) return;
+      rememberRecentSticker(imgSrc);
       document.getElementById('stickersPanel').style.display = 'none'; // إغلاق سريع
       requestAnimationFrame(() => {
           setTimeout(() => {
@@ -5718,8 +5878,9 @@ function sendSavedSticker(imgSrc) {
     });
 
     function renderStickers() {
-      const container = document.getElementById('stickersContainer');
+      const container = document.getElementById('stickersGrid');
       if(!container) return;
+      renderRecentStickers();
       
       const filteredStickers = currentCategoryId === 'all' 
           ? globalStickers 
