@@ -79,6 +79,10 @@
     /* إجبار المشغل على إظهار الدقيقة الحالية والوقت الكلي بدلاً من الوقت المتبقي */
     .video-js .vjs-current-time, .video-js .vjs-time-divider, .video-js .vjs-duration { display: flex !important; align-items: center; justify-content: center; padding: 0 4px; }
     .video-js .vjs-remaining-time { display: none !important; }
+    .video-js .vjs-seek-five { width: 3.2em; cursor: pointer; }
+    .video-js .vjs-seek-five-icon { position: relative; display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+    .video-js .vjs-seek-five-icon i { font-size: 1.25em; }
+    .video-js .vjs-seek-five-icon b { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.58em; line-height: 1; font-weight: 800; }
 
     .content-area { flex-grow: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; z-index: 10; position: relative; background: transparent; }
 
@@ -110,12 +114,13 @@
     #messages { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding-bottom: 15px; scroll-behavior: smooth; z-index: 2; position: relative; }
     
     /* أنيميشن الرسائل والملصقات الموحد: ارتداد سلس ومريح للعين */
-    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+    .msg-item { display: flex; align-items: flex-end; gap: 10px; width: 100%; min-width: 0; font-size: 0.95rem; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; touch-action: pan-y; will-change: transform; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(30px) scale(0.85); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
   
 .msg-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; align-self: flex-end; }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
-    .swipe-reply-indicator { position: absolute; left: 10px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.85rem; opacity: 0; transform: scale(0.5); pointer-events: none; z-index: 1; transition: border-color 0.15s, background-color 0.15s, color 0.15s, transform 0.1s; }
+    .swipe-reply-indicator { position: absolute; top: 50%; left: 10px; margin-top: -16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.85rem; opacity: 0; transform: scale(0.5); pointer-events: none; z-index: 1; transition: border-color 0.15s, background-color 0.15s, color 0.15s, transform 0.1s; }
+    .swipe-reply-indicator.from-right { left: auto; right: 10px; }
     .swipe-reply-indicator.ready { border-color: var(--accent); background: var(--accent); color: #fff; transform: scale(1.2) !important; box-shadow: 0 0 12px var(--accent); }
     .msg-content { padding: 12px 16px; border-radius: 20px; line-height: 1.5; position: relative; font-weight: 600; word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important; width: fit-content; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; direction: rtl !important; unicode-bidi: isolate !important; text-align: right !important; }
     .reply-badge { background: rgba(0,0,0,0.35); border-right: 3px solid var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; color: #cbd5e1; cursor: pointer; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: right; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -2940,6 +2945,281 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       }
     }
 
+    .control-actions .visual-scrub-open {
+      display: inline-flex;
+      flex: 0 0 36px;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0 !important;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(226, 232, 240, 0.1) !important;
+      border-radius: 50%;
+      background: #111a28 !important;
+      color: #d8e0ed !important;
+      font-size: 0.88rem !important;
+      box-shadow: none !important;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .control-actions .visual-scrub-open:hover,
+    .control-actions .visual-scrub-open:focus-visible {
+      border-color: rgba(139, 124, 246, 0.45) !important;
+      background: rgba(139, 124, 246, 0.14) !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .scrub-overlay,
+    .scrub-overlay * {
+      box-sizing: border-box;
+    }
+
+    .scrub-overlay {
+      position: fixed;
+      z-index: 5000;
+      inset: 0;
+      display: none;
+      width: 100%;
+      max-width: 100vw;
+      height: 100%;
+      height: 100dvh;
+      padding: max(14px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      overflow: hidden;
+      background: rgba(2, 6, 14, 0.94);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      color: #f8fafc;
+      touch-action: none;
+    }
+
+    .scrub-overlay.is-open {
+      display: block;
+    }
+
+    .scrub-close-button {
+      position: absolute;
+      top: max(14px, env(safe-area-inset-top));
+      right: max(14px, env(safe-area-inset-right));
+      z-index: 3;
+      display: inline-flex;
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0 !important;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.16) !important;
+      border-radius: 50%;
+      background: rgba(17, 26, 40, 0.92) !important;
+      color: #f8fafc !important;
+      font-size: 0.95rem !important;
+      box-shadow: none !important;
+    }
+
+    .scrub-close-button:hover,
+    .scrub-close-button:focus-visible {
+      border-color: rgba(139, 124, 246, 0.55) !important;
+      background: #1b2740 !important;
+      outline: none;
+    }
+
+    .scrub-preview-box {
+      position: absolute;
+      z-index: 2;
+      bottom: calc(154px + env(safe-area-inset-bottom));
+      left: 50%;
+      width: min(82vw, 320px);
+      max-width: calc(100vw - 20px);
+      aspect-ratio: 16 / 9;
+      overflow: visible;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      background: #050810;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(139, 124, 246, 0.12);
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .scrub-preview-box canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #111827, #070b14);
+    }
+
+    .scrub-preview-caption {
+      position: absolute;
+      top: calc(100% + 7px);
+      left: 50%;
+      min-width: 66px;
+      padding: 3px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(8, 13, 22, 0.94);
+      color: #fff;
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+
+    .scrub-preview-status {
+      position: absolute;
+      inset: auto 8px 8px;
+      display: none;
+      padding: 5px 7px;
+      border-radius: 7px;
+      background: rgba(0, 0, 0, 0.78);
+      color: #e2e8f0;
+      font-size: 0.7rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .scrub-preview-status.is-visible {
+      display: block;
+    }
+
+    .scrub-timeline-panel {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      min-width: 0;
+      padding: 14px max(12px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(180deg, rgba(8, 13, 22, 0.68), rgba(8, 13, 22, 0.98));
+    }
+
+    .scrub-timeline-meta {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    #scrubTimelineTime {
+      flex: 0 0 auto;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      direction: ltr;
+    }
+
+    #scrubTimelineHint {
+      min-width: 0;
+      overflow: hidden;
+      color: #94a3b8;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .scrub-range-wrap {
+      width: 100%;
+      min-width: 0;
+      padding: 5px 0;
+    }
+
+    #scrubTimelineRange {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: 28px;
+      margin: 0;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      direction: ltr;
+      border: 0;
+      outline: none;
+      background: transparent;
+      touch-action: none;
+      cursor: ew-resize;
+    }
+
+    #scrubTimelineRange:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    #scrubTimelineRange::-webkit-slider-runnable-track {
+      height: 5px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #8b5cf6, #d946ef);
+    }
+
+    #scrubTimelineRange::-moz-range-track {
+      height: 5px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #8b5cf6, #d946ef);
+    }
+
+    #scrubTimelineRange::-webkit-slider-thumb {
+      width: 19px;
+      height: 19px;
+      margin-top: -7px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.24);
+    }
+
+    #scrubTimelineRange::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.24);
+    }
+
+    .scrub-offscreen-video {
+      position: fixed !important;
+      z-index: 0 !important;
+      top: 0 !important;
+      left: -10000px !important;
+      width: 2px !important;
+      height: 2px !important;
+      opacity: 0.01 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+
+    @media (max-height: 500px) {
+      .scrub-preview-box {
+        bottom: calc(124px + env(safe-area-inset-bottom));
+      }
+
+      .scrub-timeline-panel {
+        padding-top: 9px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+      }
+
+      .scrub-timeline-meta {
+        margin-bottom: 5px;
+      }
+    }
+
   </style>
 
 </head>
@@ -3186,6 +3466,9 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
         <button id="appMenuBtn" class="app-menu-button" type="button" aria-label="فتح قائمة التحكم" aria-controls="appDrawer" aria-expanded="false" onclick="toggleAppDrawer()">
           <i class="fa-solid fa-bars" aria-hidden="true"></i>
         </button>
+        <button id="openScrubTimelineBtn" class="visual-scrub-open" type="button" title="فتح المعاينة الزمنية" aria-label="فتح شريط المعاينة الزمنية">
+          <i class="fa-solid fa-film" aria-hidden="true"></i>
+        </button>
         <button class="control-button sync-control icon-only" type="button" onclick="forceSync()" title="مزامنة الآن" aria-label="مزامنة الآن">
           <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
         </button>
@@ -3293,6 +3576,27 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     </main>
   </div>
 
+  <section id="scrubTimelineOverlay" class="scrub-overlay" role="dialog" aria-modal="true" aria-label="المعاينة الزمنية للفيديو" aria-hidden="true">
+    <button id="closeScrubTimelineBtn" class="scrub-close-button" type="button" aria-label="إغلاق المعاينة الزمنية" title="إغلاق">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+    <div id="scrubPreviewBox" class="scrub-preview-box">
+      <canvas id="scrubPreviewCanvas" width="352" height="198" aria-label="معاينة إطار الفيديو"></canvas>
+      <span id="scrubPreviewStatus" class="scrub-preview-status" role="status"></span>
+      <span id="scrubPreviewCaption" class="scrub-preview-caption">00:00</span>
+    </div>
+    <div class="scrub-timeline-panel">
+      <div class="scrub-timeline-meta">
+        <span id="scrubTimelineHint">اسحب لمعاينة اللقطات ثم ارفع إصبعك للانتقال</span>
+        <span id="scrubTimelineTime">00:00 / 00:00</span>
+      </div>
+      <div class="scrub-range-wrap">
+        <input id="scrubTimelineRange" type="range" min="0" max="0" step="0.1" value="0" disabled aria-label="شريط السحب الزمني">
+      </div>
+    </div>
+  </section>
+  <video id="scrubOffscreenVideo" class="scrub-offscreen-video" muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+
   <script>
     function setAppDrawer(open) {
       const drawer = document.getElementById('appDrawer');
@@ -3342,7 +3646,41 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       techOrder: ['html5', 'youtube'], // السماح بالتبديل بين MP4 ويوتيوب
       userActions: { hotkeys: true },
       fluid: false,
-      fill: true // إجبار المشغل على ملاءمة مساحة الحاوية في كروم
+      fill: true, // إجبار المشغل على ملاءمة مساحة الحاوية في كروم
+      controlBar: {
+        pictureInPictureToggle: false, // حذف زر النافذة العائمة نهائياً
+        fullscreenToggle: true         // تفعيل وإظهار زر ملء الشاشة
+      }
+    });
+
+
+    class SeekFiveSecondsButton extends videojs.getComponent('Button') {
+      constructor(player, options) {
+        super(player, options);
+        this.offset = options.offset;
+        this.label = options.label;
+        this.addClass('vjs-seek-five');
+        this.addClass(this.offset < 0 ? 'vjs-seek-five-back' : 'vjs-seek-five-forward');
+        this.controlText(this.label);
+        this.el().setAttribute('aria-label', this.label);
+        this.el().setAttribute('title', this.label);
+        this.el().innerHTML = `<span class="vjs-seek-five-icon" aria-hidden="true"><i class="fa-solid ${this.offset < 0 ? 'fa-rotate-left' : 'fa-rotate-right'}"></i><b>5</b></span><span class="vjs-control-text">${this.label}</span>`;
+      }
+
+      handleClick() {
+        const currentTime = this.player().currentTime() || 0;
+        const duration = this.player().duration();
+        let nextTime = currentTime + this.offset;
+        if (this.offset > 0 && Number.isFinite(duration)) nextTime = Math.min(duration, nextTime);
+        this.player().currentTime(Math.max(0, nextTime));
+      }
+    }
+    videojs.registerComponent('SeekFiveSecondsButton', SeekFiveSecondsButton);
+    player.ready(function () {
+      const controlBar = player.getChild('controlBar');
+      if (!controlBar) return;
+      controlBar.addChild('SeekFiveSecondsButton', { offset: -5, label: 'إرجاع 5 ثوانٍ' }, 1);
+      controlBar.addChild('SeekFiveSecondsButton', { offset: 5, label: 'تقديم 5 ثوانٍ' }, 2);
     });
 
 
@@ -3898,6 +4236,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
     function handleSwipeStart(e, key) {
         if (e.touches && e.touches.length > 1) return;
         const point = e.touches ? e.touches[0] : e;
+        if (typeof point.clientX !== 'number' || typeof point.clientY !== 'number') return;
         swipeStartX = point.clientX;
         swipeStartY = point.clientY;
         currentSwipingKey = key;
@@ -3906,10 +4245,32 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
         isReadyToReply = false;
 
         const item = document.getElementById(`msg-item-${key}`);
+        const indicator = document.getElementById(`swipe-indicator-${key}`);
         if (item) {
             item.style.transition = 'none';
             item.style.transform = 'translateX(0)';
         }
+        if (indicator) {
+            indicator.style.transition = 'none';
+            indicator.style.opacity = '0';
+            indicator.style.transform = 'scale(0.5)';
+            indicator.classList.remove('ready', 'from-right');
+        }
+    }
+
+    function handleSwipePointerStart(e, key) {
+        if (e.pointerType === 'touch') return;
+        handleSwipeStart(e, key);
+    }
+
+    function handleSwipePointerMove(e, key) {
+        if (e.pointerType === 'touch') return;
+        handleSwipeMove(e, key);
+    }
+
+    function handleSwipePointerEnd(e, key, name, text) {
+        if (e.pointerType === 'touch') return;
+        handleSwipeEnd(e, key, name, text);
     }
 
     function handleSwipeMove(e, key) {
@@ -3938,14 +4299,21 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
                 return;
             }
 
-            if (diffX > 10) {
+            if (Math.abs(diffX) > 10) {
                 isHorizontalSwipe = true;
                 suppressTouchReactionUntil = Date.now() + 700;
+                const item = document.getElementById(`msg-item-${key}`);
+                if (item) item.style.animation = 'none';
             }
         }
 
-        if (isHorizontalSwipe && diffX > 0) {
+        if (isHorizontalSwipe) {
             if (e.cancelable) e.preventDefault();
+            if (e.pointerId !== undefined && e.pointerType !== 'touch' && e.currentTarget && e.currentTarget.setPointerCapture) {
+                try {
+                    if (!e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
+                } catch (error) {}
+            }
 
             cancelLongPress();
             suppressTouchReactionUntil = Date.now() + 700;
@@ -3954,17 +4322,18 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
                 closeReactionMenu();
             }
 
-            /* تحريك مباشر مع الإصبع، مع حد يمنع سحب الرسالة خارج الواجهة */
-            const moveX = Math.min(diffX, 96);
-            const item = document.getElementById(`msg-item-${key}`);
+            /* تحريك مباشر مع الإصبع بالاتجاهين، مع حد يمنع خروج الرسالة من الواجهة */
+            const moveX = Math.max(-96, Math.min(diffX, 96));
             const indicator = document.getElementById(`swipe-indicator-${key}`);
+            const item = document.getElementById(`msg-item-${key}`);
 
             if (item) {
                 item.style.transform = `translateX(${moveX}px)`;
             }
 
             if (indicator) {
-                const progress = Math.min(moveX / 45, 1);
+                indicator.classList.toggle('from-right', moveX < 0);
+                const progress = Math.min(Math.abs(moveX) / 45, 1);
                 indicator.style.opacity = progress;
                 indicator.style.transform = `scale(${0.5 + progress * 0.5})`;
 
@@ -4006,7 +4375,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
             indicator.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
             indicator.style.opacity = '0';
             indicator.style.transform = 'scale(0.5)';
-            indicator.classList.remove('ready');
+            indicator.classList.remove('ready', 'from-right');
             setTimeout(() => { indicator.style.transition = ''; }, 250);
         }
 
@@ -4030,7 +4399,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       if (text) {
-        db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
+        db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
         input.value = "";
         input.focus();
         db.ref(`typing/${userId}`).remove();
@@ -4061,7 +4430,7 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
           
 const compressedDataUrl = canvas.toDataURL('image/webp', 0.6); 
           // تمت إضافة الجنس (gender) هنا
-          db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
+          db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: compressedDataUrl, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
           db.ref(`typing/${userId}`).remove();
           cancelReply();
         };
@@ -4082,10 +4451,12 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
     }
 
 // دالة بناء وتوليد عناصر الرسائل
+    let currentRenderedMessages = [];
     function renderMessagesFromList(messagesList) {
       const msgDiv = document.getElementById('messages');
       if (!msgDiv) return;
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
+      currentRenderedMessages = messagesList;
 
       let htmlBuilder = "";
       let previousTime = 0;
@@ -4106,7 +4477,7 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
         if (m.isSystem) {
           htmlBuilder += `<div class="msg-system">${m.text}</div>`;
         } else {
-          const isMine = currentUser && m.name === currentUser.name;
+          const isMine = currentUser && (m.senderId ? m.senderId === userId : m.name === currentUser.name);
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
           if (m.img && m.isSticker) {
             contentHtml += `<img src="${m.img}" loading="lazy" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
@@ -4152,7 +4523,12 @@ htmlBuilder += `
               <div id="msg-item-${msgKey}" class="msg-item ${isStickerMsg && !m.text ? 'is-sticker' : ''}" style="width: 100%; min-width: 0; flex-direction: ${flexDir};"
                    ontouchstart="handleSwipeStart(event, '${msgKey}')"
                    ontouchmove="handleSwipeMove(event, '${msgKey}')"
-                   ontouchend="handleSwipeEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
+                   ontouchend="handleSwipeEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
+                   ontouchcancel="handleSwipeEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
+                   onpointerdown="handleSwipePointerStart(event, '${msgKey}')"
+                   onpointermove="handleSwipePointerMove(event, '${msgKey}')"
+                   onpointerup="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
+                   onpointercancel="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
                 <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
                 <div style="display:flex; flex:0 1 auto; flex-direction:column; align-items: ${isFemale ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
                     ${replyHtml}
@@ -4169,7 +4545,7 @@ htmlBuilder += `
                       <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
                     </div>
                     ${reactionsHtml}
-                    <div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>
+                    ${isMine ? `<div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>` : ''}
                 </div>
               </div>
             </div>
@@ -4183,10 +4559,7 @@ htmlBuilder += `
       msgDiv.innerHTML = htmlBuilder;
       if (isScrolledToBottom || window.isChatLocked) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
-        if (messagesList.length > 0 && currentUser) {
-            const lastMsgId = messagesList[messagesList.length - 1].key;
-            db.ref(`lastSeen/${userId}`).set({ avatar: currentUser.avatar, msgKey: lastMsgId });
-        }
+          markMessagesAsSeen();
       }
       renderSeenAvatars();
     }
@@ -4200,11 +4573,25 @@ let lastSeenData = {};
     function renderSeenAvatars() {
         document.querySelectorAll('.seen-container').forEach(el => el.innerHTML = '');
         const seenByMsg = {};
+
         Object.keys(lastSeenData).forEach(uid => {
-            if (uid !== userId) {
-                const data = lastSeenData[uid];
-                if (!seenByMsg[data.msgKey]) seenByMsg[data.msgKey] = [];
-                seenByMsg[data.msgKey].push(data.avatar);
+            if (uid === userId) return;
+            const data = lastSeenData[uid];
+            if (!data || !data.msgKey) return;
+
+            const readIndex = currentRenderedMessages.findIndex(item => item.key === data.msgKey);
+            if (readIndex < 0) return;
+
+            /* إيصال القراءة يوضع على آخر رسالة أرسلها المستخدم الحالي قبل موضع القراءة */
+            for (let i = readIndex; i >= 0; i--) {
+                const message = currentRenderedMessages[i] && currentRenderedMessages[i].val;
+                const isCurrentUsersMessage = message && !message.isSystem && currentUser &&
+                    (message.senderId ? message.senderId === userId : message.name === currentUser.name);
+                if (isCurrentUsersMessage) {
+                    if (!seenByMsg[currentRenderedMessages[i].key]) seenByMsg[currentRenderedMessages[i].key] = [];
+                    if (data.avatar) seenByMsg[currentRenderedMessages[i].key].push(data.avatar);
+                    break;
+                }
             }
         });
 
@@ -4218,6 +4605,30 @@ let lastSeenData = {};
                 container.innerHTML = html;
             }
         });
+    }
+
+    let lastSeenWriteKey = null;
+    function markMessagesAsSeen() {
+        const msgDiv = document.getElementById('messages');
+        if (!msgDiv || !currentUser || !currentRenderedMessages.length) return;
+        const atBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
+        if (!atBottom && !window.isChatLocked) return;
+
+        const lastMessage = currentRenderedMessages[currentRenderedMessages.length - 1];
+        if (!lastMessage || !lastMessage.key) return;
+        const existingSeen = lastSeenData[userId];
+        if (lastSeenWriteKey === lastMessage.key || (existingSeen && existingSeen.msgKey === lastMessage.key)) {
+            lastSeenWriteKey = lastMessage.key;
+            return;
+        }
+
+        lastSeenWriteKey = lastMessage.key;
+        db.ref(`lastSeen/${userId}`).set({ avatar: currentUser.avatar, msgKey: lastMessage.key });
+    }
+
+    const messagesReadTracker = document.getElementById('messages');
+    if (messagesReadTracker) {
+        messagesReadTracker.addEventListener('scroll', markMessagesAsSeen, { passive: true });
     }
 
     // عرض الكاش المحفوظ فوراً من ذاكرة الهاتف عند فتح الصفحة
@@ -4372,6 +4783,7 @@ let lastSeenData = {};
     function sendSuggestedSticker(imgUrl) {
         db.ref('chat').push({ 
             name: currentUser.name, 
+            senderId: userId,
             avatar: currentUser.avatar, 
             gender: currentUser.gender || 'male', 
             img: imgUrl, 
@@ -5029,7 +5441,7 @@ function sendSavedSticker(imgSrc) {
       document.getElementById('stickersPanel').style.display = 'none'; // إغلاق سريع
       requestAnimationFrame(() => {
           setTimeout(() => {
-              db.ref('chat').push({ name: currentUser.name, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
+              db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', img: imgSrc, isSticker: true, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
               cancelReply();
           }, 10);
       });
@@ -5727,6 +6139,357 @@ window.addEventListener('mouseup', stopResize);
       });
     }
 
+  </script>
+
+  <script>
+    // معاينة اللقطات أثناء السحب: مصدر HTML5 منفصل حتى لا يتأثر تشغيل الفيديو الأساسي.
+    (() => {
+      const overlay = document.getElementById('scrubTimelineOverlay');
+      const openButton = document.getElementById('openScrubTimelineBtn');
+      const closeButton = document.getElementById('closeScrubTimelineBtn');
+      const range = document.getElementById('scrubTimelineRange');
+      const previewBox = document.getElementById('scrubPreviewBox');
+      const canvas = document.getElementById('scrubPreviewCanvas');
+      const caption = document.getElementById('scrubPreviewCaption');
+      const previewStatus = document.getElementById('scrubPreviewStatus');
+      const timelineTime = document.getElementById('scrubTimelineTime');
+      const timelineHint = document.getElementById('scrubTimelineHint');
+      const previewVideo = document.getElementById('scrubOffscreenVideo');
+      const context = canvas.getContext('2d', { alpha: false });
+
+      let scrubIsOpen = false;
+      let scrubIsDragging = false;
+      let pendingPreviewTime = null;
+      let previewSeekTimer = null;
+      let pendingSeekFrame = null;
+      let lastPreviewSeekAt = 0;
+      let previewFrameUnavailable = false;
+      let previewCanRender = false;
+      let currentScrubTime = 0;
+
+      function formatScrubTime(seconds) {
+        const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+        const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, '0');
+        const remainder = (safeSeconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${remainder}`;
+      }
+
+      function setPreviewStatus(message) {
+        previewStatus.textContent = message || '';
+        previewStatus.classList.toggle('is-visible', Boolean(message));
+      }
+
+      function clearPreviewCanvas() {
+        if (!context) return;
+        context.fillStyle = '#050810';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function getScrubDuration() {
+        let duration = Number(player.duration());
+        if (!Number.isFinite(duration) || duration <= 0) {
+          duration = Number(previewVideo.duration);
+        }
+        return Number.isFinite(duration) && duration > 0 ? duration : 0;
+      }
+
+      function updateScrubTimeline(value) {
+        const duration = getScrubDuration();
+        if (duration > 0) {
+          range.max = String(duration);
+          range.disabled = false;
+          const selected = Math.max(0, Math.min(duration, Number(value) || 0));
+          range.value = String(selected);
+          currentScrubTime = selected;
+          timelineTime.textContent = `${formatScrubTime(selected)} / ${formatScrubTime(duration)}`;
+          caption.textContent = formatScrubTime(selected);
+        } else {
+          range.max = '0';
+          range.value = '0';
+          range.disabled = true;
+          currentScrubTime = 0;
+          timelineTime.textContent = '00:00 / --:--';
+          caption.textContent = '00:00';
+        }
+      }
+
+      function drawScrubFrame() {
+        if (!context || previewFrameUnavailable) return;
+        if (previewVideo.readyState < 2 || !previewVideo.videoWidth || !previewVideo.videoHeight) return;
+
+        try {
+          const canvasWidth = canvas.width;
+          const canvasHeight = canvas.height;
+          const scale = Math.min(canvasWidth / previewVideo.videoWidth, canvasHeight / previewVideo.videoHeight);
+          const drawWidth = previewVideo.videoWidth * scale;
+          const drawHeight = previewVideo.videoHeight * scale;
+          const drawX = (canvasWidth - drawWidth) / 2;
+          const drawY = (canvasHeight - drawHeight) / 2;
+          context.fillStyle = '#050810';
+          context.fillRect(0, 0, canvasWidth, canvasHeight);
+          context.drawImage(previewVideo, drawX, drawY, drawWidth, drawHeight);
+          setPreviewStatus('');
+        } catch (error) {
+          previewFrameUnavailable = true;
+          setPreviewStatus('تعذر استخراج الإطار من هذا المصدر أو بسبب قيود CORS');
+          console.warn('تعذر رسم إطار المعاينة الزمنية:', error);
+        }
+      }
+
+      function startPendingPreviewSeek() {
+        if (!scrubIsOpen || !previewCanRender || pendingPreviewTime === null || previewFrameUnavailable) return;
+        if (previewVideo.seeking) return;
+        if (previewVideo.readyState < 1) return;
+
+        const duration = Number(previewVideo.duration);
+        const upperBound = Number.isFinite(duration) && duration > 0 ? Math.max(0, duration - 0.05) : pendingPreviewTime;
+        const targetTime = Math.max(0, Math.min(upperBound, pendingPreviewTime));
+        pendingPreviewTime = null;
+
+        if (previewVideo.readyState >= 2 && Math.abs((Number(previewVideo.currentTime) || 0) - targetTime) < 0.04) {
+          drawScrubFrame();
+          return;
+        }
+        try {
+          if (typeof previewVideo.fastSeek === 'function') {
+            previewVideo.fastSeek(targetTime);
+          } else {
+            previewVideo.currentTime = targetTime;
+          }
+          lastPreviewSeekAt = performance.now();
+        } catch (error) {
+          pendingPreviewTime = targetTime;
+          setPreviewStatus('جارٍ تجهيز إطار المعاينة…');
+        }
+      }
+
+      function queuePreviewFrame(seconds) {
+        if (!previewCanRender || previewFrameUnavailable) return;
+        pendingPreviewTime = Number(seconds) || 0;
+        if (previewVideo.seeking) return;
+        if (previewSeekTimer) clearTimeout(previewSeekTimer);
+        const elapsed = performance.now() - lastPreviewSeekAt;
+        const waitMs = Math.max(0, 70 - elapsed);
+        previewSeekTimer = setTimeout(() => {
+          previewSeekTimer = null;
+          if (!scrubIsOpen || pendingPreviewTime === null) return;
+          if (pendingSeekFrame !== null) cancelAnimationFrame(pendingSeekFrame);
+          pendingSeekFrame = requestAnimationFrame(() => {
+            pendingSeekFrame = null;
+            startPendingPreviewSeek();
+          });
+        }, waitMs);
+      }
+
+      function updatePreviewPosition(targetTime = currentScrubTime) {
+        if (!scrubIsOpen) return;
+        const rect = range.getBoundingClientRect();
+        const percent = (targetTime - range.min) / (range.max - range.min);
+        const currentThumbX = rect.left + (rect.width * percent);
+        const halfBox = previewBox.offsetWidth / 2;
+        const safeLeft = Math.max(halfBox + 8, Math.min(window.innerWidth - halfBox - 8, currentThumbX));
+        previewBox.style.left = `${safeLeft}px`;
+      }
+
+      function setScrubHint(message) {
+        timelineHint.textContent = message;
+      }
+
+      function syncPreviewSource() {
+        if (!scrubIsOpen) return;
+
+        let techElement = null;
+        try {
+          const tech = player.tech(true);
+          techElement = tech && typeof tech.el === 'function' ? tech.el() : null;
+        } catch (_) {
+          techElement = null;
+        }
+        if (!techElement) techElement = document.getElementById('videoPlayer_html5_api');
+
+        if (!techElement || techElement.tagName !== 'VIDEO') {
+          previewCanRender = false;
+          pendingPreviewTime = null;
+          previewVideo.pause();
+          clearPreviewCanvas();
+          setPreviewStatus('المعاينة الحية متاحة لمصادر HTML5 فقط');
+          setScrubHint('يمكنك السحب للانتقال؛ لا يمكن استخراج لقطة مباشرة من هذا المشغل');
+          updateScrubTimeline(player.currentTime());
+          return;
+        }
+
+        const source = player.currentSrc() || techElement.currentSrc || techElement.src || '';
+        if (!source) {
+          previewCanRender = false;
+          pendingPreviewTime = null;
+          previewVideo.pause();
+          clearPreviewCanvas();
+          setPreviewStatus('حمّل فيديو أولاً لعرض اللقطات');
+          setScrubHint('لا يوجد مصدر فيديو محمّل حالياً');
+          updateScrubTimeline(0);
+          return;
+        }
+
+        if (previewVideo.dataset.source === source) {
+          previewCanRender = !previewFrameUnavailable;
+          if (previewFrameUnavailable) {
+            setPreviewStatus('تعذر استخراج لقطة من هذا المصدر؛ يمكنك متابعة السحب والانتقال');
+          }
+          updateScrubTimeline(currentScrubTime);
+          return;
+        }
+
+        previewFrameUnavailable = false;
+        previewCanRender = true;
+        pendingPreviewTime = null;
+        setPreviewStatus('جارٍ تجهيز إطار المعاينة…');
+        setScrubHint('اسحب لمعاينة اللقطات ثم ارفع إصبعك للانتقال');
+        previewVideo.pause();
+        previewVideo.removeAttribute('src');
+        previewVideo.dataset.source = source;
+        previewVideo.crossOrigin = 'anonymous';
+        previewVideo.src = source;
+        previewVideo.load();
+        updateScrubTimeline(player.currentTime());
+      }
+
+      function openScrubTimeline() {
+        if (scrubIsOpen) return;
+        scrubIsOpen = true;
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('visual-scrub-open');
+        currentScrubTime = Number(player.currentTime()) || 0;
+        updateScrubTimeline(currentScrubTime);
+        setPreviewStatus('جارٍ تجهيز إطار المعاينة…');
+        setScrubHint('اسحب لمعاينة اللقطات ثم ارفع إصبعك للانتقال');
+        syncPreviewSource();
+        queuePreviewFrame(currentScrubTime);
+        updatePreviewPosition();
+        range.focus({ preventScroll: true });
+      }
+
+      function closeScrubTimeline(restoreFocus) {
+        if (!scrubIsOpen) return;
+        scrubIsOpen = false;
+        scrubIsDragging = false;
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('visual-scrub-open');
+        if (previewSeekTimer) {
+          clearTimeout(previewSeekTimer);
+          previewSeekTimer = null;
+        }
+        if (pendingSeekFrame !== null) {
+          cancelAnimationFrame(pendingSeekFrame);
+          pendingSeekFrame = null;
+        }
+        pendingPreviewTime = null;
+        previewVideo.pause();
+        if (restoreFocus && openButton) openButton.focus({ preventScroll: true });
+      }
+
+      function previewRangeInput() {
+        if (!scrubIsOpen || range.disabled) return;
+        currentScrubTime = Number(range.value) || 0;
+        updateScrubTimeline(currentScrubTime);
+        updatePreviewPosition();
+        queuePreviewFrame(currentScrubTime);
+      }
+
+      function commitScrubSelection() {
+        if (!scrubIsOpen || range.disabled) return;
+        const duration = getScrubDuration();
+        if (!duration) return;
+        const targetTime = Math.max(0, Math.min(duration, Number(range.value) || 0));
+
+        try {
+          isSystemAction = true;
+          player.currentTime(targetTime);
+          db.ref('videoState').update({
+            time: targetTime,
+            timestamp: Date.now(),
+            sender: currentUser && currentUser.name ? currentUser.name : 'مستخدم',
+            action: player.paused() ? 'pause' : 'play'
+          }).catch((error) => console.warn('تعذرت مزامنة القفزة الزمنية:', error));
+          setTimeout(() => { isSystemAction = false; }, 800);
+        } catch (error) {
+          isSystemAction = false;
+          console.error('تعذر الانتقال إلى التوقيت المختار:', error);
+          setScrubHint('تعذر الانتقال الآن؛ تحقق من تحميل الفيديو');
+          return;
+        }
+
+        closeScrubTimeline(true);
+      }
+
+      previewVideo.addEventListener('loadedmetadata', () => {
+        if (!scrubIsOpen || !previewCanRender) return;
+        updateScrubTimeline(currentScrubTime);
+        if (pendingPreviewTime === null) pendingPreviewTime = currentScrubTime;
+        startPendingPreviewSeek();
+      });
+      previewVideo.addEventListener('loadeddata', () => {
+        if (!previewCanRender) return;
+        if (pendingPreviewTime !== null) startPendingPreviewSeek();
+        else drawScrubFrame();
+      });
+      previewVideo.addEventListener('seeked', () => {
+        if (!previewCanRender) return;
+        drawScrubFrame();
+        if (pendingPreviewTime !== null) {
+          queuePreviewFrame(pendingPreviewTime);
+        }
+      });
+      previewVideo.addEventListener('error', () => {
+        if (!scrubIsOpen) return;
+        previewFrameUnavailable = true;
+        setPreviewStatus('تعذر تحميل لقطة من هذا المصدر؛ يمكنك متابعة السحب والانتقال');
+      });
+
+      openButton.addEventListener('click', openScrubTimeline);
+      closeButton.addEventListener('click', () => closeScrubTimeline(true));
+      range.addEventListener('input', previewRangeInput);
+      range.addEventListener('change', () => {
+        if (scrubIsOpen && !scrubIsDragging) commitScrubSelection();
+      });
+
+      function releaseScrubDrag() {
+        if (!scrubIsDragging) return;
+        scrubIsDragging = false;
+        commitScrubSelection();
+      }
+
+      if (window.PointerEvent) {
+        range.addEventListener('pointerdown', () => { scrubIsDragging = true; });
+        window.addEventListener('pointerup', releaseScrubDrag);
+        window.addEventListener('pointercancel', releaseScrubDrag);
+      }
+      // Explicit mouse/touch fallbacks; in PointerEvent browsers the drag flag
+      // makes the later compatibility event a harmless no-op.
+      range.addEventListener('mousedown', () => { scrubIsDragging = true; });
+      range.addEventListener('touchstart', () => { scrubIsDragging = true; }, { passive: true });
+      window.addEventListener('mouseup', releaseScrubDrag);
+      window.addEventListener('touchend', releaseScrubDrag, { passive: true });
+
+      ['loadedmetadata', 'durationchange', 'sourceset'].forEach((eventName) => {
+        player.on(eventName, () => {
+          if (!scrubIsOpen) return;
+          updateScrubTimeline(currentScrubTime);
+          syncPreviewSource();
+          updatePreviewPosition();
+        });
+      });
+      player.on('loadstart', () => {
+        if (scrubIsOpen) setTimeout(syncPreviewSource, 0);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && scrubIsOpen) closeScrubTimeline(true);
+      });
+      window.addEventListener('resize', updatePreviewPosition);
+      window.addEventListener('orientationchange', () => setTimeout(updatePreviewPosition, 80));
+    })();
   </script>
 </body>
 
