@@ -3460,8 +3460,18 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
     .chat-bottom-bar .input-group:focus-within {
       border-color: #38bdf8 !important;
-      box-shadow: 0 14px 36px rgba(2, 132, 199, 0.3), 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
+      box-shadow: 0 14px 36px rgba(2, 132, 199, 0.35), 0 0 25px rgba(14, 165, 233, 0.45) !important;
     }
+    .chat-bottom-bar .input-group input[type="text"],
+    .chat-bottom-bar .input-group input[type="text"]:focus {
+      outline: none !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      -webkit-appearance: none !important;
+    }
+
+
     .chat-bottom-bar .input-group .icon-btn {
       background: rgba(14, 165, 233, 0.08) !important;
       border: 1px solid rgba(56, 189, 248, 0.18) !important;
@@ -3478,8 +3488,21 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%) !important;
       border: 1px solid rgba(186, 230, 253, 0.45) !important;
       border-radius: 50% !important;
-      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
+      box-shadow: 0 4px 12px rgba(2, 6, 23, 0.6) !important;
+      outline: none !important;
+      transition: all 0.5s ease !important;
     }
+    .chat-bottom-bar .input-group > button:last-child.send-glow {
+      box-shadow: 0 8px 30px rgba(14, 165, 233, 0.95), 0 0 24px rgba(56, 189, 248, 0.85) !important;
+      filter: brightness(1.2) !important;
+      transform: scale(1.08) !important;
+    }
+    .chat-bottom-bar .input-group > button:last-child:focus {
+      outline: none !important;
+    }
+
+
+
 
     .premium-toolbar-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 12px !important; background: rgba(13, 27, 54, 0.85) !important; color: #7dd3fc !important; border: 1px solid rgba(56, 189, 248, 0.22) !important; transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1); cursor: pointer; padding: 0; font-size: 0.92rem; box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.12) !important; }
     .premium-toolbar-btn:hover { background: linear-gradient(135deg, #1d4ed8, #0ea5e9) !important; color: #fff !important; border-color: #7dd3fc !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4) !important; }
@@ -4605,12 +4628,20 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
 
     function sendMessage() {
       if (!currentUser) return;
+      const sendBtn = document.querySelector('.chat-bottom-bar .input-group > button:last-child');
+      if (sendBtn) {
+        sendBtn.classList.add('send-glow');
+        setTimeout(() => {
+          sendBtn.classList.remove('send-glow');
+          sendBtn.blur();
+        }, 1000);
+      }
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
       if (text) {
         db.ref('chat').push({ name: currentUser.name, senderId: userId, avatar: currentUser.avatar, gender: currentUser.gender || 'male', text: text, time: Date.now(), isSystem: false, replyTo: currentReplyContext });
         input.value = "";
-        input.focus();
+        input.blur();
         db.ref(`typing/${userId}`).remove();
         cancelReply();
         
@@ -4618,6 +4649,9 @@ let swipeStartX = null, swipeStartY = null, currentSwipingKey = null, isHorizont
         if (suggestBox) suggestBox.classList.remove('active');
       }
     }
+
+
+
 
     // إرسال الصور (مع ضغط الحجم وإضافة الجنس)
     function sendImage(input) {
@@ -4750,7 +4784,8 @@ htmlBuilder += `
                          ontouchstart="startLongPress(event, '${msgKey}')" 
                          ontouchend="cancelLongPress()"
                          oncontextmenu="event.preventDefault(); showReactionMenu(event, '${msgKey}');">
-                      <span class="msg-name" style="display: block; color: ${isMine ? '#e0e7ff' : 'var(--accent)'}; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+                      <span class="msg-name" style="display: block; color: ${isMine ? '#ffffff' : (isFemale ? '#7dd3fc' : '#93c5fd')}; text-shadow: 0 1px 3px rgba(0,0,0,0.6); font-weight: 800; text-align: ${textAlign};">${m.name} ${deleteBtn}</span>
+
                       <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
                     </div>
                     ${reactionsHtml}
