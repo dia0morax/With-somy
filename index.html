@@ -738,7 +738,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       border-color: var(--accent);
     }
 
-    /* امنع صفوف الرسائل من الانكماش إلى عرض النص أو الصفر داخل Flex */
+    /* صف الرسائل بعرض كامل واتجاه عربي؛ رسائلي يمين ورسائل الطرف الآخر يسار */
     .msg-row-wrapper {
       flex: 0 0 auto !important;
       width: 100% !important;
@@ -746,29 +746,56 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     .msg-row-wrapper > .msg-item {
+      display: flex !important;
       flex: 0 0 100% !important;
       width: 100% !important;
-      min-width: 0 !important;
       max-width: 100% !important;
-    }
-
-    /* أعطِ منطقة الرسالة عرضاً محدداً؛ لا تستخدم max-content هنا */
-    .msg-item > .msg-avatar + div {
-      flex: 0 1 82% !important;
-      width: 82% !important;
-      max-width: 620px !important;
       min-width: 0 !important;
+      gap: 8px;
+      align-items: flex-end;
+      direction: rtl !important;
     }
 
-    /* اجعل الفقاعة بعرض النص الطبيعي ضمن المساحة المتاحة */
-    .msg-content {
+    .msg-row-wrapper > .msg-item.is-mine {
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+    }
+
+    .msg-row-wrapper > .msg-item.is-other {
+      flex-direction: row-reverse !important;
+      justify-content: flex-start !important;
+    }
+
+    /* عمود المحتوى يترك مساحة للصورة الرمزية ويلتصق بالجهة المجاورة لها */
+    .msg-row-wrapper > .msg-item > .msg-avatar + div {
+      display: flex !important;
+      flex: 0 1 calc(100% - 38px) !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      width: calc(100% - 38px) !important;
+      max-width: calc(100% - 38px) !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    .msg-row-wrapper > .msg-item.is-mine > .msg-avatar + div {
+      direction: rtl !important;
+    }
+
+    .msg-row-wrapper > .msg-item.is-other > .msg-avatar + div {
+      direction: ltr !important;
+    }
+
+    /* الفقاعة بعرض النص الطبيعي، وبحد أقصى 80% من مساحة عمود الرسالة */
+    .msg-row-wrapper > .msg-item > .msg-avatar + div > .msg-content {
       display: block;
       width: fit-content !important;
-      max-width: 100% !important;
+      max-width: 80% !important;
       min-width: 0 !important;
       padding: 9px 13px;
       border: 1px solid transparent;
       border-radius: 17px;
+      box-sizing: border-box !important;
       font-size: 0.88rem;
       font-weight: 500;
       line-height: 1.6;
@@ -776,12 +803,11 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       text-align: right !important;
       unicode-bidi: plaintext !important;
       word-break: normal !important;
-      overflow-wrap: break-word !important;
+      overflow-wrap: anywhere !important;
       white-space: normal !important;
       box-shadow: none !important;
     }
 
-    /* أزل العرض النسبي الذي كان يسبب دورة في حساب عرض الفقاعة */
     .msg-content > div:last-of-type {
       display: block !important;
       width: auto !important;
@@ -791,13 +817,12 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       text-align: right !important;
       unicode-bidi: plaintext !important;
       word-break: normal !important;
-      overflow-wrap: break-word !important;
+      overflow-wrap: anywhere !important;
       white-space: normal !important;
     }
 
-    /* طبّق اتجاه العربية مباشرة على عنصر النص الفعلي */
     .msg-content > div:last-of-type > div {
-      display: block;
+      display: block !important;
       width: auto !important;
       max-width: 100% !important;
       min-width: 0 !important;
@@ -805,7 +830,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       text-align: right !important;
       unicode-bidi: plaintext !important;
       word-break: normal !important;
-      overflow-wrap: break-word !important;
+      overflow-wrap: anywhere !important;
       white-space: normal !important;
     }
 
@@ -4825,7 +4850,7 @@ const compressedDataUrl = canvas.toDataURL('image/webp', 0.6);
           const floatDir = isMine ? 'left' : 'right';
           const textAlign = 'right';
 
-          const deleteBtn = `<span onclick="deleteMessage('${msgKey}', event)" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer; position: relative; z-index: 10;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
+          const deleteBtn = `<span onclick="event.stopPropagation(); deleteMessage('${msgKey}', event)" onpointerdown="event.stopPropagation()" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()" class="delete-btn-msg" style="float: ${floatDir}; cursor: pointer; position: relative; z-index: 10;" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></span>`;
 
 
           let reactionsHtml = '';
