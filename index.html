@@ -3684,67 +3684,681 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     <span onclick="customReactionPrompt()" class="more-btn" title="المزيد..."><i class="fa-solid fa-plus"></i></span>
   </div>
 
-  <!-- النافذة المنبثقة لإعدادات المشاهدة (Premium Redesign) -->
+  <!-- ستايلات مركز البث والميديا الفاخر (Ultra-Premium Media Hub) -->
+  <style>
+    #settingsModal .hub-modal-card {
+      max-width: 450px !important;
+      width: 94% !important;
+      padding: 20px !important;
+      gap: 14px !important;
+      background: linear-gradient(165deg, rgba(8, 18, 38, 0.96) 0%, rgba(3, 8, 20, 0.99) 100%) !important;
+      border: 1px solid rgba(56, 189, 248, 0.25) !important;
+      border-radius: 26px !important;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(14, 165, 233, 0.14), inset 0 1px 0 rgba(186, 230, 253, 0.2) !important;
+    }
+
+    .hub-top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.14);
+    }
+
+    .hub-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hub-brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.35), rgba(14, 165, 233, 0.22));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 1.15rem;
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .hub-brand-text h3 {
+      color: #f8fafc;
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .hub-brand-text span {
+      color: #7fa2c9;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .hub-close-circle {
+      width: 36px !important;
+      min-width: 36px !important;
+      height: 36px !important;
+      min-height: 36px !important;
+      border-radius: 50% !important;
+      padding: 0 !important;
+      background: rgba(15, 30, 58, 0.8) !important;
+      border: 1px solid rgba(56, 189, 248, 0.2) !important;
+      color: #94a3b8 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem !important;
+      box-shadow: none !important;
+    }
+
+    .hub-close-circle:hover {
+      background: rgba(239, 68, 68, 0.18) !important;
+      border-color: rgba(248, 113, 113, 0.5) !important;
+      color: #fca5a5 !important;
+    }
+
+    /* نظام التبويبات المدمج (Segmented Control) */
+    .hub-segmented-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 5px;
+      background: rgba(3, 7, 18, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+      border-radius: 16px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .hub-seg-btn {
+      min-height: 40px !important;
+      padding: 8px 10px !important;
+      border-radius: 12px !important;
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      color: #7fa2c9 !important;
+      font-size: 0.8rem !important;
+      font-weight: 700 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: none !important;
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }
+
+    .hub-seg-btn:hover {
+      color: #e0f2fe !important;
+      transform: none !important;
+    }
+
+    .hub-seg-btn.active {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 55%, #0ea5e9 100%) !important;
+      border-color: rgba(125, 211, 252, 0.45) !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    }
+
+    .hub-tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      animation: hubFadeIn 0.22s ease-out;
+    }
+
+    .hub-tab-panel.active {
+      display: flex;
+    }
+
+    @keyframes hubFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* كبسولة إدخال وتشغيل الرابط الموحدة */
+    .hub-command-box {
+      background: linear-gradient(145deg, rgba(12, 25, 51, 0.72), rgba(6, 14, 30, 0.88));
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 18px;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.08);
+    }
+
+    .hub-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #bae6fd;
+    }
+
+    .hub-label-row span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hub-url-capsule {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(3, 7, 18, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.26);
+      border-radius: 14px;
+      padding: 4px;
+      transition: all 0.25s ease;
+    }
+
+    .hub-url-capsule:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), 0 0 20px rgba(14, 165, 233, 0.25);
+    }
+
+    .hub-url-capsule input[type="text"] {
+      flex: 1 1 auto !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 10px !important;
+      font-size: 0.84rem !important;
+      color: #f8fafc !important;
+    }
+
+    .hub-play-trigger {
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 15px !important;
+      border-radius: 11px !important;
+      font-size: 0.8rem !important;
+      font-weight: 800 !important;
+      flex-shrink: 0;
+      gap: 6px !important;
+    }
+
+    /* بطاقات الوصول السريع (Google Drive + Local File) */
+    .hub-quick-sources {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .hub-source-tile {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 10px !important;
+      padding: 10px 12px !important;
+      min-height: 52px !important;
+      border-radius: 14px !important;
+      background: rgba(14, 29, 58, 0.65) !important;
+      border: 1px solid rgba(56, 189, 248, 0.2) !important;
+      text-align: right !important;
+      box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
+    }
+
+    .hub-source-tile:hover {
+      background: linear-gradient(135deg, rgba(29, 78, 216, 0.35), rgba(14, 165, 233, 0.25)) !important;
+      border-color: #38bdf8 !important;
+    }
+
+    .hub-tile-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(14, 165, 233, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .hub-tile-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .hub-tile-meta strong {
+      font-size: 0.78rem;
+      color: #f0f7ff;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hub-tile-meta small {
+      font-size: 0.64rem;
+      color: #7fa2c9;
+      font-weight: 600;
+    }
+
+    /* تصميم سجل المشاهدة المطور */
+    .hub-history-scroll {
+      max-height: 155px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding-left: 2px;
+    }
+
+    .hub-history-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 13px;
+      background: rgba(7, 16, 34, 0.78);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .hub-history-row:hover {
+      border-color: #38bdf8;
+      background: rgba(16, 34, 68, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .hub-history-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hub-history-play {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: rgba(14, 165, 233, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .hub-history-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hub-history-url {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .hub-history-sub {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .hub-type-pill {
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: rgba(14, 165, 233, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .hub-sender-tag {
+      font-size: 0.65rem;
+      color: #7fa2c9;
+      font-weight: 600;
+    }
+
+    /* بطاقات حلقات السيرفر الاحترافية */
+    .hub-episodes-scroll {
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-left: 2px;
+    }
+
+    .hub-ep-card {
+      background: linear-gradient(145deg, rgba(12, 26, 54, 0.78), rgba(6, 14, 30, 0.92)) !important;
+      border: 1px solid rgba(56, 189, 248, 0.2) !important;
+      border-radius: 16px !important;
+      padding: 12px !important;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(186, 230, 253, 0.08) !important;
+    }
+
+    .hub-ep-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .hub-ep-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hub-ep-edit-btn {
+      width: 28px !important;
+      min-width: 28px !important;
+      height: 28px !important;
+      min-height: 28px !important;
+      padding: 0 !important;
+      border-radius: 8px !important;
+      background: rgba(14, 165, 233, 0.12) !important;
+      border: 1px solid rgba(56, 189, 248, 0.25) !important;
+      color: #7dd3fc !important;
+      font-size: 0.7rem !important;
+      flex-shrink: 0;
+      box-shadow: none !important;
+    }
+
+    .hub-ep-name {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      direction: ltr;
+      text-align: right;
+      flex: 1;
+    }
+
+    .hub-ep-badges {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .hub-status-pill {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 99px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hub-status-pill.ready {
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .hub-status-pill.cloud {
+      background: rgba(14, 165, 233, 0.14);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.28);
+    }
+
+    .hub-size-pill {
+      font-size: 0.64rem;
+      font-family: monospace;
+      font-weight: 700;
+      color: #94a3b8;
+      background: rgba(2, 6, 23, 0.65);
+      padding: 2px 7px;
+      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      direction: ltr;
+    }
+
+    .hub-ep-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .hub-ep-btn-main {
+      flex: 1.5 !important;
+      min-height: 36px !important;
+      height: 36px !important;
+      padding: 0 10px !important;
+      border-radius: 10px !important;
+      font-size: 0.74rem !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+    }
+
+    .hub-ep-btn-sub {
+      flex: 1 !important;
+      min-height: 36px !important;
+      height: 36px !important;
+      padding: 0 8px !important;
+      border-radius: 10px !important;
+      font-size: 0.72rem !important;
+      font-weight: 700 !important;
+      white-space: nowrap !important;
+      background: rgba(15, 30, 58, 0.75) !important;
+      border: 1px solid rgba(56, 189, 248, 0.22) !important;
+      color: #cbd5e1 !important;
+      box-shadow: none !important;
+    }
+
+    .hub-ep-btn-sub:hover {
+      border-color: #38bdf8 !important;
+      color: #fff !important;
+      background: rgba(14, 165, 233, 0.22) !important;
+    }
+
+    .hub-ep-btn-danger {
+      flex: 0 0 36px !important;
+      width: 36px !important;
+      min-width: 36px !important;
+      height: 36px !important;
+      min-height: 36px !important;
+      padding: 0 !important;
+      border-radius: 10px !important;
+      background: rgba(239, 68, 68, 0.12) !important;
+      border: 1px solid rgba(248, 113, 113, 0.3) !important;
+      color: #f87171 !important;
+      box-shadow: none !important;
+    }
+
+    .hub-ep-btn-danger:hover {
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+
+    /* شريط الفوتر السفلي الأنيق */
+    .hub-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(56, 189, 248, 0.14);
+    }
+
+    .hub-reset-btn {
+      width: 100%;
+      min-height: 40px !important;
+      padding: 8px 14px !important;
+      border-radius: 12px !important;
+      background: rgba(239, 68, 68, 0.09) !important;
+      border: 1px solid rgba(248, 113, 113, 0.26) !important;
+      color: #fca5a5 !important;
+      font-size: 0.78rem !important;
+      font-weight: 700 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: none !important;
+    }
+
+    .hub-reset-btn:hover {
+      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+      border-color: #fca5a5 !important;
+      color: #fff !important;
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35) !important;
+    }
+  </style>
+
+  <!-- النافذة المنبثقة لإعدادات المشاهدة (Ultra-Premium Media Hub) -->
   <div id="settingsModal" class="modal-overlay" style="display: none; z-index: 2000;" onclick="if(event.target===this) this.style.display='none'">
-    <div class="modal-card premium-panel" style="max-width: 420px; width: 92%; gap: 16px; padding: 24px;" onclick="event.stopPropagation()">
+    <div class="modal-card premium-panel hub-modal-card" onclick="event.stopPropagation()">
       
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-        <div style="width: 38px; height: 38px; border-radius: 13px; background: rgba(14, 165, 233, 0.16); border: 1px solid rgba(56, 189, 248, 0.32); display: flex; align-items: center; justify-content: center; color: var(--accent-hover); font-size: 1.1rem;">
-          <i class="fa-solid fa-sliders"></i>
+      <!-- الهيدر العلوي الاحترافي -->
+      <div class="hub-top-header">
+        <div class="hub-brand">
+          <div class="hub-brand-icon">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div class="hub-brand-text">
+            <h3>إعدادات المشاهدة</h3>
+            <span>مركز البث والمكتبة السحابية</span>
+          </div>
         </div>
-        <h3 style="color: #f0f7ff; margin: 0; font-size: 1.2rem; font-weight: 800;">إعدادات المشاهدة</h3>
-      </div>
-      
-      <!-- كارت تشغيل رابط جديد -->
-      <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
-        <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-satellite-dish" style="margin-left: 4px; color: var(--accent-hover);"></i> تشغيل رابط جديد</span>
-        <div class="input-group" style="gap: 8px;">
-          <button onclick="openDrivePicker()" class="premium-ghost-btn" style="padding: 0 12px; height: 44px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); background: rgba(14, 165, 233, 0.14);" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
-          <input type="text" id="videoUrlInput" class="premium-input" placeholder="رابط MP4 مباشر..." style="height: 44px; padding: 0 14px;" />
-          <button onclick="changeVideoManual()" style="height: 44px; padding: 0 16px; border-radius: 12px;"><i class="fa-solid fa-circle-play"></i></button>
-        </div>
+        <button type="button" class="hub-close-circle" onclick="document.getElementById('settingsModal').style.display='none'" title="إغلاق النافذة" aria-label="إغلاق">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
-      <!-- كارت سجل المشاهدة -->
-      <div class="premium-card" style="display: flex; flex-direction: column; gap: 10px;">
-         <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="margin-left: 4px; color: var(--accent-hover);"></i> سجل المشاهدة</span>
-         <div id="historyList" style="max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">لا توجد مقاطع سابقة</div>
+      <!-- أزرار التبديل بين الأقسام (Segmented Control) -->
+      <div class="hub-segmented-tabs" role="tablist">
+        <button type="button" id="hubTabBtnStream" class="hub-seg-btn active" onclick="switchSettingsHubTab('stream')">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>البث المباشر والسجل</span>
+        </button>
+        <button type="button" id="hubTabBtnLibrary" class="hub-seg-btn" onclick="switchSettingsHubTab('library')">
+          <i class="fa-solid fa-Server"></i>
+          <i class="fa-solid fa-film"></i>
+          <span>مكتبة السيرفر والجهاز</span>
+        </button>
       </div>
 
-      <!-- قسم الإعدادات المتقدمة (تصميم مدمج ونظيف) -->
-      <details style="background: rgba(9, 20, 40, 0.65); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 16px; overflow: hidden; width: 100%;">
-        <summary style="padding: 14px 16px; font-size: 0.85rem; color: #e0f2fe; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: transparent;">
-          <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-hard-drive" style="color: var(--accent-hover);"></i> الحلقات والتشغيل المحلي</span>
-          <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
-        </summary>
+      <!-- القسم الأول: البث المباشر + الاختصارات + السجل -->
+      <div id="hubPanelStream" class="hub-tab-panel active">
         
-        <div class="details-content" style="padding: 16px; gap: 16px; max-height: 300px; overflow-y: auto; background: rgba(3, 7, 18, 0.45) !important; border-top: 1px solid rgba(56, 189, 248, 0.12);">
-          
-          <!-- زر التشغيل من الجهاز -->
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <input type="file" id="manualDeviceVideoInput" accept="video/*" style="display: none;" onchange="playFromDeviceFiles(this)">
-            <button onclick="document.getElementById('manualDeviceVideoInput').click()" class="premium-ghost-btn" style="width: 100%; border-color: rgba(56, 189, 248, 0.42); color: #7dd3fc; background: rgba(14, 165, 233, 0.14);"><i class="fa-solid fa-photo-film"></i> تشغيل فيديو من ملفات الجهاز (Local)</button>
-            <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center; line-height: 1.4;">لتشغيل حلقة محملة مسبقاً على جهازك بدون استهلاك إنترنت وبالمزامنة الكاملة.</span>
+        <!-- كبسولة الرابط المباشر -->
+        <div class="hub-command-box">
+          <div class="hub-label-row">
+            <span><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> تشغيل رابط مباشر أو يوتيوب</span>
+            <small style="color: #64748b; font-size: 0.65rem;">MP4 / YouTube</small>
+          </div>
+          <div class="hub-url-capsule">
+            <input type="text" id="videoUrlInput" placeholder="ألصق رابط الفيديو أو اليوتيوب هنا..." onkeydown="if(event.key==='Enter') changeVideoManual()" />
+            <button type="button" class="hub-play-trigger" onclick="changeVideoManual()">
+              <i class="fa-solid fa-play"></i>
+              <span>تشغيل</span>
+            </button>
           </div>
 
-          <div style="height: 1px; background: rgba(56, 189, 248, 0.14); width: 100%;"></div>
+          <!-- بطاقتا الوصول السريع: Google Drive + ملف محلي -->
+          <div class="hub-quick-sources">
+            <button type="button" class="hub-source-tile" onclick="openDrivePicker()">
+              <div class="hub-tile-icon"><i class="fa-brands fa-google-drive"></i></div>
+              <div class="hub-tile-meta">
+                <strong>Google Drive</strong>
+                <small>اختر من سحابتك</small>
+              </div>
+            </button>
 
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">الحلقات المرفوعة بالسيرفر:</span>
-            <div id="localVideosList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-               <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 10px;">جاري تجهيز القائمة...</span>
-            </div>
+            <input type="file" id="manualDeviceVideoInput" accept="video/*" style="display: none;" onchange="playFromDeviceFiles(this)">
+            <button type="button" class="hub-source-tile" onclick="document.getElementById('manualDeviceVideoInput').click()">
+              <div class="hub-tile-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+              <div class="hub-tile-meta">
+                <strong>ملفات الجهاز</strong>
+                <small>تشغيل Local فوري</small>
+              </div>
+            </button>
           </div>
         </div>
-      </details>
 
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-        <button onclick="clearDatabase()" class="premium-danger-btn"><i class="fa-solid fa-broom"></i> مسح بيانات الشات والسجل</button>
-        <button onclick="document.getElementById('settingsModal').style.display='none'" class="premium-ghost-btn"><i class="fa-solid fa-circle-xmark"></i> إغلاق النافذة</button>
+        <!-- سجل المشاهدة الحديث -->
+        <div class="hub-command-box">
+          <div class="hub-label-row">
+            <span><i class="fa-solid fa-clock-rotate-left" style="color: #38bdf8;"></i> سجل المشاهدة الأخير</span>
+            <small style="color: #64748b; font-size: 0.65rem;">آخر 5 مقاطع</small>
+          </div>
+          <div id="historyList" class="hub-history-scroll">لا توجد مقاطع سابقة</div>
+        </div>
+
       </div>
-    </div>
 
+      <!-- القسم الثاني: مكتبة حلقات السيرفر والكاش المحلي -->
+      <div id="hubPanelLibrary" class="hub-tab-panel">
+        
+        <!-- شريط التشغيل من ذاكرة الهاتف -->
+        <div class="hub-command-box" style="padding: 11px 13px; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <span style="font-size: 0.78rem; font-weight: 800; color: #e0f2fe;"><i class="fa-solid fa-hard-drive" style="color: #38bdf8; margin-left: 5px;"></i> لديك حلقة محملة بجهازك؟</span>
+            <span style="font-size: 0.64rem; color: #7fa2c9;">شغّلها مباشرة بدون استهلاك إنترنت وبمزامنة كاملة</span>
+          </div>
+          <button type="button" onclick="document.getElementById('manualDeviceVideoInput').click()" class="premium-ghost-btn" style="flex-shrink: 0; padding: 8px 12px !important; font-size: 0.75rem !important; border-color: rgba(56, 189, 248, 0.4) !important;">
+            <i class="fa-solid fa-folder-open"></i> اختر ملفاً
+          </button>
+        </div>
+
+        <!-- قائمة الحلقات المرفوعة بالسيرفر -->
+        <div class="hub-command-box">
+          <div class="hub-label-row">
+            <span><i class="fa-solid fa-cloud-arrow-down" style="color: #38bdf8;"></i> الحلقات المتوفرة بالسيرفر</span>
+            <small style="color: #64748b; font-size: 0.65rem;">مزامنة وتخزين مؤقت</small>
+          </div>
+          <div id="localVideosList" class="hub-episodes-scroll">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 14px;">جاري تجهيز القائمة...</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- الفوتر السفلي: مسح البيانات -->
+      <div class="hub-footer-bar">
+        <button type="button" onclick="clearDatabase()" class="hub-reset-btn">
+          <i class="fa-solid fa-broom"></i>
+          <span>مسح بيانات الشات والسجل وتصفير التوقيت</span>
+        </button>
+      </div>
+
+    </div>
   </div>
+
 
   <!-- 🗂️ نافذة اختيار ملصق من "الكل" لإضافته للقسم الحالي -->
   <div id="categoryPickerModal" class="modal-overlay" style="display: none; z-index: 5000;" onclick="if(event.target===this) closeCategoryPicker()">
@@ -5252,23 +5866,78 @@ let lastSeenData = {};
     });
 
     // ==========================================
-    // 8. سجل الروابط وتكامل Google Drive
+    // 8. سجل الروابط وتكامل Google Drive + تبديل تبويبات الإعدادات
     // ==========================================
+    function switchSettingsHubTab(tabName) {
+      const streamBtn = document.getElementById('hubTabBtnStream');
+      const libraryBtn = document.getElementById('hubTabBtnLibrary');
+      const streamPanel = document.getElementById('hubPanelStream');
+      const libraryPanel = document.getElementById('hubPanelLibrary');
+
+      if (tabName === 'library') {
+        if (streamBtn) streamBtn.classList.remove('active');
+        if (libraryBtn) libraryBtn.classList.add('active');
+        if (streamPanel) streamPanel.classList.remove('active');
+        if (libraryPanel) libraryPanel.classList.add('active');
+      } else {
+        if (libraryBtn) libraryBtn.classList.remove('active');
+        if (streamBtn) streamBtn.classList.add('active');
+        if (libraryPanel) libraryPanel.classList.remove('active');
+        if (streamPanel) streamPanel.classList.add('active');
+      }
+    }
+
     db.ref('history').limitToLast(5).on('value', (snap) => {
       const box = document.getElementById('historyList');
+      if (!box) return;
       box.innerHTML = "";
-      let hasItems = false;
-      snap.forEach(c => {
-        hasItems = true;
-        const item = c.val();
-        // تقصير الرابط الطويل لجمالية الشكل
-        const shortUrl = item.url.length > 40 ? item.url.substring(0, 40) + '...' : item.url;
-        box.innerHTML += `<div class="history-item" title="${item.url}" onclick="playFromHistory('${item.url}')">
-          ▶ ${shortUrl} <span style="color:#6366f1; font-size:0.7rem;">(من ${item.sender || 'مجهول'})</span>
-        </div>`;
+      const items = [];
+      snap.forEach(c => { items.push(c.val()); });
+      items.reverse(); // عرض الأحدث في الأعلى دائماً
+
+      if (items.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding: 16px; color: var(--text-muted); font-size: 0.75rem;">لا توجد مقاطع سابقة في السجل</div>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const rawUrl = item.url || '';
+        const safeUrl = rawUrl.replace(/'/g, "\\'");
+        let badgeText = 'MP4';
+        let iconClass = 'fa-solid fa-play';
+
+        if (rawUrl.includes('youtu.be') || rawUrl.includes('youtube.com')) {
+          badgeText = 'YouTube';
+          iconClass = 'fa-brands fa-youtube';
+        } else if (rawUrl.includes('Drive') || rawUrl.includes('drive.google')) {
+          badgeText = 'Drive';
+          iconClass = 'fa-brands fa-google-drive';
+        } else if (rawUrl.includes('Local') || rawUrl.includes('ملفات الجهاز')) {
+          badgeText = 'Local';
+          iconClass = 'fa-solid fa-hard-drive';
+        }
+
+        const cleanLabel = rawUrl.replace(/^https?:\/\/(www\.)?/, '');
+        const shortUrl = cleanLabel.length > 34 ? cleanLabel.substring(0, 34) + '...' : cleanLabel;
+
+        box.innerHTML += `
+          <div class="hub-history-row" title="${rawUrl}" onclick="playFromHistory('${safeUrl}')">
+            <div class="hub-history-left">
+              <div class="hub-history-play"><i class="${iconClass}"></i></div>
+              <div class="hub-history-info">
+                <div class="hub-history-url">${shortUrl}</div>
+                <div class="hub-history-sub">
+                  <span class="hub-type-pill">${badgeText}</span>
+                  <span class="hub-sender-tag">بواسطة ${item.sender || 'مجهول'}</span>
+                </div>
+              </div>
+            </div>
+            <i class="fa-solid fa-circle-play" style="color: #38bdf8; font-size: 0.95rem; flex-shrink: 0;"></i>
+          </div>
+        `;
       });
-      if(!hasItems) box.innerHTML = "لا توجد مقاطع سابقة";
     });
+
 
     function playFromHistory(url) {
       db.ref('videoState').set({src: url, action: 'load', time: 0, timestamp: Date.now(), sender: currentUser.name});
@@ -5365,43 +6034,65 @@ async function renderAvailableVideosUI(items) {
         const safeTitle = (item.title || 'فيديو بدون عنوان').replace(/'/g, "\\'");
 
         html += `
-          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box;">
+          <div class="hub-ep-card">
             
-            <!-- السطر العلوي: اسم الحلقة + زر التعديل + الحجم -->
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;">
-              <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                <button onclick="editVideoTitle('${safeKey}', '${safeTitle}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 0.7rem; cursor: pointer; flex-shrink: 0; box-shadow: none; transition: 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='#cbd5e1'; this.style.background='rgba(255,255,255,0.05)'" title="تعديل اسم الحلقة للجميع"><i class="fa-solid fa-pen"></i></button>
-                <span style="font-size: 0.8rem; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;" title="${item.title}">${item.title}</span>
+            <!-- السطر العلوي: زر تعديل الاسم + اسم الحلقة + شارة الحالة والحجم -->
+            <div class="hub-ep-top">
+              <div class="hub-ep-title-wrap">
+                <button type="button" class="hub-ep-edit-btn" onclick="editVideoTitle('${safeKey}', '${safeTitle}')" title="تعديل اسم الحلقة للجميع">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <span class="hub-ep-name" title="${item.title}">${item.title}</span>
               </div>
-              <span style="font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0; font-family: monospace; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${displaySize}</span>
+              <div class="hub-ep-badges">
+                ${isDownloaded
+                  ? `<span class="hub-status-pill ready"><i class="fa-solid fa-circle-check"></i> محمل</span>`
+                  : `<span class="hub-status-pill cloud"><i class="fa-solid fa-cloud"></i> سحابي</span>`
+                }
+                ${displaySize ? `<span class="hub-size-pill">${displaySize}</span>` : ''}
+              </div>
             </div>
 
             <!-- شريط تقدم التحميل المتقدم -->
-            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; box-sizing: border-box;">
-              <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #a5b4fc; font-weight: bold; margin-bottom: 6px;">
+            <div id="progressBox_${safeKey}" style="display: none; width: 100%; background: rgba(3, 7, 18, 0.75); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 11px; padding: 9px; box-sizing: border-box;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.66rem; color: #bae6fd; font-weight: 800; margin-bottom: 6px; direction: ltr;">
                 <span id="progSize_${safeKey}">0 MB / 0 MB</span>
-                <span id="progPercent_${safeKey}" style="color: var(--accent);">0%</span>
+                <span id="progPercent_${safeKey}" style="color: #38bdf8;">0%</span>
               </div>
-              <div style="width: 100%; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; height: 6px;">
-                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.15s ease; border-radius: 99px;"></div>
+              <div style="width: 100%; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; height: 6px;">
+                <div id="progressBar_${safeKey}" style="width: 0%; height: 100%; background: linear-gradient(90deg, #1d4ed8, #0ea5e9, #38bdf8); transition: width 0.15s ease; border-radius: 99px;"></div>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.62rem; color: #7fa2c9; margin-top: 6px;">
                 <span id="progSpeed_${safeKey}">السرعة: --</span>
-                <span id="progEta_${safeKey}">الوقت المتبقي: --:--</span>
+                <span id="progEta_${safeKey}">المتبقي: --:--</span>
               </div>
             </div>
 
-            <!-- أزرار الإجراءات (Premium Ghost Buttons) -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: 6px; width: 100%; box-sizing: border-box;">
+            <!-- شريط أزرار الإجراءات المتناسق بدون انكسار النص -->
+            <div class="hub-ep-actions">
               ${isDownloaded ? `
-                <button onclick="playLocalVideo('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); background: rgba(14, 165, 233, 0.16);"><i class="fa-solid fa-circle-play"></i> تشغيل</button>
-                <button onclick="copyLocalUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;"><i class="fa-solid fa-clone"></i> الرابط</button>
-                <button onclick="deleteSingleLocalVideo('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.08);" title="حذف من هذا الجهاز"><i class="fa-solid fa-trash-can"></i> حذف</button>
+                <button type="button" onclick="playLocalVideo('${item.url}', '${safeTitle}')" class="hub-ep-btn-main">
+                  <i class="fa-solid fa-circle-play"></i><span>تشغيل الحلقة</span>
+                </button>
+                <button type="button" onclick="copyLocalUrl('${item.url}')" class="hub-ep-btn-sub" title="نسخ الرابط المحلي">
+                  <i class="fa-solid fa-link"></i><span>الرابط</span>
+                </button>
+                <button type="button" onclick="deleteSingleLocalVideo('${item.url}')" class="hub-ep-btn-danger" title="حذف من هذا الجهاز وتوفير المساحة">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
               ` : `
-                <button id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); background: rgba(14, 165, 233, 0.14);"><i class="fa-solid fa-cloud-arrow-down"></i> كاش داخلي</button>
-                <button onclick="downloadVia1DM('${item.url}', '${safeTitle}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="فتح التحميل مباشرة داخل تطبيق 1DM"><i class="fa-solid fa-bolt"></i> عبر 1DM</button>
-                <button onclick="copyDirectVideoUrl('${item.url}')" class="premium-ghost-btn" style="padding: 6px; font-size: 0.7rem;" title="نسخ رابط الفيديو المباشر"><i class="fa-solid fa-clone"></i> نسخ</button>
-                <button id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" class="premium-ghost-btn" style="display: none; padding: 6px; font-size: 0.7rem; color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1);"><i class="fa-solid fa-circle-xmark"></i> إلغاء</button>
+                <button type="button" id="dlBtn_${safeKey}" onclick="downloadVideoToLocal('${item.url}', '${safeTitle}', '${safeKey}')" class="hub-ep-btn-main">
+                  <i class="fa-solid fa-cloud-arrow-down"></i><span>حفظ بالكاش</span>
+                </button>
+                <button type="button" onclick="downloadVia1DM('${item.url}', '${safeTitle}')" class="hub-ep-btn-sub" title="التحميل عبر تطبيق 1DM">
+                  <i class="fa-solid fa-bolt"></i><span>1DM</span>
+                </button>
+                <button type="button" onclick="copyDirectVideoUrl('${item.url}')" class="hub-ep-btn-sub" style="flex: 0.7 !important;" title="نسخ رابط الفيديو المباشر">
+                  <i class="fa-solid fa-copy"></i><span>نسخ</span>
+                </button>
+                <button type="button" id="cancelDlBtn_${safeKey}" onclick="abortLocalDownload('${safeKey}')" class="hub-ep-btn-danger" style="display: none;" title="إلغاء التحميل">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
               `}
             </div>
 
@@ -5411,6 +6102,7 @@ async function renderAvailableVideosUI(items) {
       });
       listDiv.innerHTML = html;
     }
+
 
     // دالة تعديل اسم الفيديو وتحديثه للطرفين لحظياً
     function editVideoTitle(videoKey, oldTitle) {
