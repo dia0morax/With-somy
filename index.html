@@ -5640,17 +5640,35 @@ html,
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // 2. تهيئة مشغل Video.js (البديل الأقوى مع دعم اليوتيوب)
+    // 2. تهيئة مشغل Video.js (البديل الأقوى مع دعم اليوتيوب والتحميل المسبق العالي)
     const player = videojs('videoPlayer', {
       techOrder: ['html5', 'youtube'], // السماح بالتبديل بين MP4 ويوتيوب
       userActions: { hotkeys: true },
       fluid: false,
       fill: true, // إجبار المشغل على ملاءمة مساحة الحاوية في كروم
+      html5: {
+        vhs: {
+          overrideNative: true,
+          maxBufferLength: 180, // تحميل مسبق حتى 3 دقائق للأمام
+          maxMaxBufferLength: 360 // الحد الأقصى للكاش 6 دقائق
+        },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false
+      },
       controlBar: {
         pictureInPictureToggle: false, // حذف زر النافذة العائمة نهائياً
         fullscreenToggle: true         // تفعيل وإظهار زر ملء الشاشة
       }
     });
+
+    // إجبار المشغل على التحميل المستمر للروابط الخارجية ودرايف
+    player.ready(function() {
+      const techEl = player.tech(true) && player.tech(true).el();
+      if (techEl && techEl.tagName === 'VIDEO') {
+        techEl.preload = 'auto';
+      }
+    });
+
 
 
     class SeekFiveSecondsButton extends videojs.getComponent('Button') {
