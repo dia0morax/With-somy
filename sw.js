@@ -30,7 +30,21 @@ async function proxyDriveStream(request, localUrl, fileId) {
     'Cache-Control': 'no-store'
   });
   const range = request.headers.get('Range');
-  if (range) headers.set('Range', range);
+  if (range) {
+    // توسيع نطاق التحميل المسبق ليشمل حجماً أكبر للأمام لتفادي التقطيع
+    const match = range.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const specifiedEnd = match[2] ? parseInt(match[2], 10) : null;
+      // إذا لم يحدد المتصفح نهاية للطلب أو طلب قطعة صغيرة، نجبره على سحب 5 ميغابايت دفعة واحدة
+      const minChunkSize = 5 * 1024 * 1024; // 5MB
+      const end = specifiedEnd !== null ? Math.max(specifiedEnd, start + minChunkSize - 1) : '';
+      headers.set('Range', `bytes=${start}-${end}`);
+    } else {
+      headers.set('Range', range);
+    }
+  }
+
 
   const resourceKey = localUrl.searchParams.get('resource_key');
   if (resourceKey) {
