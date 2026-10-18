@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-together-cache-v2';
+const CACHE_NAME = 'anime-together-cache-v3';
 const DRIVE_STREAM_ROUTE = '__drive_stream__';
 
 self.addEventListener('install', (event) => {
@@ -21,14 +21,13 @@ async function proxyDriveStream(request, localUrl, fileId) {
   }
 
   const accessToken = localUrl.searchParams.get('access_token');
-  if (!accessToken) {
+  const apiKey = localUrl.searchParams.get('key');
+  if (!accessToken && !(apiKey && /^[a-zA-Z0-9_-]+$/.test(apiKey))) {
     return new Response('Google Drive authorization is required.', { status: 401 });
   }
 
-  const headers = new Headers({
-    Authorization: `Bearer ${accessToken}`,
-    'Cache-Control': 'no-store'
-  });
+  const headers = new Headers({ 'Cache-Control': 'no-store' });
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
   const range = request.headers.get('Range');
   if (range) {
     // توسيع نطاق التحميل المسبق ليشمل حجماً أكبر للأمام لتفادي التقطيع
@@ -54,6 +53,7 @@ async function proxyDriveStream(request, localUrl, fileId) {
   const apiUrl = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`);
   apiUrl.searchParams.set('alt', 'media');
   apiUrl.searchParams.set('supportsAllDrives', 'true');
+  if (!accessToken) apiUrl.searchParams.set('key', apiKey);
 
   try {
     // تمرير استجابة Google كما هي، بما فيها 206 وContent-Range؛ هذا يتيح seek وبث أجزاء الملف.

@@ -4224,6 +4224,11 @@ html,
     .msg-item.is-mine .msg-avatar {
       border-color: #38bdf8 !important;
     }
+    /* دائرة خضراء حول صورة المتصل حالياً */
+    .msg-avatar.is-online {
+      outline: 2px solid #22c55e;
+      outline-offset: 1px;
+    }
 
     /* ✨ فقاعات رسائلي (is-mine) — تدرج ياقوتي وسماوي ملكي بظل واحد نظيف */
     .msg-row-wrapper > .msg-item.is-mine > .msg-avatar + div > .msg-content:not(.sticker-bg),
@@ -5829,6 +5834,8 @@ html,
 
       // تحديث لحظي لقائمة المتصلين ومصادر التشغيل فور حدوث أي حركة بالخادم
       db.ref('onlineUsers').on('value', (snap) => {
+        window.onlineUserIds = new Set(Object.keys(snap.val() || {}));
+        updateOnlineIndicators();
         const sourceList = document.getElementById('playbackSourcesList'); 
         
         if (sourceList) sourceList.innerHTML = ""; 
@@ -6587,7 +6594,7 @@ htmlBuilder += `
                    onpointermove="handleSwipePointerMove(event, '${msgKey}')"
                    onpointerup="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
                    onpointercancel="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
-                <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
+                <img src="${m.avatar}" loading="lazy" class="msg-avatar" data-uid="${m.senderId || ''}" />
                 <div style="display:flex; flex:0 1 auto; flex-direction:column; direction:ltr; align-items: ${isMine ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
                     ${replyHtml}
                     <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
@@ -6621,6 +6628,14 @@ htmlBuilder += `
           markMessagesAsSeen();
       }
       renderSeenAvatars();
+      updateOnlineIndicators();
+    }
+
+    window.onlineUserIds = new Set();
+    function updateOnlineIndicators() {
+      document.querySelectorAll('.msg-avatar[data-uid]').forEach(img => {
+        img.classList.toggle('is-online', window.onlineUserIds.has(img.dataset.uid));
+      });
     }
 
 let lastSeenData = {};
@@ -7481,6 +7496,9 @@ async function renderAvailableVideosUI(items) {
     const CLIENT_ID = '925753610772-ih6q5ghbeg6g2imqtnefv9dqdsnjd1sv.apps.googleusercontent.com';
     const DRIVE_READ_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
     const DRIVE_STREAM_ROUTE = '__drive_stream__';
+    // مفتاح Google API (مقيّد بـ Drive API فقط) يسمح للأصدقاء بمشاهدة ملفات "أي شخص لديه الرابط" بدون تسجيل دخول.
+    const DRIVE_API_KEY = 'AIzaSyB8J8zVOh8MiPM2ImNFhDSFBzYdINuqMes';
+    const DRIVE_KEY_MODE = '__api_key__';
     let accessToken = null;
     let accessTokenExpiresAt = 0;
     window.roomDriveAuth = null;
@@ -7609,6 +7627,7 @@ async function renderAvailableVideosUI(items) {
     function getRoomDriveAccessToken(state) {
       const myToken = getCachedDriveAccessToken();
       if (myToken) return myToken;
+      if (DRIVE_API_KEY) return DRIVE_KEY_MODE;
       if (state && state.driveAccessToken) return String(state.driveAccessToken);
       if (window.drivePendingState && window.drivePendingState.driveAccessToken) {
         return String(window.drivePendingState.driveAccessToken);
@@ -7759,7 +7778,7 @@ async function renderAvailableVideosUI(items) {
     }
 
     function driveRequestHeaders(state, token) {
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = token === DRIVE_KEY_MODE ? {} : { Authorization: `Bearer ${token}` };
       const resourceKey = state.driveResourceKey || (window.driveCurrentPlayback && window.driveCurrentPlayback.resourceKey);
       if (resourceKey) headers['X-Goog-Drive-Resource-Keys'] = `${extractDriveFileId(state)}/${resourceKey}`;
       return headers;
@@ -7782,6 +7801,7 @@ async function renderAvailableVideosUI(items) {
       const metadataUrl = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`);
       metadataUrl.searchParams.set('fields', 'id,name,mimeType,size,resourceKey,capabilities(canDownload)');
       metadataUrl.searchParams.set('supportsAllDrives', 'true');
+      if (token === DRIVE_KEY_MODE) metadataUrl.searchParams.set('key', DRIVE_API_KEY);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
       let response;
@@ -7868,7 +7888,8 @@ async function renderAvailableVideosUI(items) {
 
     function buildLocalDriveStreamUrl(fileId, token, resourceKey) {
       const streamUrl = new URL(`./${DRIVE_STREAM_ROUTE}/${encodeURIComponent(fileId)}`, window.location.href);
-      streamUrl.searchParams.set('access_token', token);
+      if (token === DRIVE_KEY_MODE) streamUrl.searchParams.set('key', DRIVE_API_KEY);
+      else streamUrl.searchParams.set('access_token', token);
       if (resourceKey) streamUrl.searchParams.set('resource_key', resourceKey);
       return streamUrl.href;
     }
@@ -7913,7 +7934,16 @@ async function renderAvailableVideosUI(items) {
       window.driveLoadingFileId = fileId;
       showDriveOverlayMessage('جارٍ التحقق من الملف وتجهيز البث المباشر…');
       const loadPromise = (async () => {
-        const metadata = await fetchDriveMetadata(state, token);
+        let metadata;
+        try {
+          metadata = await fetchDriveMetadata(state, token);
+        } catch (keyError) {
+          // الملف غير عام: نجرّب صلاحية صاحب الغرفة المشتركة إن وُجدت
+          const roomToken = window.roomDriveAuth && window.roomDriveAuth.accessToken;
+          if (token !== DRIVE_KEY_MODE || !roomToken) throw keyError;
+          token = String(roomToken);
+          metadata = await fetchDriveMetadata(state, token);
+        }
         if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
         await ensureDriveStreamWorker();
         if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
