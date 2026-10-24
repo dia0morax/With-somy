@@ -262,6 +262,10 @@
       flex-shrink: 0;
       align-self: flex-end;
     }
+    .avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; align-self: flex-end; }
+    .avatar-wrap.online::after { content: ''; position: absolute; right: 0; bottom: 0; width: 28%; height: 28%; min-width: 6px; min-height: 6px; border-radius: 50%; background: #22c55e; border: 2px solid #0b1220; box-sizing: border-box; }
+    .seen-pop { animation: seenPop 0.25s ease-out; }
+    @keyframes seenPop { from { opacity: 0; transform: translateY(-4px) scale(0.6); } to { opacity: 1; transform: none; } }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
     .swipe-reply-indicator {
       position: absolute;
@@ -1095,7 +1099,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     }
 
     /* عمود المحتوى يترك مساحة للصورة الرمزية ويلتصق بالجهة المجاورة لها */
-    .msg-row-wrapper > .msg-item > .msg-avatar + div {
+    .msg-row-wrapper > .msg-item > .avatar-wrap + div {
       display: flex !important;
       flex: 0 1 calc(100% - 38px) !important;
       flex-direction: column !important;
@@ -1106,16 +1110,16 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
       box-sizing: border-box !important;
     }
 
-    .msg-row-wrapper > .msg-item.is-mine > .msg-avatar + div {
+    .msg-row-wrapper > .msg-item.is-mine > .avatar-wrap + div {
       direction: rtl !important;
     }
 
-    .msg-row-wrapper > .msg-item.is-other > .msg-avatar + div {
+    .msg-row-wrapper > .msg-item.is-other > .avatar-wrap + div {
       direction: ltr !important;
     }
 
     /* الفقاعة بعرض النص الطبيعي، وبحد أقصى 80% من مساحة عمود الرسالة */
-    .msg-row-wrapper > .msg-item > .msg-avatar + div > .msg-content {
+    .msg-row-wrapper > .msg-item > .avatar-wrap + div > .msg-content {
       display: block;
       width: fit-content !important;
       max-width: 80% !important;
@@ -4226,7 +4230,7 @@ html,
     }
 
     /* ✨ فقاعات رسائلي (is-mine) — تدرج ياقوتي وسماوي ملكي بظل واحد نظيف */
-    .msg-row-wrapper > .msg-item.is-mine > .msg-avatar + div > .msg-content:not(.sticker-bg),
+    .msg-row-wrapper > .msg-item.is-mine > .avatar-wrap + div > .msg-content:not(.sticker-bg),
     .msg-item.is-mine .msg-content:not(.sticker-bg) {
       background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 48%, #0ea5e9 100%) !important;
       border: 1px solid rgba(186, 230, 253, 0.42) !important;
@@ -4237,7 +4241,7 @@ html,
     }
 
     /* ✨ فقاعات رسائل الطرف الآخر (is-other) — بدون backdrop-filter لتجنب أي تقطيع أثناء التمرير */
-    .msg-row-wrapper > .msg-item.is-other > .msg-avatar + div > .msg-content:not(.sticker-bg),
+    .msg-row-wrapper > .msg-item.is-other > .avatar-wrap + div > .msg-content:not(.sticker-bg),
     .msg-item.is-other .msg-content:not(.sticker-bg) {
       background: linear-gradient(145deg, rgba(16, 33, 66, 0.96) 0%, rgba(8, 17, 36, 0.99) 100%) !important;
       border: 1px solid rgba(125, 211, 252, 0.22) !important;
@@ -5807,10 +5811,16 @@ html,
             name: currentUser.name, 
             avatar: currentUser.avatar, 
             source: (player && !player.paused() && window.currentUserSource !== 'متوقف') ? window.currentUserSource : 'متوقف',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            active: !document.hidden
           });
         }
       });
+
+      const syncActive = () => userRef.update({ active: !document.hidden });
+      document.addEventListener('visibilitychange', syncActive);
+      window.addEventListener('pagehide', () => userRef.update({ active: false }));
+      window.addEventListener('pageshow', syncActive);
 
       // استماع لحدث الطرد الفردي من الفيديو (يجعل الشاشة سوداء لحظياً)
       db.ref('kickVideo/' + userId).on('value', (snap) => {
@@ -6502,8 +6512,17 @@ function sendMessage() {
     // زر التفريغ المعزول والمحدث (يحذف الشات، السجل، وأوقات المشاهدة)
     function clearDatabase() {
       if(confirm("هل أنت متأكد من رغبتك في مسح الشات والسجل وتوقيت المشاهدة نهائياً؟")) {
-        db.ref('chat').remove();
-        db.ref('history').remove();
+        // حذف كل رسالة ورابط محفوظ بالفايربيس فرداً فرداً (بما فيها المخفية) ثم العقدة كاملة
+        ['chat', 'history'].forEach(path => {
+          db.ref(path).once('value', snap => {
+            const updates = {};
+            snap.forEach(c => { updates[c.key] = null; });
+            if (Object.keys(updates).length) db.ref(path).update(updates);
+            db.ref(path).remove();
+          });
+        });
+        db.ref('lastSeen').remove();
+        try { localStorage.removeItem('cached_chat_msgs'); } catch (e) {}
         db.ref('typing').remove(); 
         db.ref('playbackPositions').remove(); // مسح وقت المشاهدة لكل الأطراف
       }
@@ -6587,7 +6606,7 @@ htmlBuilder += `
                    onpointermove="handleSwipePointerMove(event, '${msgKey}')"
                    onpointerup="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
                    onpointercancel="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
-                <img src="${m.avatar}" loading="lazy" class="msg-avatar" />
+                <span class="avatar-wrap" data-uid="${m.senderId || ''}"><img src="${m.avatar}" loading="lazy" class="msg-avatar" /></span>
                 <div style="display:flex; flex:0 1 auto; flex-direction:column; direction:ltr; align-items: ${isMine ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
                     ${replyHtml}
                     <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
@@ -6604,7 +6623,7 @@ htmlBuilder += `
                       <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
                     </div>
                     ${reactionsHtml}
-                    ${isMine ? `<div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>` : ''}
+                    <div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>
                 </div>
               </div>
             </div>
@@ -6629,6 +6648,7 @@ let lastSeenData = {};
         renderSeenAvatars();
     });
 
+    const prevSeenKeyByUser = {};
     function renderSeenAvatars() {
         document.querySelectorAll('.seen-container').forEach(el => el.innerHTML = '');
         const seenByMsg = {};
@@ -6641,14 +6661,14 @@ let lastSeenData = {};
             const readIndex = currentRenderedMessages.findIndex(item => item.key === data.msgKey);
             if (readIndex < 0) return;
 
-            /* إيصال القراءة يوضع على آخر رسالة أرسلها المستخدم الحالي قبل موضع القراءة */
+            /* إيصال القراءة يوضع على آخر رسالة غير نظامية قرأها المستخدم (مهما كان مرسلها) */
             for (let i = readIndex; i >= 0; i--) {
                 const message = currentRenderedMessages[i] && currentRenderedMessages[i].val;
-                const isCurrentUsersMessage = message && !message.isSystem && currentUser &&
-                    (message.senderId ? message.senderId === userId : message.name === currentUser.name);
-                if (isCurrentUsersMessage) {
-                    if (!seenByMsg[currentRenderedMessages[i].key]) seenByMsg[currentRenderedMessages[i].key] = [];
-                    if (data.avatar) seenByMsg[currentRenderedMessages[i].key].push(data.avatar);
+                if (message && !message.isSystem) {
+                    const key = currentRenderedMessages[i].key;
+                    if (!seenByMsg[key]) seenByMsg[key] = [];
+                    if (data.avatar) seenByMsg[key].push({ uid, avatar: data.avatar, moved: prevSeenKeyByUser[uid] !== key });
+                    prevSeenKeyByUser[uid] = key;
                     break;
                 }
             }
@@ -6658,11 +6678,25 @@ let lastSeenData = {};
             const container = document.getElementById(`seen-${msgKey}`);
             if (container) {
                 let html = '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
-                seenByMsg[msgKey].forEach(avatar => {
-                    html += `<img src="${avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);">`;
+                seenByMsg[msgKey].forEach(s => {
+                    html += `<span class="avatar-wrap ${s.moved ? 'seen-pop' : ''}" data-uid="${s.uid}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
                 });
                 container.innerHTML = html;
             }
+        });
+        updateOnlineDots();
+    }
+
+    // النقطة الخضراء: تظهر فقط لمن الموقع ظاهر أمامه الآن (active في onlineUsers)
+    let activeUserIds = new Set();
+    db.ref('onlineUsers').on('value', snap => {
+        activeUserIds = new Set();
+        snap.forEach(c => { if (c.val() && c.val().active !== false) activeUserIds.add(c.key); });
+        updateOnlineDots();
+    });
+    function updateOnlineDots() {
+        document.querySelectorAll('.avatar-wrap[data-uid]').forEach(el => {
+            el.classList.toggle('online', activeUserIds.has(el.dataset.uid));
         });
     }
 
