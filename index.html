@@ -264,8 +264,8 @@
     }
     .avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; align-self: flex-end; }
     .avatar-wrap.online::after { content: ''; position: absolute; right: 0; bottom: 0; width: 28%; height: 28%; min-width: 6px; min-height: 6px; border-radius: 50%; background: #22c55e; border: 2px solid #0b1220; box-sizing: border-box; }
-    .seen-pop { animation: seenPop 0.25s ease-out; }
-    @keyframes seenPop { from { opacity: 0; transform: translateY(-4px) scale(0.6); } to { opacity: 1; transform: none; } }
+    .seen-pop { animation: seenPop 0.15s ease-out; }
+    @keyframes seenPop { from { transform: scale(0.7); } to { opacity: 1; transform: none; } }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
     .swipe-reply-indicator {
       position: absolute;
@@ -6535,6 +6535,7 @@ function sendMessage() {
       if (!msgDiv) return;
       const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
       currentRenderedMessages = messagesList;
+      if (isScrolledToBottom || window.isChatLocked) markMessagesAsSeen(); // إرسال Seen فوراً قبل بناء الرسائل
 
       let htmlBuilder = "";
       let previousTime = 0;
