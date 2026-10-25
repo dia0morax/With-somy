@@ -5772,17 +5772,39 @@ html,
     }
 
     // معالجة الأفاتار من الاستوديو وتحويله لداتا
+    // صورة الحساب تُرسل داخل كل رسالة؛ نصغّرها إلى 160px (تظهر بحجم 34px فقط) حتى لا تبطئ إرسال الرسائل
+    function shrinkAvatar(src, done) {
+      if (typeof src !== 'string' || !src.startsWith('data:') || src.length < 40000) return done(src);
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 160 / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0b1220';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const out = canvas.toDataURL('image/jpeg', 0.88);
+        done(out.length < src.length ? out : src);
+      };
+      img.onerror = () => done(src);
+      img.src = src;
+    }
+
     function handleCustomAvatar(input) {
       const file = input.files[0];
       if(!file) return;
       if(file.size > 500000) { alert("حجم الصورة كبير جداً، اختر صورة أصغر للأفاتار."); return; }
       const reader = new FileReader();
       reader.onload = function(e) {
-        selectedAvatarUrl = e.target.result;
+        shrinkAvatar(e.target.result, small => {
+        selectedAvatarUrl = small;
         const label = input.previousElementSibling;
         label.innerHTML = `<img src="${selectedAvatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
         document.querySelectorAll('.avatar-opt').forEach(img => img.classList.remove('selected'));
         label.classList.add('selected');
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -5815,7 +5837,14 @@ html,
     if (!currentUser) {
       document.getElementById('profileModal').style.display = 'flex';
     } else {
-      initPresence();
+      // تصغير صورة الحساب المحفوظة سابقاً إذا كانت كبيرة (مرة واحدة)
+      shrinkAvatar(currentUser.avatar, small => {
+        if (small !== currentUser.avatar) {
+          currentUser.avatar = small;
+          localStorage.setItem('app_user_profile', JSON.stringify(currentUser));
+        }
+        initPresence();
+      });
     }
 
 // 4. نظام المتواجدين الآن والمصادر المحدث لحظياً (Real-time Presence)
@@ -6495,7 +6524,7 @@ function sendMessage() {
         if (input.value !== undefined) input.value = "";
         else input.innerText = "";
         input.blur();
-        db.ref(`typing/${userId}`).remove();
+        db.ref(`typing/${userId}`).remove(); if (lastTypingSentAt) lastTypingSentAt = 1;
         cancelReply();
         
         const suggestBox = document.getElementById('stickerSuggestions');
@@ -6540,7 +6569,7 @@ function sendMessage() {
         isSystem: false, 
         replyTo: currentReplyContext 
       });
-      db.ref(`typing/${userId}`).remove();
+      db.ref(`typing/${userId}`).remove(); if (lastTypingSentAt) lastTypingSentAt = 1;
       cancelReply();
       closeSendImageModal();
     }
@@ -6550,19 +6579,32 @@ function sendMessage() {
     function clearDatabase() {
       if(confirm("هل أنت متأكد من رغبتك في مسح الشات والسجل وتوقيت المشاهدة نهائياً؟")) {
         // حذف كل رسالة ورابط محفوظ بالفايربيس فرداً فرداً (بما فيها المخفية) ثم العقدة كاملة
+        // كل رسالة تحمل بداخلها صورها وملصقاتها وصورة الحساب وتفاعلاتها، فحذفها يحذف كل ذلك من فايربيس
+        let failed = false;
+        const onFail = () => { if (!failed) { failed = true; alert("تعذر حذف بعض البيانات من فايربيس، تحقق من الاتصال وحاول مرة أخرى."); } };
         ['chat', 'history'].forEach(path => {
           db.ref(path).once('value', snap => {
             const updates = {};
             snap.forEach(c => { updates[c.key] = null; });
-            if (Object.keys(updates).length) db.ref(path).update(updates);
-            db.ref(path).remove();
+            if (Object.keys(updates).length) db.ref(path).update(updates).catch(onFail);
+            db.ref(path).remove().catch(onFail);
           });
         });
-        db.ref('lastSeen').remove();
-        try { localStorage.removeItem('cached_chat_msgs'); } catch (e) {}
+        db.ref('lastSeen').remove().catch(onFail); // مواضع Seen وصور الحساب المرفقة بها
         db.ref('typing').remove(); 
         db.ref('playbackPositions').remove(); // مسح وقت المشاهدة لكل الأطراف
+        clearLocalChatData();
       }
+    }
+
+    // مسح كل ما يتعلق بالشات من ذاكرة هذا الجهاز: نسخة الرسائل المحفوظة والملصقات المرسلة مؤخراً
+    function clearLocalChatData() {
+      try {
+        localStorage.removeItem('cached_chat_msgs');
+        localStorage.removeItem(RECENT_STICKERS_STORAGE_KEY);
+      } catch (e) {}
+      clearTimeout(window.chatCacheTimer);
+      if (typeof renderRecentStickers === 'function') renderRecentStickers([]);
     }
 
     // الصور المضمّنة (base64) تتحول لرابط blob قصير مرة واحدة: بناء الشات يصير أخف بكثير على الأجهزة المتوسطة
@@ -6852,6 +6894,8 @@ let lastSeenData = {};
         messagesList.push({ key: c.key, val: c.val() });
       });
 
+      // الشات لا يفرغ إلا بزر المسح (الحذف التلقائي يبقي 14)، فنمسح بقاياه من ذاكرة كل جهاز حتى لو كان مغلقاً وقت المسح
+      if (!messagesList.length && currentRenderedMessages.length) clearLocalChatData();
       renderMessagesFromList(messagesList);
 
       clearTimeout(window.chatCacheTimer);
@@ -6939,16 +6983,20 @@ let lastSeenData = {};
         return expanded;
     }
 
-    let typingTimeout;
+    let typingTimeout, lastTypingSentAt = 0;
     function handleTyping() {
       if (!currentUser) return;
       
       // 1. إرسال إشارة مؤشر الكتابة للمتواجدين
+      // إشارة "يكتب" مرة كل ثانية بدل عمليتين مع كل حرف، حتى لا تتأخر الرسالة خلف طابور من العمليات
       const typeRef = db.ref(`typing/${userId}`);
-      typeRef.set(currentUser.name);
-      typeRef.onDisconnect().remove();
+      if (Date.now() - lastTypingSentAt > 1000) {
+        if (!lastTypingSentAt) typeRef.onDisconnect().remove();
+        typeRef.set(currentUser.name);
+        lastTypingSentAt = Date.now();
+      }
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { typeRef.remove(); }, 1500);
+      typingTimeout = setTimeout(() => { typeRef.remove(); lastTypingSentAt = 1; }, 1500);
 
 // 2. تشغيل الاقتراحات الذكية للملصقات (للكلمة المفردة فقط وبدون مسافات)
       const input = document.getElementById('messageInput');
