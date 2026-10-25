@@ -264,8 +264,15 @@
     }
     .avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; align-self: flex-end; }
     .avatar-wrap.online::after { content: ''; position: absolute; right: 0; bottom: 0; width: 28%; height: 28%; min-width: 6px; min-height: 6px; border-radius: 50%; background: #22c55e; border: 2px solid #0b1220; box-sizing: border-box; }
-    .seen-pop { animation: seenPop 0.15s ease-out; }
-    @keyframes seenPop { from { transform: scale(0.7); } to { opacity: 1; transform: none; } }
+    .seen-container { display: flex; direction: ltr; justify-content: flex-end; align-items: center; gap: 2px; width: 100%; flex: 0 0 auto; margin-top: -11px; padding: 0 4px; box-sizing: border-box; }
+    .seen-container:empty { display: none; }
+    .seen-avatar { display: inline-flex; }
+    .seen-pop { animation: seenDrop 0.32s cubic-bezier(0.25, 0.9, 0.35, 1.2); transform-origin: 50% 100%; }
+    @keyframes seenDrop {
+      0% { transform: translateY(-16px) scale(0.75, 1.2); opacity: 0.5; }
+      65% { transform: translateY(1px) scale(1.15, 0.85); opacity: 1; }
+      100% { transform: none; }
+    }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
     .swipe-reply-indicator {
       position: absolute;
@@ -3681,6 +3688,16 @@ html,
     </div>
   </div>
 
+<!-- نافذة تأكيد إرسال صورة -->
+  <div id="sendImageModal" class="modal-overlay" style="display: none; z-index: 4500;" onclick="if(event.target===this) closeSendImageModal()">
+    <div class="modal-card" style="max-width: 360px; gap: 14px; text-align: center;" onclick="event.stopPropagation()">
+      <h3 style="color: var(--accent-hover); text-align: center;"><i class="fa-solid fa-image"></i> إرسال صورة</h3>
+      <img id="sendImagePreview" src="" style="max-width: 100%; max-height: 50vh; border-radius: 12px; object-fit: contain; align-self: center;" />
+      <button onclick="confirmSendImage()" style="width: 100%; padding: 12px; font-size: 1rem;"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
+      <button onclick="closeSendImageModal()" class="premium-ghost-btn"><i class="fa-solid fa-circle-xmark"></i> إغلاق</button>
+    </div>
+  </div>
+
 <!-- نافذة عرض الصور العالية الجودة فوق شجرة الذكريات مع الزوم -->
   <div id="imageModal" class="modal-overlay" style="display: none; z-index: 4000; flex-direction: column;" onclick="this.style.display='none'">
     <div style="background: rgba(20,20,25,0.98); padding: 10px; border-radius: 16px; max-width: 95vw; max-height: 85vh; border: 1px solid rgba(255,255,255,0.15); overflow: auto; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation()">
@@ -6285,6 +6302,7 @@ let currentReplyContext = null;
     function scrollToMsg(key) {
         const el = document.getElementById(`msg-item-${key}`);
         if (el) {
+            chatFollowBottom = false;
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.style.backgroundColor = 'rgba(139, 92, 246, 0.3)';
             el.style.borderRadius = '12px';
@@ -6490,22 +6508,35 @@ function sendMessage() {
       
       const reader = new FileReader();
       reader.onload = function(e) {
-        const fullQualityDataUrl = e.target.result;
-        db.ref('chat').push({ 
-          name: currentUser.name, 
-          senderId: userId, 
-          avatar: currentUser.avatar, 
-          gender: currentUser.gender || 'male', 
-          img: fullQualityDataUrl, 
-          time: Date.now(), 
-          isSystem: false, 
-          replyTo: currentReplyContext 
-        });
-        db.ref(`typing/${userId}`).remove();
-        cancelReply();
+        // عرض الصورة للتأكيد قبل الإرسال لمنع الإرسال العرضي
+        document.getElementById('sendImagePreview').src = e.target.result;
+        document.getElementById('sendImageModal').style.display = 'flex';
       };
       reader.readAsDataURL(file);
       input.value = "";
+    }
+
+    function closeSendImageModal() {
+      document.getElementById('sendImageModal').style.display = 'none';
+      document.getElementById('sendImagePreview').src = '';
+    }
+
+    function confirmSendImage() {
+      const fullQualityDataUrl = document.getElementById('sendImagePreview').src;
+      if (!currentUser || !fullQualityDataUrl.startsWith('data:')) return;
+      db.ref('chat').push({ 
+        name: currentUser.name, 
+        senderId: userId, 
+        avatar: currentUser.avatar, 
+        gender: currentUser.gender || 'male', 
+        img: fullQualityDataUrl, 
+        time: Date.now(), 
+        isSystem: false, 
+        replyTo: currentReplyContext 
+      });
+      db.ref(`typing/${userId}`).remove();
+      cancelReply();
+      closeSendImageModal();
     }
 
 
@@ -6533,7 +6564,14 @@ function sendMessage() {
     function renderMessagesFromList(messagesList) {
       const msgDiv = document.getElementById('messages');
       if (!msgDiv) return;
-      const isScrolledToBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
+      const isScrolledToBottom = chatFollowBottom || msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
+      const newLastKey = messagesList.length ? messagesList[messagesList.length - 1].key : null;
+      const prevLastKey = currentRenderedMessages.length ? currentRenderedMessages[currentRenderedMessages.length - 1].key : null;
+      if (prevLastKey && newLastKey && newLastKey !== prevLastKey) {
+          optimisticSeen = { key: newLastKey, until: Date.now() + 4000 };
+          clearTimeout(optimisticSeenTimer);
+          optimisticSeenTimer = setTimeout(renderSeenAvatars, 4050); // إن لم يؤكدها فايربيس ترجع لآخر رسالة مقروءة فعلاً
+      }
       currentRenderedMessages = messagesList;
       if (isScrolledToBottom || window.isChatLocked) markMessagesAsSeen(); // إرسال Seen فوراً قبل بناء الرسائل
 
@@ -6624,10 +6662,10 @@ htmlBuilder += `
                       <div style="text-align: ${textAlign}; color: ${isMine ? '#fff' : 'inherit'}; width: 100%; max-width: 100%; min-width: 0; overflow-wrap: anywhere;">${contentHtml}</div>
                     </div>
                     ${reactionsHtml}
-                    <div id="seen-${msgKey}" class="seen-container" style="display:flex; align-items:center; flex-direction:row-reverse; margin-top:2px; gap: 2px;"></div>
                 </div>
               </div>
             </div>
+            <div id="seen-${msgKey}" class="seen-container"></div>
           `;
 
 
@@ -6636,6 +6674,10 @@ htmlBuilder += `
       });
 
       msgDiv.innerHTML = htmlBuilder;
+      // الصور تكبر بعد التحميل؛ نبقى بالقاع حتى لا تختفي الرسائل الجديدة تحتها
+      msgDiv.querySelectorAll('img').forEach(img => {
+        if (!img.complete) img.addEventListener('load', () => { if (chatFollowBottom || window.isChatLocked) msgDiv.scrollTop = msgDiv.scrollHeight; }, { once: true });
+      });
       if (isScrolledToBottom || window.isChatLocked) {
         msgDiv.scrollTop = msgDiv.scrollHeight;
           markMessagesAsSeen();
@@ -6650,16 +6692,23 @@ let lastSeenData = {};
     });
 
     const prevSeenKeyByUser = {};
+    let optimisticSeen = null, optimisticSeenTimer = null;
     function renderSeenAvatars() {
-        document.querySelectorAll('.seen-container').forEach(el => el.innerHTML = '');
+        const msgDiv = document.getElementById('messages');
+        const stickToBottom = msgDiv && (chatFollowBottom || window.isChatLocked) || msgDiv && msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
         const seenByMsg = {};
+        const optimisticKey = optimisticSeen && Date.now() < optimisticSeen.until &&
+            currentRenderedMessages.some(item => item.key === optimisticSeen.key) ? optimisticSeen.key : null;
 
-        Object.keys(lastSeenData).forEach(uid => {
+        new Set([...Object.keys(lastSeenData), ...activeUserIds]).forEach(uid => {
             if (uid === userId) return;
-            const data = lastSeenData[uid];
-            if (!data || !data.msgKey) return;
+            const data = lastSeenData[uid] || {};
+            const avatar = data.avatar || onlineAvatars[uid];
+            /* عرض فوري لمن عليه نقطة خضراء، ثم التحقق من فايربيس خلال ثوانٍ */
+            const msgKey = (optimisticKey && activeUserIds.has(uid)) ? optimisticKey : data.msgKey;
+            if (!msgKey || !avatar) return;
 
-            const readIndex = currentRenderedMessages.findIndex(item => item.key === data.msgKey);
+            const readIndex = currentRenderedMessages.findIndex(item => item.key === msgKey);
             if (readIndex < 0) return;
 
             /* إيصال القراءة يوضع على آخر رسالة غير نظامية قرأها المستخدم (مهما كان مرسلها) */
@@ -6668,32 +6717,42 @@ let lastSeenData = {};
                 if (message && !message.isSystem) {
                     const key = currentRenderedMessages[i].key;
                     if (!seenByMsg[key]) seenByMsg[key] = [];
-                    if (data.avatar) seenByMsg[key].push({ uid, avatar: data.avatar, moved: prevSeenKeyByUser[uid] !== key });
-                    prevSeenKeyByUser[uid] = key;
+                    seenByMsg[key].push({ uid, avatar, moved: prevSeenKeyByUser[uid] !== key });
                     break;
                 }
             }
         });
 
-        Object.keys(seenByMsg).forEach(msgKey => {
-            const container = document.getElementById(`seen-${msgKey}`);
-            if (container) {
-                let html = '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
-                seenByMsg[msgKey].forEach(s => {
-                    html += `<span class="avatar-wrap ${s.moved ? 'seen-pop' : ''}" data-uid="${s.uid}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
-                });
-                container.innerHTML = html;
-            }
+        // نلمس فقط الحاويات التي تغيّرت حتى لا ينقطع أنميشن النزول
+        document.querySelectorAll('.seen-container').forEach(container => {
+            const list = seenByMsg[container.id.slice(5)] || [];
+            list.forEach(s => { prevSeenKeyByUser[s.uid] = container.id.slice(5); });
+            const sig = list.map(s => s.uid).join(',');
+            if (container.dataset.sig === sig && (sig || !container.innerHTML)) return;
+            container.dataset.sig = sig;
+            if (!list.length) { container.innerHTML = ''; return; }
+            let html = '';
+            list.forEach(s => {
+                html += `<span class="seen-avatar ${s.moved ? 'seen-pop' : ''}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
+            });
+            container.innerHTML = html + '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
         });
+        if (stickToBottom) msgDiv.scrollTop = msgDiv.scrollHeight;
         updateOnlineDots();
     }
 
     // النقطة الخضراء: تظهر فقط لمن الموقع ظاهر أمامه الآن (active في onlineUsers)
     let activeUserIds = new Set();
+    const onlineAvatars = {};
     db.ref('onlineUsers').on('value', snap => {
         activeUserIds = new Set();
-        snap.forEach(c => { if (c.val() && c.val().active !== false) activeUserIds.add(c.key); });
+        snap.forEach(c => {
+            const u = c.val();
+            if (u && u.avatar) onlineAvatars[c.key] = u.avatar;
+            if (u && u.active !== false) activeUserIds.add(c.key);
+        });
         updateOnlineDots();
+        renderSeenAvatars();
     });
     function updateOnlineDots() {
         document.querySelectorAll('.avatar-wrap[data-uid]').forEach(el => {
@@ -6704,9 +6763,9 @@ let lastSeenData = {};
     let lastSeenWriteKey = null;
     function markMessagesAsSeen() {
         const msgDiv = document.getElementById('messages');
-        if (!msgDiv || !currentUser || !currentRenderedMessages.length) return;
+        if (!msgDiv || !currentUser || !currentRenderedMessages.length || document.hidden) return;
         const atBottom = msgDiv.scrollHeight - msgDiv.clientHeight <= msgDiv.scrollTop + 50;
-        if (!atBottom && !window.isChatLocked) return;
+        if (!atBottom && !window.isChatLocked && !chatFollowBottom) return;
 
         const lastMessage = currentRenderedMessages[currentRenderedMessages.length - 1];
         if (!lastMessage || !lastMessage.key) return;
@@ -6717,12 +6776,29 @@ let lastSeenData = {};
         }
 
         lastSeenWriteKey = lastMessage.key;
-        db.ref(`lastSeen/${userId}`).set({ avatar: currentUser.avatar, msgKey: lastMessage.key });
+        if (existingSeen && existingSeen.avatar === currentUser.avatar) {
+            db.ref(`lastSeen/${userId}`).update({ msgKey: lastMessage.key });
+        } else {
+            db.ref(`lastSeen/${userId}`).set({ avatar: currentUser.avatar, msgKey: lastMessage.key });
+        }
     }
+    document.addEventListener('visibilitychange', markMessagesAsSeen);
 
     const messagesReadTracker = document.getElementById('messages');
     if (messagesReadTracker) {
         messagesReadTracker.addEventListener('scroll', markMessagesAsSeen, { passive: true });
+    }
+
+    /* سبب توقف ظهور الرسائل: التمرير الناعم يكون بمنتصف حركته عند وصول رسائل متتالية فيُظن أن المستخدم صعد للأعلى
+       فيتوقف النزول التلقائي. الحل: نبقى نتبع القاع إلا إذا مرّر المستخدم بنفسه للأعلى */
+    let chatFollowBottom = true, chatUserScrollAt = 0;
+    if (messagesReadTracker) {
+        ['wheel', 'touchmove', 'keydown'].forEach(ev => messagesReadTracker.addEventListener(ev, () => { chatUserScrollAt = Date.now(); }, { passive: true }));
+        messagesReadTracker.addEventListener('scroll', () => {
+            if (Date.now() - chatUserScrollAt < 1500) {
+                chatFollowBottom = messagesReadTracker.scrollHeight - messagesReadTracker.clientHeight <= messagesReadTracker.scrollTop + 50;
+            }
+        }, { passive: true });
     }
 
     // عرض الكاش المحفوظ فوراً من ذاكرة الهاتف عند فتح الصفحة
