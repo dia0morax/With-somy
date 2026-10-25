@@ -33,6 +33,8 @@
     <!-- مكتبة قص الصور والـ GIF الاحترافية -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <!-- مكتبة الأنميشن GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 
   <style>
     :root {
@@ -273,6 +275,18 @@
       65% { transform: translateY(1px) scale(1.15, 0.85); opacity: 1; }
       100% { transform: none; }
     }
+    .seen-avatar { position: relative; }
+    .seen-ripple { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(56, 189, 248, 0.85); pointer-events: none; opacity: 0; }
+    .has-gsap .msg-item { animation: none !important; }
+    .has-gsap .seen-pop { animation: none; }
+    .has-gsap .modal-overlay { animation: none; }
+    /* ضغطة الأزرار عبر خاصية scale المستقلة حتى لا تتعارض مع transform الموجود */
+    .has-gsap :is(button, .drawer-action, .hub-close-circle, .reaction-badge, .avatar-opt) { scale: var(--press, 1); }
+    .avatar-wrap.online::after { animation: onlinePulse 2.6s ease-out infinite; }
+    @keyframes onlinePulse {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+      70%, 100% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+    }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
     .swipe-reply-indicator {
       position: absolute;
@@ -411,7 +425,7 @@
       transform: translate3d(0, 10px, 0) scale(0.85);
       opacity: 0;
       will-change: transform, opacity;
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
+      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
       pointer-events: none;
       transform-origin: bottom center;
     }
@@ -717,7 +731,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     .memory-sticker:hover { transform: scale(1.5) rotate(0deg); z-index: 10; }
 
 /* 🌟 ستايلات الاقتراحات الذكية للملصقات وأقسام اللوحة (تم تخفيفها) */
-    .sticker-suggestions { position: absolute; bottom: 65px; right: 16px; left: 16px; display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.98); padding: 12px; border-radius: 16px; border: 1px solid var(--accent); opacity: 0; pointer-events: none; transition: 0.2s ease; z-index: 20; transform: translateY(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+    .sticker-suggestions { position: absolute; bottom: 65px; right: 16px; left: 16px; display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.98); padding: 12px; border-radius: 16px; border: 1px solid var(--accent); opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 20; transform: translateY(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
     .sticker-suggestions.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
     .sticker-suggestions img { width: 70px; height: 70px; border-radius: 12px; cursor: pointer; object-fit: cover; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
     .sticker-suggestions img:hover { transform: scale(1.15) translateY(-5px); border: 2px solid var(--accent); }
@@ -4478,8 +4492,8 @@ html,
       pointer-events: auto !important;
       transform: translate3d(0, 0, 0) scale(1) !important;
       transition:
-        transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.16s ease,
+        transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1),
+        opacity 0.2s ease,
         visibility 0s linear 0s !important;
     }
     .premium-toolbar-btn {
@@ -6674,6 +6688,7 @@ htmlBuilder += `
       });
 
       msgDiv.innerHTML = htmlBuilder;
+      if (window.siteMotion) siteMotion.messages(msgDiv);
       // الصور تكبر بعد التحميل؛ نبقى بالقاع حتى لا تختفي الرسائل الجديدة تحتها
       msgDiv.querySelectorAll('img').forEach(img => {
         if (!img.complete) img.addEventListener('load', () => { if (chatFollowBottom || window.isChatLocked) msgDiv.scrollTop = msgDiv.scrollHeight; }, { once: true });
@@ -6733,9 +6748,10 @@ let lastSeenData = {};
             if (!list.length) { container.innerHTML = ''; return; }
             let html = '';
             list.forEach(s => {
-                html += `<span class="seen-avatar ${s.moved ? 'seen-pop' : ''}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
+                html += `<span class="seen-avatar ${s.moved ? 'seen-pop' : ''}" data-uid="${s.uid}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
             });
             container.innerHTML = html + '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
+            if (window.siteMotion) siteMotion.seen(container);
         });
         if (stickToBottom) msgDiv.scrollTop = msgDiv.scrollHeight;
         updateOnlineDots();
@@ -9416,6 +9432,158 @@ window.addEventListener('mouseup', stopResize);
       });
       window.addEventListener('resize', updatePreviewPosition);
       window.addEventListener('orientationchange', () => setTimeout(updatePreviewPosition, 80));
+    })();
+  </script>
+  <!-- 🎬 طبقة الأنميشن الاحترافية (GSAP) — تعديل شكلي فقط، بدون المكتبة يبقى أنميشن CSS القديم -->
+  <script>
+    (function () {
+      if (!window.gsap || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.documentElement.classList.add('has-gsap');
+
+      // يستكمل الأنميشن من نفس النقطة إذا أعيد بناء العنصر في منتصف حركته (الشات يعيد بناء الرسائل مع كل تحديث)
+      const started = {};
+      // build() تُستدعى فقط إذا كان العنصر جديداً أو حركته لم تنتهِ بعد (fromTo يطبّق حالة البداية فور إنشائه)
+      function play(id, build, isNew, maxDur) {
+        const now = performance.now();
+        if (!(id in started)) { if (!isNew) return; started[id] = now; }
+        const elapsed = (now - started[id]) / 1000;
+        if (elapsed >= maxDur) return;
+        const tl = build();
+        tl.progress(Math.min(1, elapsed / tl.duration())).play();
+      }
+
+      // --- دخول الرسائل الجديدة فقط ---
+      const knownMsgs = new Set();
+      let firstRender = true;
+      function messages(msgDiv) {
+        msgDiv.querySelectorAll('.msg-item').forEach((item, i, all) => {
+          const key = item.id.slice(9);
+          const isNew = !knownMsgs.has(key);
+          knownMsgs.add(key);
+          if (firstRender) {
+            // أول فتح للموقع: ظهور متتابع ناعم لآخر الرسائل
+            gsap.fromTo(item.children, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: Math.max(0, i - (all.length - 8)) * 0.04, clearProps: 'opacity,transform' });
+            return;
+          }
+          const mine = item.classList.contains('is-mine');
+          const col = item.querySelector('.avatar-wrap + div');
+          const avatar = item.querySelector('.avatar-wrap');
+          if (!col || !avatar) return;
+          play('msg:' + key, () => gsap.timeline({ paused: true })
+            .fromTo(col, { opacity: 0, x: mine ? 26 : -26, y: 16, scale: 0.88, transformOrigin: mine ? '100% 100%' : '0% 100%' },
+                         { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.45)', clearProps: 'opacity,transform' }, 0)
+            .fromTo(avatar, { opacity: 0, scale: 0.3, rotate: mine ? 25 : -25 },
+                            { opacity: 1, scale: 1, rotate: 0, duration: 0.55, ease: 'back.out(2.3)', clearProps: 'opacity,transform' }, 0.06), isNew, 0.61);
+        });
+        if (knownMsgs.size) firstRender = false;
+      }
+
+      // --- Seen: نزول مثل قطرة الماء مع تموّج عند الارتطام ---
+      function seen(container) {
+        const key = container.id.slice(5);
+        container.querySelectorAll('.seen-avatar[data-uid]').forEach(av => {
+          const isNew = av.classList.contains('seen-pop');
+          const label = container.lastElementChild;
+          play('seen:' + av.dataset.uid + ':' + key, () => {
+          const ripple = document.createElement('span');
+          ripple.className = 'seen-ripple';
+          av.appendChild(ripple);
+          return gsap.timeline({ paused: true, onComplete: () => ripple.remove() })
+            .fromTo(av, { y: -40, scaleX: 0.68, scaleY: 1.35, opacity: 0, transformOrigin: '50% 100%' },
+                        { y: 0, scaleX: 0.9, scaleY: 1.12, opacity: 1, duration: 0.36, ease: 'power2.in' })
+            .to(av, { scaleX: 1.38, scaleY: 0.62, duration: 0.09, ease: 'power1.out' })
+            .to(av, { scaleX: 1, scaleY: 1, duration: 0.6, ease: 'elastic.out(1.1, 0.32)', clearProps: 'transform,opacity' })
+            .fromTo(ripple, { scale: 0.3, opacity: 0.75 }, { scale: 2.8, opacity: 0, duration: 0.7, ease: 'power2.out' }, 0.36)
+            .fromTo(label, { opacity: 0, x: 8 }, { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out', clearProps: 'opacity,transform' }, 0.3);
+          }, isNew, 1.06);
+        });
+      }
+
+      // --- النوافذ المنبثقة: دخول نابض وخروج ناعم ---
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        let shown = overlay.style.display !== 'none';
+        let exitTl = null;
+        const card = () => overlay.firstElementChild;
+        function enter() {
+          if (exitTl) { exitTl.kill(); exitTl = null; }
+          gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity' });
+          const c = card();
+          if (!c) return;
+          gsap.fromTo(c, { opacity: 0, y: 46, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.35)', clearProps: 'opacity,transform' });
+          if (c.classList.contains('modal-card')) {
+            gsap.fromTo(c.children, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.035, delay: 0.08, clearProps: 'opacity,transform' });
+          }
+        }
+        function exit() {
+          // نرجعها ظاهرة مؤقتاً (important يميزها عن كتابة الكود الأصلي) ثم نخفيها بعد حركة الخروج
+          overlay.style.setProperty('display', 'flex', 'important');
+          overlay.style.pointerEvents = 'none';
+          exitTl = gsap.timeline({ onComplete: () => { exitTl = null; overlay.style.pointerEvents = ''; overlay.style.setProperty('display', 'none'); gsap.set([overlay, card()], { clearProps: 'opacity,transform' }); } })
+            .to(card(), { opacity: 0, y: 30, scale: 0.94, duration: 0.22, ease: 'power2.in' }, 0)
+            .to(overlay, { opacity: 0, duration: 0.24, ease: 'power1.in' }, 0);
+        }
+        new MutationObserver(() => {
+          const d = overlay.style.display;
+          const ours = overlay.style.getPropertyPriority('display') === 'important';
+          if (ours) return;
+          const nowShown = d !== 'none';
+          if (exitTl && nowShown) { exitTl.kill(); exitTl = null; overlay.style.pointerEvents = ''; gsap.set([overlay, card()], { clearProps: 'opacity,transform' }); shown = true; enter(); return; }
+          if (exitTl) return;
+          if (nowShown && !shown) enter();
+          else if (!nowShown && shown) exit();
+          shown = nowShown;
+        }).observe(overlay, { attributes: true, attributeFilter: ['style'] });
+      });
+
+      // --- قوائم تظهر بإضافة كلاس: الملصقات، التفاعلات، الاقتراحات، تبويبات الإعدادات ---
+      function onClassAdded(el, cls, fn) {
+        if (!el) return;
+        let had = el.classList.contains(cls);
+        new MutationObserver(() => { const has = el.classList.contains(cls); if (has && !had) fn(el); had = has; })
+          .observe(el, { attributes: true, attributeFilter: ['class'] });
+      }
+      onClassAdded(document.getElementById('stickersPanel'), 'is-open', () => {
+        const items = [...document.querySelectorAll('#stickersGrid > *')].slice(0, 24);
+        gsap.fromTo(items, { opacity: 0, y: 18, scale: 0.7 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.8)', stagger: { each: 0.018, from: 'start' }, delay: 0.05, clearProps: 'opacity,transform' });
+      });
+      onClassAdded(document.getElementById('reactionMenu'), 'show', menu => {
+        gsap.fromTo(menu.children, { opacity: 0, y: 12, scale: 0.4 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(2.6)', stagger: 0.03, clearProps: 'opacity,transform' });
+      });
+      onClassAdded(document.getElementById('stickerSuggestions'), 'active', box => {
+        gsap.fromTo(box.children, { opacity: 0, scale: 0.6, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'back.out(2)', stagger: 0.03, clearProps: 'opacity,transform' });
+      });
+      document.querySelectorAll('.hub-tab-panel').forEach(panel => onClassAdded(panel, 'active', p => {
+        gsap.fromTo(p.children, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.05, clearProps: 'opacity,transform' });
+      }));
+
+      // --- مؤشر "يكتب الآن" ---
+      const typingArea = document.getElementById('typingArea');
+      if (typingArea) {
+        let wasEmpty = !typingArea.innerHTML.trim();
+        new MutationObserver(() => {
+          const empty = !typingArea.innerHTML.trim();
+          if (!empty && wasEmpty) gsap.fromTo(typingArea.firstElementChild, { opacity: 0, y: 8, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(1.8)', clearProps: 'opacity,transform' });
+          wasEmpty = empty;
+        }).observe(typingArea, { childList: true });
+      }
+
+      // --- ضغطة الأزرار: انكماش خفيف وارتداد مطاطي ---
+      const pressSel = 'button, .drawer-action, .hub-close-circle, .reaction-badge, .avatar-opt';
+      let pressed = null;
+      function release() {
+        if (!pressed) return;
+        gsap.to(pressed, { '--press': 1, duration: 0.55, ease: 'elastic.out(1.2, 0.45)', clearProps: '--press' });
+        pressed = null;
+      }
+      document.addEventListener('pointerdown', e => {
+        const btn = e.target.closest && e.target.closest(pressSel);
+        if (!btn || btn.disabled) return;
+        pressed = btn;
+        gsap.fromTo(btn, { '--press': 1 }, { '--press': 0.92, duration: 0.12, ease: 'power2.out' });
+      }, { passive: true, capture: true });
+      ['pointerup', 'pointercancel', 'dragstart'].forEach(ev => document.addEventListener(ev, release, { passive: true, capture: true }));
+
+      window.siteMotion = { messages, seen };
     })();
   </script>
 </body>
