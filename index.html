@@ -8064,10 +8064,13 @@ async function renderAvailableVideosUI(items) {
       }
     }
 
-    function buildLocalDriveStreamUrl(fileId, token, resourceKey) {
+    function buildLocalDriveStreamUrl(fileId, token, resourceKey, size, type) {
       const streamUrl = new URL(`./${DRIVE_STREAM_ROUTE}/${encodeURIComponent(fileId)}`, window.location.href);
       streamUrl.searchParams.set('access_token', token);
       if (resourceKey) streamUrl.searchParams.set('resource_key', resourceKey);
+      // حجم الملف ونوعه ليبني مشغّل البث ردوداً دقيقة يقبلها سفاري
+      if (size) streamUrl.searchParams.set('size', String(size));
+      if (type) streamUrl.searchParams.set('type', type);
       return streamUrl.href;
     }
 
@@ -8138,7 +8141,7 @@ async function renderAvailableVideosUI(items) {
         window.driveLoadedFileId = fileId;
         window.driveMediaReady = false;
         const directUrl = buildDirectDriveStreamUrl(fileId, token);
-        const streamUrl = workerReady ? buildLocalDriveStreamUrl(fileId, token, window.driveCurrentPlayback.resourceKey) : directUrl;
+        const streamUrl = workerReady ? buildLocalDriveStreamUrl(fileId, token, window.driveCurrentPlayback.resourceKey, metadata.size, metadata.mimeType) : directUrl;
         let triedDirect = !workerReady;
 
         player.one('loadedmetadata', () => {
@@ -8163,6 +8166,8 @@ async function renderAvailableVideosUI(items) {
           window.driveMediaReady = false;
           if (isAppleMobile && /matroska|mkv/i.test(metadata.mimeType + ' ' + (metadata.name || ''))) {
             showDriveOverlayMessage('أجهزة آيفون وآيباد لا تدعم صيغة MKV. حوّل الفيديو إلى MP4 ثم شغّله من Drive.');
+          } else if (isAppleMobile) {
+            showDriveOverlayMessage('تعذّر تشغيل الفيديو على هذا الجهاز. اضغط للمحاولة مرة أخرى ▶️ — وإذا تكرر فغالباً ترميز الملف غير مدعوم بأجهزة آبل (مثل 10-bit أو HEVC)، جرّب نسخة MP4 بترميز H.264 عادي. (رمز الخطأ: ' + ((player.error() && player.error().code) || '?') + ')');
           } else {
             showDriveOverlayMessage('اضغط هنا لإعادة تنشيط بث الفيديو ▶️');
           }
