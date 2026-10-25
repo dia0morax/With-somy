@@ -33,8 +33,6 @@
     <!-- مكتبة قص الصور والـ GIF الاحترافية -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-  <!-- مكتبة الأنميشن GSAP -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 
   <style>
     :root {
@@ -277,16 +275,10 @@
     }
     .seen-avatar { position: relative; }
     .seen-ripple { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(56, 189, 248, 0.85); pointer-events: none; opacity: 0; }
-    .has-gsap .msg-item { animation: none !important; }
-    .has-gsap .seen-pop { animation: none; }
-    .has-gsap .modal-overlay { animation: none; }
-    /* ضغطة الأزرار عبر خاصية scale المستقلة حتى لا تتعارض مع transform الموجود */
-    .has-gsap :is(button, .drawer-action, .hub-close-circle, .reaction-badge, .avatar-opt) { scale: var(--press, 1); }
-    .avatar-wrap.online::after { animation: onlinePulse 2.6s ease-out infinite; }
-    @keyframes onlinePulse {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
-      70%, 100% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-    }
+    .has-motion .msg-item { animation: none !important; }
+    .has-motion .seen-pop { animation: none; }
+    .has-motion .modal-overlay { animation: none; }
+    .avatar-wrap.online::after { box-shadow: 0 0 6px rgba(34, 197, 94, 0.6); }
     .msg-row-wrapper { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; overflow: visible; touch-action: pan-y; }
     .swipe-reply-indicator {
       position: absolute;
@@ -425,7 +417,7 @@
       transform: translate3d(0, 10px, 0) scale(0.85);
       opacity: 0;
       will-change: transform, opacity;
-      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+      transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
       pointer-events: none;
       transform-origin: bottom center;
     }
@@ -731,7 +723,7 @@ body.device-mobile .chat-container { padding: 10px !important; border-radius: 14
     .memory-sticker:hover { transform: scale(1.5) rotate(0deg); z-index: 10; }
 
 /* 🌟 ستايلات الاقتراحات الذكية للملصقات وأقسام اللوحة (تم تخفيفها) */
-    .sticker-suggestions { position: absolute; bottom: 65px; right: 16px; left: 16px; display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.98); padding: 12px; border-radius: 16px; border: 1px solid var(--accent); opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 20; transform: translateY(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+    .sticker-suggestions { position: absolute; bottom: 65px; right: 16px; left: 16px; display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.98); padding: 12px; border-radius: 16px; border: 1px solid var(--accent); opacity: 0; pointer-events: none; transition: opacity 0.24s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); z-index: 20; transform: translateY(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
     .sticker-suggestions.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
     .sticker-suggestions img { width: 70px; height: 70px; border-radius: 12px; cursor: pointer; object-fit: cover; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
     .sticker-suggestions img:hover { transform: scale(1.15) translateY(-5px); border: 2px solid var(--accent); }
@@ -4492,8 +4484,8 @@ html,
       pointer-events: auto !important;
       transform: translate3d(0, 0, 0) scale(1) !important;
       transition:
-        transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1),
-        opacity 0.2s ease,
+        transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.24s ease,
         visibility 0s linear 0s !important;
     }
     .premium-toolbar-btn {
@@ -6573,6 +6565,32 @@ function sendMessage() {
       }
     }
 
+    // الصور المضمّنة (base64) تتحول لرابط blob قصير مرة واحدة: بناء الشات يصير أخف بكثير على الأجهزة المتوسطة
+    // والمتصفح لا يعيد فك الصورة مع كل تحديث. الشكل والبيانات المحفوظة بفايربيس كما هي.
+    let blobUrlCache = new Map(), blobUrlUsed = new Map();
+    function lightSrc(src) {
+      if (typeof src !== 'string' || src.length < 4000 || !/^data:[^,]*;base64,/.test(src.slice(0, 80))) return src;
+      let url = blobUrlCache.get(src);
+      if (!url) {
+        try {
+          const comma = src.indexOf(',');
+          const bin = atob(src.slice(comma + 1));
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          url = URL.createObjectURL(new Blob([bytes], { type: src.slice(5, src.indexOf(';')) }));
+        } catch (e) { return src; }
+        blobUrlCache.set(src, url);
+      }
+      blobUrlUsed.set(src, url);
+      return url;
+    }
+    // بعد كل بناء للشات: نحرر روابط الصور التي لم تعد معروضة
+    function releaseUnusedBlobUrls() {
+      blobUrlCache.forEach((url, src) => { if (!blobUrlUsed.has(src)) URL.revokeObjectURL(url); });
+      blobUrlCache = blobUrlUsed;
+      blobUrlUsed = new Map();
+    }
+
 // دالة بناء وتوليد عناصر الرسائل
     let currentRenderedMessages = [];
     function renderMessagesFromList(messagesList) {
@@ -6610,10 +6628,11 @@ function sendMessage() {
         } else {
           const isMine = currentUser && (m.senderId ? m.senderId === userId : m.name === currentUser.name);
           let contentHtml = m.text ? `<div>${m.text}</div>` : '';
+          const imgSrc = lightSrc(m.img);
           if (m.img && m.isSticker) {
-            contentHtml += `<img src="${m.img}" loading="lazy" class="chat-sticker" onclick="openImageModal('${m.img}')">`;
+            contentHtml += `<img src="${imgSrc}" loading="lazy" class="chat-sticker" onclick="openImageModal('${imgSrc}')">`;
           } else if (m.img) {
-            contentHtml += `<img src="${m.img}" loading="lazy" class="chat-img" onclick="openImageModal('${m.img}')">`;
+            contentHtml += `<img src="${imgSrc}" loading="lazy" class="chat-img" onclick="openImageModal('${imgSrc}')">`;
           }
 
           const isStickerMsg = m.img && m.isSticker;
@@ -6659,7 +6678,7 @@ htmlBuilder += `
                    onpointermove="handleSwipePointerMove(event, '${msgKey}')"
                    onpointerup="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')"
                    onpointercancel="handleSwipePointerEnd(event, '${msgKey}', '${senderNameEscaped}', '${previewTextForReply}')">
-                <span class="avatar-wrap" data-uid="${m.senderId || ''}"><img src="${m.avatar}" loading="lazy" class="msg-avatar" /></span>
+                <span class="avatar-wrap" data-uid="${m.senderId || ''}"><img src="${lightSrc(m.avatar)}" loading="lazy" class="msg-avatar" /></span>
                 <div style="display:flex; flex:0 1 auto; flex-direction:column; direction:ltr; align-items: ${isMine ? 'flex-end' : 'flex-start'}; width: fit-content; max-width: 82%; min-width: 0; box-sizing: border-box;">
                     ${replyHtml}
                     <div class="msg-content ${(m.isSticker && !m.text) ? 'sticker-bg' : ''}" 
@@ -6688,6 +6707,7 @@ htmlBuilder += `
       });
 
       msgDiv.innerHTML = htmlBuilder;
+      releaseUnusedBlobUrls();
       if (window.siteMotion) siteMotion.messages(msgDiv);
       // الصور تكبر بعد التحميل؛ نبقى بالقاع حتى لا تختفي الرسائل الجديدة تحتها
       msgDiv.querySelectorAll('img').forEach(img => {
@@ -6748,7 +6768,7 @@ let lastSeenData = {};
             if (!list.length) { container.innerHTML = ''; return; }
             let html = '';
             list.forEach(s => {
-                html += `<span class="seen-avatar ${s.moved ? 'seen-pop' : ''}" data-uid="${s.uid}"><img src="${s.avatar}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
+                html += `<span class="seen-avatar ${s.moved ? 'seen-pop' : ''}" data-uid="${s.uid}"><img src="${lightSrc(s.avatar)}" style="width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--bg-color-1);"></span>`;
             });
             container.innerHTML = html + '<span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 4px; font-weight: bold;">Seen</span>';
             if (window.siteMotion) siteMotion.seen(container);
@@ -6834,9 +6854,12 @@ let lastSeenData = {};
 
       renderMessagesFromList(messagesList);
 
-      try {
-        localStorage.setItem('cached_chat_msgs', JSON.stringify(messagesList));
-      } catch (e) {}
+      clearTimeout(window.chatCacheTimer);
+      window.chatCacheTimer = setTimeout(() => {
+        try {
+          localStorage.setItem('cached_chat_msgs', JSON.stringify(messagesList));
+        } catch (e) {}
+      }, 1200);
     });
 
 
@@ -9434,127 +9457,139 @@ window.addEventListener('mouseup', stopResize);
       window.addEventListener('orientationchange', () => setTimeout(updatePreviewPosition, 80));
     })();
   </script>
-  <!-- 🎬 طبقة الأنميشن الاحترافية (GSAP) — تعديل شكلي فقط، بدون المكتبة يبقى أنميشن CSS القديم -->
+  <!-- 🎬 طبقة الأنميشن (Web Animations الأصلية بالمتصفح): تعمل على كرت الشاشة فتبقى ناعمة حتى والموقع مشغول، وبدون أي مكتبة -->
   <script>
     (function () {
-      if (!window.gsap || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      document.documentElement.classList.add('has-gsap');
+      if (!Element.prototype.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.documentElement.classList.add('has-motion');
+      const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';      // انسيابي طويل الذيل، مريح للعين
+      const EASE_SOFT = 'cubic-bezier(0.33, 1, 0.68, 1)';
+      const EASE_IN = 'cubic-bezier(0.55, 0, 1, 0.45)';
+      const anim = (el, frames, opts) => el && el.animate(frames, Object.assign({ easing: EASE, fill: 'backwards' }, opts));
 
-      // يستكمل الأنميشن من نفس النقطة إذا أعيد بناء العنصر في منتصف حركته (الشات يعيد بناء الرسائل مع كل تحديث)
+      // يستكمل الحركة من نفس النقطة إذا أعيد بناء العنصر بمنتصفها (الشات يعيد بناء الرسائل مع كل تحديث)
       const started = {};
-      // build() تُستدعى فقط إذا كان العنصر جديداً أو حركته لم تنتهِ بعد (fromTo يطبّق حالة البداية فور إنشائه)
-      function play(id, build, isNew, maxDur) {
+      function play(id, isNew, dur, run) {
         const now = performance.now();
         if (!(id in started)) { if (!isNew) return; started[id] = now; }
-        const elapsed = (now - started[id]) / 1000;
-        if (elapsed >= maxDur) return;
-        const tl = build();
-        tl.progress(Math.min(1, elapsed / tl.duration())).play();
+        const elapsed = now - started[id];
+        if (elapsed >= dur) return;
+        run().forEach(a => { if (a) a.currentTime = elapsed; });
       }
 
       // --- دخول الرسائل الجديدة فقط ---
       const knownMsgs = new Set();
       let firstRender = true;
       function messages(msgDiv) {
-        msgDiv.querySelectorAll('.msg-item').forEach((item, i, all) => {
+        const items = msgDiv.querySelectorAll('.msg-item');
+        items.forEach((item, i) => {
           const key = item.id.slice(9);
           const isNew = !knownMsgs.has(key);
           knownMsgs.add(key);
-          if (firstRender) {
-            // أول فتح للموقع: ظهور متتابع ناعم لآخر الرسائل
-            gsap.fromTo(item.children, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: Math.max(0, i - (all.length - 8)) * 0.04, clearProps: 'opacity,transform' });
-            return;
-          }
-          const mine = item.classList.contains('is-mine');
           const col = item.querySelector('.avatar-wrap + div');
           const avatar = item.querySelector('.avatar-wrap');
           if (!col || !avatar) return;
-          play('msg:' + key, () => gsap.timeline({ paused: true })
-            .fromTo(col, { opacity: 0, x: mine ? 26 : -26, y: 16, scale: 0.88, transformOrigin: mine ? '100% 100%' : '0% 100%' },
-                         { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.45)', clearProps: 'opacity,transform' }, 0)
-            .fromTo(avatar, { opacity: 0, scale: 0.3, rotate: mine ? 25 : -25 },
-                            { opacity: 1, scale: 1, rotate: 0, duration: 0.55, ease: 'back.out(2.3)', clearProps: 'opacity,transform' }, 0.06), isNew, 0.61);
+          if (firstRender) {
+            // أول فتح: ظهور متتابع هادئ لآخر الرسائل
+            const d = Math.max(0, i - (items.length - 7)) * 45;
+            anim(col, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 520, delay: d });
+            anim(avatar, [{ opacity: 0 }, { opacity: 1 }], { duration: 520, delay: d });
+            return;
+          }
+          const mine = item.classList.contains('is-mine');
+          const sticker = item.classList.contains('is-sticker');
+          const dx = mine ? 14 : -14;
+          play('msg:' + key, isNew, 560, () => [
+            sticker
+              ? anim(col, [{ opacity: 0, transform: `translate(${dx}px, 18px) scale(0.82)` }, { opacity: 1, offset: 0.45 }, { opacity: 1, transform: 'none' }], { duration: 560 })
+              : anim(col, [{ opacity: 0, transform: `translate(${dx}px, 12px)` }, { opacity: 1, offset: 0.4 }, { opacity: 1, transform: 'none' }], { duration: 500 }),
+            anim(avatar, [{ opacity: 0, transform: 'scale(0.6)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: 40, easing: EASE_SOFT })
+          ]);
         });
         if (knownMsgs.size) firstRender = false;
       }
 
-      // --- Seen: نزول مثل قطرة الماء مع تموّج عند الارتطام ---
+      // --- Seen: قطرة ماء تسقط، ترتطم، تتماوج وتهدأ ---
       function seen(container) {
         const key = container.id.slice(5);
+        const label = container.lastElementChild;
         container.querySelectorAll('.seen-avatar[data-uid]').forEach(av => {
-          const isNew = av.classList.contains('seen-pop');
-          const label = container.lastElementChild;
-          play('seen:' + av.dataset.uid + ':' + key, () => {
-          const ripple = document.createElement('span');
-          ripple.className = 'seen-ripple';
-          av.appendChild(ripple);
-          return gsap.timeline({ paused: true, onComplete: () => ripple.remove() })
-            .fromTo(av, { y: -40, scaleX: 0.68, scaleY: 1.35, opacity: 0, transformOrigin: '50% 100%' },
-                        { y: 0, scaleX: 0.9, scaleY: 1.12, opacity: 1, duration: 0.36, ease: 'power2.in' })
-            .to(av, { scaleX: 1.38, scaleY: 0.62, duration: 0.09, ease: 'power1.out' })
-            .to(av, { scaleX: 1, scaleY: 1, duration: 0.6, ease: 'elastic.out(1.1, 0.32)', clearProps: 'transform,opacity' })
-            .fromTo(ripple, { scale: 0.3, opacity: 0.75 }, { scale: 2.8, opacity: 0, duration: 0.7, ease: 'power2.out' }, 0.36)
-            .fromTo(label, { opacity: 0, x: 8 }, { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out', clearProps: 'opacity,transform' }, 0.3);
-          }, isNew, 1.06);
+          play('seen:' + av.dataset.uid + ':' + key, av.classList.contains('seen-pop'), 1100, () => {
+            const ripple = document.createElement('span');
+            ripple.className = 'seen-ripple';
+            av.appendChild(ripple);
+            const r = anim(ripple, [{ opacity: 0.7, transform: 'scale(0.5)' }, { opacity: 0, transform: 'scale(2.6)' }], { duration: 720, delay: 360, easing: EASE_SOFT, fill: 'both' });
+            r.onfinish = () => ripple.remove();
+            return [
+              anim(av, [
+                { opacity: 0, transform: 'translateY(-30px) scale(0.78, 1.18)', easing: EASE_IN },
+                { opacity: 1, transform: 'translateY(0) scale(0.9, 1.1)', offset: 0.42, easing: 'ease-out' },
+                { transform: 'translateY(0) scale(1.22, 0.8)', offset: 0.54, easing: 'ease-in-out' },
+                { transform: 'translateY(-2px) scale(0.95, 1.05)', offset: 0.72, easing: 'ease-in-out' },
+                { transform: 'translateY(0) scale(1.03, 0.98)', offset: 0.86, easing: 'ease-in-out' },
+                { transform: 'none' }
+              ], { duration: 860, easing: 'linear' }),
+              r,
+              anim(label, [{ opacity: 0, transform: 'translateX(6px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 300 })
+            ];
+          });
         });
       }
 
-      // --- النوافذ المنبثقة: دخول نابض وخروج ناعم ---
+      // --- النوافذ المنبثقة: دخول انسيابي وخروج ناعم ---
       document.querySelectorAll('.modal-overlay').forEach(overlay => {
         let shown = overlay.style.display !== 'none';
-        let exitTl = null;
+        let exiting = null;
         const card = () => overlay.firstElementChild;
         function enter() {
-          if (exitTl) { exitTl.kill(); exitTl = null; }
-          gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity' });
+          anim(overlay, [{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: 'ease-out' });
           const c = card();
-          if (!c) return;
-          gsap.fromTo(c, { opacity: 0, y: 46, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.35)', clearProps: 'opacity,transform' });
-          if (c.classList.contains('modal-card')) {
-            gsap.fromTo(c.children, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.035, delay: 0.08, clearProps: 'opacity,transform' });
+          anim(c, [{ opacity: 0, transform: 'translateY(28px) scale(0.97)' }, { opacity: 1, transform: 'none' }], { duration: 480 });
+          if (c && c.classList.contains('modal-card')) {
+            [...c.children].slice(0, 8).forEach((ch, i) => anim(ch, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 70 + i * 32 }));
           }
         }
         function exit() {
           // نرجعها ظاهرة مؤقتاً (important يميزها عن كتابة الكود الأصلي) ثم نخفيها بعد حركة الخروج
           overlay.style.setProperty('display', 'flex', 'important');
           overlay.style.pointerEvents = 'none';
-          exitTl = gsap.timeline({ onComplete: () => { exitTl = null; overlay.style.pointerEvents = ''; overlay.style.setProperty('display', 'none'); gsap.set([overlay, card()], { clearProps: 'opacity,transform' }); } })
-            .to(card(), { opacity: 0, y: 30, scale: 0.94, duration: 0.22, ease: 'power2.in' }, 0)
-            .to(overlay, { opacity: 0, duration: 0.24, ease: 'power1.in' }, 0);
+          anim(card(), [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(18px) scale(0.98)' }], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+          exiting = anim(overlay, [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' });
+          exiting.onfinish = () => { finishExit(); overlay.style.setProperty('display', 'none'); };
+        }
+        function finishExit() {
+          if (!exiting) return;
+          exiting = null;
+          overlay.style.pointerEvents = '';
+          overlay.getAnimations().concat(card() ? card().getAnimations() : []).forEach(a => a.cancel());
         }
         new MutationObserver(() => {
-          const d = overlay.style.display;
-          const ours = overlay.style.getPropertyPriority('display') === 'important';
-          if (ours) return;
-          const nowShown = d !== 'none';
-          if (exitTl && nowShown) { exitTl.kill(); exitTl = null; overlay.style.pointerEvents = ''; gsap.set([overlay, card()], { clearProps: 'opacity,transform' }); shown = true; enter(); return; }
-          if (exitTl) return;
+          if (overlay.style.getPropertyPriority('display') === 'important') return;
+          const nowShown = overlay.style.display !== 'none';
+          if (exiting && nowShown) { finishExit(); shown = true; enter(); return; }
+          if (exiting) return;
           if (nowShown && !shown) enter();
           else if (!nowShown && shown) exit();
           shown = nowShown;
         }).observe(overlay, { attributes: true, attributeFilter: ['style'] });
       });
 
-      // --- قوائم تظهر بإضافة كلاس: الملصقات، التفاعلات، الاقتراحات، تبويبات الإعدادات ---
+      // --- قوائم تظهر بإضافة كلاس ---
       function onClassAdded(el, cls, fn) {
         if (!el) return;
         let had = el.classList.contains(cls);
         new MutationObserver(() => { const has = el.classList.contains(cls); if (has && !had) fn(el); had = has; })
           .observe(el, { attributes: true, attributeFilter: ['class'] });
       }
-      onClassAdded(document.getElementById('stickersPanel'), 'is-open', () => {
-        const items = [...document.querySelectorAll('#stickersGrid > *')].slice(0, 24);
-        gsap.fromTo(items, { opacity: 0, y: 18, scale: 0.7 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.8)', stagger: { each: 0.018, from: 'start' }, delay: 0.05, clearProps: 'opacity,transform' });
-      });
-      onClassAdded(document.getElementById('reactionMenu'), 'show', menu => {
-        gsap.fromTo(menu.children, { opacity: 0, y: 12, scale: 0.4 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(2.6)', stagger: 0.03, clearProps: 'opacity,transform' });
-      });
-      onClassAdded(document.getElementById('stickerSuggestions'), 'active', box => {
-        gsap.fromTo(box.children, { opacity: 0, scale: 0.6, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'back.out(2)', stagger: 0.03, clearProps: 'opacity,transform' });
-      });
-      document.querySelectorAll('.hub-tab-panel').forEach(panel => onClassAdded(panel, 'active', p => {
-        gsap.fromTo(p.children, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.05, clearProps: 'opacity,transform' });
-      }));
+      const stagger = (els, from, dur, step, delay) => els.forEach((el, i) => anim(el, [from, { opacity: 1, transform: 'none' }], { duration: dur, delay: (delay || 0) + i * step }));
+      onClassAdded(document.getElementById('stickersPanel'), 'is-open', () =>
+        stagger([...document.querySelectorAll('#stickersGrid > *')].slice(0, 16), { opacity: 0, transform: 'translateY(12px) scale(0.92)' }, 420, 18, 60));
+      onClassAdded(document.getElementById('reactionMenu'), 'show', menu =>
+        stagger([...menu.children], { opacity: 0, transform: 'translateY(8px) scale(0.85)' }, 340, 22));
+      onClassAdded(document.getElementById('stickerSuggestions'), 'active', box =>
+        stagger([...box.children].slice(0, 10), { opacity: 0, transform: 'translateY(8px) scale(0.9)' }, 320, 24));
+      document.querySelectorAll('.hub-tab-panel').forEach(panel => onClassAdded(panel, 'active', p =>
+        stagger([...p.children], { opacity: 0, transform: 'translateY(12px)' }, 460, 45)));
 
       // --- مؤشر "يكتب الآن" ---
       const typingArea = document.getElementById('typingArea');
@@ -9562,26 +9597,29 @@ window.addEventListener('mouseup', stopResize);
         let wasEmpty = !typingArea.innerHTML.trim();
         new MutationObserver(() => {
           const empty = !typingArea.innerHTML.trim();
-          if (!empty && wasEmpty) gsap.fromTo(typingArea.firstElementChild, { opacity: 0, y: 8, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(1.8)', clearProps: 'opacity,transform' });
+          if (!empty && wasEmpty) anim(typingArea.firstElementChild, [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 380 });
           wasEmpty = empty;
         }).observe(typingArea, { childList: true });
       }
 
-      // --- ضغطة الأزرار: انكماش خفيف وارتداد مطاطي ---
-      const pressSel = 'button, .drawer-action, .hub-close-circle, .reaction-badge, .avatar-opt';
-      let pressed = null;
-      function release() {
-        if (!pressed) return;
-        gsap.to(pressed, { '--press': 1, duration: 0.55, ease: 'elastic.out(1.2, 0.45)', clearProps: '--press' });
-        pressed = null;
+      // --- ضغطة الأزرار: نزول ناعم ورجوع انسيابي (خاصية scale المستقلة لا تلمس transform الموجود) ---
+      if (CSS.supports('scale', '1')) {
+        const pressSel = 'button, .drawer-action, .hub-close-circle, .reaction-badge, .avatar-opt, .icon-btn';
+        let pressed = null;
+        document.addEventListener('pointerdown', e => {
+          const btn = e.target.closest && e.target.closest(pressSel);
+          if (!btn || btn.disabled) return;
+          pressed = btn;
+          btn.animate([{ scale: '1' }, { scale: '0.93' }], { duration: 140, easing: 'ease-out', fill: 'forwards' });
+        }, { passive: true, capture: true });
+        const release = () => {
+          if (!pressed) return;
+          const btn = pressed; pressed = null;
+          btn.getAnimations().forEach(a => { if (a.effect && a.effect.getKeyframes().some(k => k.scale)) a.cancel(); });
+          btn.animate([{ scale: '0.93' }, { scale: '1.025', offset: 0.55 }, { scale: '1' }], { duration: 460, easing: EASE_SOFT });
+        };
+        ['pointerup', 'pointercancel', 'dragstart'].forEach(ev => document.addEventListener(ev, release, { passive: true, capture: true }));
       }
-      document.addEventListener('pointerdown', e => {
-        const btn = e.target.closest && e.target.closest(pressSel);
-        if (!btn || btn.disabled) return;
-        pressed = btn;
-        gsap.fromTo(btn, { '--press': 1 }, { '--press': 0.92, duration: 0.12, ease: 'power2.out' });
-      }, { passive: true, capture: true });
-      ['pointerup', 'pointercancel', 'dragstart'].forEach(ev => document.addEventListener(ev, release, { passive: true, capture: true }));
 
       window.siteMotion = { messages, seen };
     })();
