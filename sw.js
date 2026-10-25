@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-together-cache-v4';
+const CACHE_NAME = 'anime-together-cache-v5';
 const DRIVE_STREAM_ROUTE = '__drive_stream__';
 
 self.addEventListener('install', (event) => {
@@ -39,12 +39,63 @@ async function proxyDriveStream(request, localUrl, fileId) {
   apiUrl.searchParams.set('alt', 'media');
   apiUrl.searchParams.set('supportsAllDrives', 'true');
 
+  let upstream;
   try {
-    // تمرير استجابة Google كما هي (206 وContent-Range) ليعمل التقديم والبث على أجزاء
-    return await fetch(apiUrl.href, { method: 'GET', headers, cache: 'no-store', redirect: 'follow' });
+    upstream = await fetch(apiUrl.href, { method: 'GET', headers, cache: 'no-store', redirect: 'follow' });
   } catch (error) {
     return new Response('Google Drive stream request failed.', { status: 502 });
   }
+  if (!upstream.ok) return new Response(upstream.body, { status: upstream.status, headers: { 'Content-Type': 'text/plain' } });
+
+  // سفاري (آيفون/آيباد) يقبل الفيديو فقط إذا رجع له 206 بنفس البايتات المطلوبة بالضبط ومع Content-Range صحيح.
+  // رد Google من نطاق آخر قد يخفي Content-Range، فنبني رداً محلياً بالرؤوس الصحيحة محسوبة من حجم الملف.
+  const size = Number(localUrl.searchParams.get('size')) || 0;
+  const out = new Headers({
+    'Content-Type': upstream.headers.get('Content-Type') || localUrl.searchParams.get('type') || 'video/mp4',
+    'Accept-Ranges': 'bytes',
+    'Cache-Control': 'no-store'
+  });
+  const m = range && range.match(/bytes=(\d+)-(\d*)/);
+  if (!m || !size) {
+    const len = upstream.headers.get('Content-Length');
+    if (len) out.set('Content-Length', len);
+    return new Response(upstream.body, { status: upstream.status, headers: out });
+  }
+
+  const start = Number(m[1]);
+  const end = Math.min(m[2] ? Number(m[2]) : size - 1, size - 1);
+  if (start > end) {
+    out.set('Content-Range', `bytes */${size}`);
+    return new Response(null, { status: 416, headers: out });
+  }
+  out.set('Content-Range', `bytes ${start}-${end}/${size}`);
+  out.set('Content-Length', String(end - start + 1));
+  // إذا تجاهل Google النطاق ورجّع الملف كاملاً (200) نقص البايتات المطلوبة بأنفسنا
+  const body = upstream.status === 206 ? upstream.body : sliceStream(upstream.body, start, end - start + 1);
+  return new Response(body, { status: 206, headers: out });
+}
+
+// يمرر فقط `length` بايت تبدأ من `skip` من تدفق البيانات
+function sliceStream(stream, skip, length) {
+  const reader = stream.getReader();
+  let pos = 0, sent = 0;
+  return new ReadableStream({
+    async pull(controller) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || sent >= length) { controller.close(); reader.cancel().catch(() => {}); return; }
+        const chunkStart = Math.max(0, skip - pos);
+        pos += value.length;
+        if (chunkStart >= value.length) continue;
+        const part = value.subarray(chunkStart, chunkStart + (length - sent));
+        sent += part.length;
+        controller.enqueue(part);
+        if (sent >= length) { controller.close(); reader.cancel().catch(() => {}); }
+        return;
+      }
+    },
+    cancel() { reader.cancel().catch(() => {}); }
+  });
 }
 
 self.addEventListener('fetch', (event) => {
