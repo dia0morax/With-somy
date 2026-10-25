@@ -8071,6 +8071,17 @@ async function renderAvailableVideosUI(items) {
       return streamUrl.href;
     }
 
+    // رابط مباشر من Google (بديل احتياطي إذا لم يتوفر مشغّل البث، مثل التصفح الخاص بسفاري)
+    function buildDirectDriveStreamUrl(fileId, token) {
+      const directUrl = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`);
+      directUrl.searchParams.set('alt', 'media');
+      directUrl.searchParams.set('supportsAllDrives', 'true');
+      directUrl.searchParams.set('access_token', token);
+      return directUrl.href;
+    }
+
+    const isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     function applyDrivePlaybackState(state) {
       if (!state || !window.driveMediaReady || !window.driveCurrentPlayback) return;
       const duration = Number(player.duration());
@@ -8113,7 +8124,12 @@ async function renderAvailableVideosUI(items) {
       const loadPromise = (async () => {
         const metadata = await fetchDriveMetadata(state, token);
         if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
-        await ensureDriveStreamWorker();
+        let workerReady = true;
+        try {
+          await ensureDriveStreamWorker();
+        } catch (error) {
+          workerReady = false; // نكمل بالرابط المباشر بدل إيقاف التشغيل
+        }
         if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
 
         window.driveCurrentPlayback.name = metadata.name || window.driveCurrentPlayback.name;
@@ -8121,7 +8137,9 @@ async function renderAvailableVideosUI(items) {
         window.driveCurrentPlayback.resourceKey = metadata.resourceKey || window.driveCurrentPlayback.resourceKey;
         window.driveLoadedFileId = fileId;
         window.driveMediaReady = false;
-        const streamUrl = buildLocalDriveStreamUrl(fileId, token, window.driveCurrentPlayback.resourceKey);
+        const directUrl = buildDirectDriveStreamUrl(fileId, token);
+        const streamUrl = workerReady ? buildLocalDriveStreamUrl(fileId, token, window.driveCurrentPlayback.resourceKey) : directUrl;
+        let triedDirect = !workerReady;
 
         player.one('loadedmetadata', () => {
           if (generation !== window.driveLoadGeneration || !window.driveCurrentPlayback || window.driveCurrentPlayback.id !== fileId) return;
@@ -8132,13 +8150,32 @@ async function renderAvailableVideosUI(items) {
           if (generation !== window.driveLoadGeneration) return;
           hideDriveOverlayMessage();
         });
-        player.one('error', () => {
+        const onDriveError = () => {
           if (generation !== window.driveLoadGeneration) return;
+          if (!triedDirect) {
+            // محاولة ثانية تلقائية بالرابط المباشر من Google
+            triedDirect = true;
+            player.one('error', onDriveError);
+            player.src({ src: directUrl, type: metadata.mimeType });
+            return;
+          }
           window.driveLoadedFileId = '';
           window.driveMediaReady = false;
-          showDriveOverlayMessage('اضغط هنا لإعادة تنشيط بث الفيديو ▶️');
-        });
+          if (isAppleMobile && /matroska|mkv/i.test(metadata.mimeType + ' ' + (metadata.name || ''))) {
+            showDriveOverlayMessage('أجهزة آيفون وآيباد لا تدعم صيغة MKV. حوّل الفيديو إلى MP4 ثم شغّله من Drive.');
+          } else {
+            showDriveOverlayMessage('اضغط هنا لإعادة تنشيط بث الفيديو ▶️');
+          }
+        };
+        player.one('error', onDriveError);
         player.src({ src: streamUrl, type: metadata.mimeType });
+        if (isAppleMobile) {
+          setTimeout(() => {
+            if (generation === window.driveLoadGeneration && window.driveLoadedFileId === fileId && !window.driveMediaReady) {
+              showDriveOverlayMessage('اضغط هنا لبدء فيديو Drive ▶️');
+            }
+          }, 2500);
+        }
       })();
 
       window.driveLoadingPromise = loadPromise;
@@ -8526,6 +8563,15 @@ async function renderAvailableVideosUI(items) {
             return;
           }
           if (window.driveLoadedFileId === drive.id) {
+            if (isAppleMobile) {
+              // سفاري الآيفون/الآيباد لا يحمّل الفيديو إلا بعد لمسة؛ نبدأ التشغيل من هذه اللمسة والمزامنة تكمل بعد التحميل
+              hideDriveOverlayMessage();
+              isSystemAction = true; // لمسة التحميل لا تُرسل "تشغيل" للغرفة؛ التوقيت يتزامن بعد التحميل
+              const attempt = player.play();
+              if (attempt && attempt.catch) attempt.catch(() => {});
+              setTimeout(() => { isSystemAction = false; }, 500);
+              return;
+            }
             showDriveOverlayMessage('جارٍ تجهيز الفيديو للتشغيل…');
             return;
           }
